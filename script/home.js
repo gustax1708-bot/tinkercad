@@ -31,6 +31,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	document.querySelectorAll('.nav-item[data-section]').forEach((item) => {
 		item.addEventListener('click', () => {
+			const pageBySection = { overview: 'home.html', hardware: 'hardware.html', software: 'firmware.html' };
+			const currentPage = window.location.pathname.split('/').pop() || 'home.html';
+			const targetPage = pageBySection[item.dataset.section];
+
+			if (!item.getAttribute('href') && targetPage && targetPage !== currentPage) {
+				window.location.assign(targetPage);
+				return;
+			}
+
+			if (item.tagName === 'A' && !item.getAttribute('href').startsWith('#')) {
+				return;
+			}
+
 			document.querySelector('.nav-item.active').classList.remove('active');
 			item.classList.add('active');
 			document.querySelector('.breadcrumbs strong').textContent = item.querySelector('span').textContent;
