@@ -2,13 +2,20 @@ document.addEventListener('DOMContentLoaded', () => {
 	const toast = document.querySelector('#toast');
 
 	const showToast = (message) => {
-		toast.querySelector('span').textContent = message;
+		if (!toast) return;
+		const toastText = toast.querySelector('span');
+		if (toastText) toastText.textContent = message;
 		toast.classList.add('show');
 		window.setTimeout(() => toast.classList.remove('show'), 3000);
 	};
 
-	document.querySelector('#runDiagnosticsButton')?.addEventListener('click', () => showToast('Diagnóstico concluído: todos os módulos respondendo.'));
+	const runDiagnosticsButton = document.querySelector('#runDiagnosticsButton');
+	if (runDiagnosticsButton) {
+		runDiagnosticsButton.addEventListener('click', () => showToast('Diagnóstico concluído: todos os módulos respondendo.'));
+	}
+
 	document.querySelectorAll('.hardware-doc').forEach((documentButton) => {
-		documentButton.addEventListener('click', () => showToast(`${documentButton.querySelector('strong').textContent} selecionado.`));
+		const strong = documentButton.querySelector('strong');
+		documentButton.addEventListener('click', () => showToast(strong ? `${strong.textContent} selecionado.` : 'Documento selecionado.'));
 	});
 });

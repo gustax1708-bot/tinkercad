@@ -1,12 +1,17 @@
 document.addEventListener('DOMContentLoaded', () => {
 	const sidebar = document.querySelector('#sidebar');
 	const toast = document.querySelector('#toast');
+	const menuButton = document.querySelector('#menuButton');
 	let toastTimer;
 
-	lucide.createIcons();
+	if (window.lucide && typeof window.lucide.createIcons === 'function') {
+		window.lucide.createIcons();
+	}
 
 	const showToast = (message) => {
-		toast.querySelector('span').textContent = message;
+		if (!toast) return;
+		const toastText = toast.querySelector('span');
+		if (toastText) toastText.textContent = message;
 		toast.classList.add('show');
 		window.clearTimeout(toastTimer);
 		toastTimer = window.setTimeout(() => toast.classList.remove('show'), 3000);
@@ -14,46 +19,84 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const shareProject = async () => {
 		try {
-			await navigator.clipboard.writeText(window.location.href);
+			if (navigator.clipboard && window.location.href) {
+				await navigator.clipboard.writeText(window.location.href);
+			}
 			showToast('Link do projeto copiado para a área de transferência.');
 		} catch {
 			showToast('Link público pronto para compartilhar.');
 		}
 	};
 
-	document.querySelector('#menuButton').addEventListener('click', () => sidebar.classList.toggle('open'));
-	document.querySelectorAll('#shareButton, #shareTopButton').forEach((button) => button.addEventListener('click', shareProject));
-	document.querySelector('#downloadButton').addEventListener('click', () => showToast('Pacote do projeto preparado para exportação.'));
-	document.querySelector('#uploadButton').addEventListener('click', () => showToast('Área de arquivos pronta para receber um novo documento.'));
-	document.querySelector('#openWorkbench').addEventListener('click', () => showToast('Bancada de testes conectada ao ESP32.'));
-	document.querySelector('#helpButton').addEventListener('click', () => showToast('Consulte a documentação para entender cada módulo.'));
-	document.querySelector('#viewDocsButton').addEventListener('click', () => showToast('A documentação completa está disponível no README.md.'));
+	if (menuButton && sidebar) {
+		menuButton.addEventListener('click', () => sidebar.classList.toggle('open'));
+	}
+
+	document.querySelectorAll('#shareButton, #shareTopButton').forEach((button) => {
+		button.addEventListener('click', shareProject);
+	});
+
+	const downloadButton = document.querySelector('#downloadButton');
+	if (downloadButton) {
+		downloadButton.addEventListener('click', () => showToast('Pacote do projeto preparado para exportação.'));
+	}
+
+	const uploadButton = document.querySelector('#uploadButton');
+	if (uploadButton) {
+		uploadButton.addEventListener('click', () => showToast('Área de arquivos pronta para receber um novo documento.'));
+	}
+
+	const openWorkbench = document.querySelector('#openWorkbench');
+	if (openWorkbench) {
+		openWorkbench.addEventListener('click', () => showToast('Bancada de testes conectada ao ESP32.'));
+	}
+
+	const viewDocsButton = document.querySelector('#viewDocsButton');
+	if (viewDocsButton) {
+		viewDocsButton.addEventListener('click', () => showToast('A documentação completa está disponível no README.md.'));
+	}
 
 	document.querySelectorAll('.nav-item[data-section]').forEach((item) => {
-		item.addEventListener('click', () => {
+		item.addEventListener('click', (event) => {
 			const pageBySection = { overview: 'home.html', hardware: 'hardware.html', software: 'firmware.html' };
 			const currentPage = window.location.pathname.split('/').pop() || 'home.html';
-			const targetPage = pageBySection[item.dataset.section];
+			const section = item.dataset.section;
+			const targetPage = pageBySection[section];
+			const href = item.getAttribute('href');
 
-			if (!item.getAttribute('href') && targetPage && targetPage !== currentPage) {
+			if (item.tagName === 'A' && href && !href.startsWith('#') && href !== currentPage) {
+				return;
+			}
+
+			if (item.tagName === 'A' && href && href.startsWith('#')) {
+				event.preventDefault();
+			}
+
+			const activeItem = document.querySelector('.nav-item.active');
+			if (activeItem) activeItem.classList.remove('active');
+			item.classList.add('active');
+
+			const breadcrumb = document.querySelector('.breadcrumbs strong');
+			const label = item.querySelector('span');
+			if (breadcrumb && label) breadcrumb.textContent = label.textContent;
+
+			if (targetPage && targetPage !== currentPage && item.tagName !== 'A') {
 				window.location.assign(targetPage);
 				return;
 			}
 
-			if (item.tagName === 'A' && !item.getAttribute('href').startsWith('#')) {
-				return;
+			const target = document.querySelector(`#${section}`) || document.querySelector('#overview');
+			if (target) {
+				target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			}
-
-			document.querySelector('.nav-item.active').classList.remove('active');
-			item.classList.add('active');
-			document.querySelector('.breadcrumbs strong').textContent = item.querySelector('span').textContent;
-			const target = document.querySelector(`#${item.dataset.section}`) || document.querySelector('#overview');
-			target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			sidebar.classList.remove('open');
+			if (sidebar) sidebar.classList.remove('open');
 		});
 	});
 
 	document.querySelectorAll('.file-row').forEach((file) => {
-		file.addEventListener('click', () => showToast(`${file.querySelector('strong').textContent} selecionado.`));
+		file.addEventListener('click', () => {
+			const strong = file.querySelector('strong');
+			showToast(strong ? `${strong.textContent} selecionado.` : 'Arquivo selecionado.');
+		});
 	});
 });
