@@ -1,24 +1,333 @@
-.firmware-hero .hero-graphic { background: #28695c; }
-.code-window { position: absolute; top: 49px; left: 50%; width: min(310px, 78%); padding: 17px 20px; border: 1px solid rgba(223,245,224,.28); border-radius: 7px; background: rgba(20,57,48,.68); box-shadow: 11px 14px 0 rgba(18,57,45,.2); transform: translateX(-50%) rotate(-4deg); }
-.code-window pre { margin: 17px 0 0; color: #d2e7c4; font: 11px/1.7 'DM Mono', monospace; }
-.code-window b { color: #f5d477; font-weight: 400; }
-.code-window em { color: #f6a47e; font-style: normal; }
-.code-dot { display: inline-block; width: 7px; height: 7px; margin-right: 5px; border-radius: 50%; }
-.code-dot.orange { background: #f36b3c; }.code-dot.yellow { background: #f5d477; }.code-dot.green { background: #8ed3a4; }
-.heading-actions { display: flex; align-items: center; gap: 20px; }
-.firmware-layout { display: grid; grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr); gap: 17px; margin-top: 25px; }
-.code-card, .release-card { min-width: 0; padding: 21px; border: 1px solid #e7ebe7; border-radius: 7px; background: #fff; }
-.code-toolbar { display: flex; align-items: center; justify-content: space-between; margin-top: 17px; padding: 9px 11px; border: 1px solid #dce8df; border-radius: 5px 5px 0 0; color: #236557; background: #f4faf5; font: 10px 'DM Mono', monospace; }
-.code-toolbar svg { width: 13px; vertical-align: -3px; }.code-action { color: #74817b; background: transparent; font: 10px 'DM Mono', monospace; }
-.code-block { min-height: 306px; margin: 0; overflow: auto; padding: 17px 18px; border-radius: 0 0 5px 5px; background: #1d2b28; color: #dce9d9; font: 11px/1.65 'DM Mono', monospace; }
-.code-comment { color: #76968a; }.code-keyword { color: #f6c875; }.code-string { color: #a9d6a2; }.code-number { color: #f29b72; }.code-function { color: #8fd0bc; }
-.code-footer { display: flex; justify-content: space-between; margin-top: 12px; color: #9aa79f; font: 10px 'DM Mono', monospace; }
-.release-item { display: flex; gap: 12px; position: relative; padding: 0 0 23px 3px; }.release-item:not(:last-of-type):after { content: ''; position: absolute; left: 5px; top: 14px; bottom: 0; width: 1px; background: #dce5de; }
-.release-marker { z-index: 1; width: 7px; height: 7px; flex-shrink: 0; margin-top: 4px; border: 2px solid #c5d2c9; border-radius: 50%; background: #fff; }.release-item.current .release-marker { border-color: #f36b3c; background: #f36b3c; }
-.release-item p { margin: 5px 0; color: #69776f; font-size: 11px; }.release-item small { color: #9aa49f; font: 9px 'DM Mono', monospace; }.release-button { width: 100%; justify-content: center; }
-.terminal-output { padding: 14px; border-radius: 5px; background: #1d2b28; }.terminal-output p { margin: 0 0 9px; color: #b4c9bc; font: 10px/1.4 'DM Mono', monospace; }.terminal-output p:last-child { margin-bottom: 0; }.terminal-output p span { margin-right: 12px; color: #718c7f; }.terminal-active { color: #f2c878 !important; }
-.config-row { display: flex; justify-content: space-between; gap: 15px; padding: 12px 0; border-bottom: 1px solid #edf0ed; color: #7b8780; font-size: 11px; }.config-row:last-child { border-bottom: 0; }.config-row strong { color: #16211e; text-align: right; font-size: 11px; }.mono-value { font: 10px 'DM Mono', monospace; }
-.dependency-list { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 25px; overflow: hidden; border: 1px solid #e7ebe7; border-radius: 7px; background: #fff; }.dependency-list > div { display: grid; grid-template-columns: 34px 1fr; column-gap: 11px; align-items: center; padding: 17px; border-right: 1px solid #e7ebe7; }.dependency-list > div:last-child { border-right: 0; }.dependency-list .file-icon { grid-row: 1 / span 2; }.dependency-list strong { font-size: 12px; }.dependency-list small { color: #929e96; font-size: 10px; }
-@media (max-width: 1050px) { .firmware-layout { grid-template-columns: 1fr; }.dependency-list { grid-template-columns: 1fr; }.dependency-list > div { border-right: 0; border-bottom: 1px solid #e7ebe7; }.dependency-list > div:last-child { border-bottom: 0; } }
-@media (max-width: 700px) { .heading-actions { width: 100%; justify-content: space-between; gap: 8px; }.code-window { top: 36px; transform: translateX(-50%) scale(.88) rotate(-4deg); }.code-card, .release-card { padding: 17px; }.dependency-list > div { padding: 14px; } }
-@media (max-width: 480px) { .code-toolbar { flex-direction: column; align-items: flex-start; gap: 8px; } .code-footer { flex-direction: column; gap: 6px; } .release-item { gap: 10px; } .terminal-output p { font-size: 9px; } }
+.firmware-hero .hero-graphic {
+    background: #28695c;
+}
+
+.code-window {
+    position: absolute;
+    top: 49px;
+    left: 50%;
+    width: min(310px, 78%);
+    padding: 17px 20px;
+    border: 1px solid rgba(223, 245, 224, .28);
+    border-radius: 7px;
+    background: rgba(20, 57, 48, .68);
+    box-shadow: 11px 14px 0 rgba(18, 57, 45, .2);
+    transform: translateX(-50%) rotate(-4deg);
+}
+
+.code-window pre {
+    margin: 17px 0 0;
+    color: #d2e7c4;
+    font: 11px/1.7 'DM Mono', monospace;
+}
+
+.code-window b {
+    color: #f5d477;
+    font-weight: 400;
+}
+
+.code-window em {
+    color: #f6a47e;
+    font-style: normal;
+}
+
+.code-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 5px;
+    border-radius: 50%;
+}
+
+.code-dot.orange {
+    background: #f36b3c;
+}
+
+.code-dot.yellow {
+    background: #f5d477;
+}
+
+.code-dot.green {
+    background: #8ed3a4;
+}
+
+.heading-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.firmware-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.45fr) minmax(260px, .75fr);
+    gap: 17px;
+    margin-top: 25px;
+}
+
+.code-card,
+.release-card {
+    min-width: 0;
+    padding: 21px;
+    border: 1px solid #e7ebe7;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.code-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 17px;
+    padding: 9px 11px;
+    border: 1px solid #dce8df;
+    border-radius: 5px 5px 0 0;
+    color: #236557;
+    background: #f4faf5;
+    font: 10px 'DM Mono', monospace;
+}
+
+.code-toolbar svg {
+    width: 13px;
+    vertical-align: -3px;
+}
+
+.code-action {
+    color: #74817b;
+    background: transparent;
+    font: 10px 'DM Mono', monospace;
+}
+
+.code-block {
+    min-height: 306px;
+    margin: 0;
+    overflow: auto;
+    padding: 17px 18px;
+    border-radius: 0 0 5px 5px;
+    background: #1d2b28;
+    color: #dce9d9;
+    font: 11px/1.65 'DM Mono', monospace;
+}
+
+.code-comment {
+    color: #76968a;
+}
+
+.code-keyword {
+    color: #f6c875;
+}
+
+.code-string {
+    color: #a9d6a2;
+}
+
+.code-number {
+    color: #f29b72;
+}
+
+.code-function {
+    color: #8fd0bc;
+}
+
+.code-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+    color: #9aa79f;
+    font: 10px 'DM Mono', monospace;
+}
+
+.release-item {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    padding: 0 0 23px 3px;
+}
+
+.release-item:not(:last-of-type):after {
+    content: '';
+    position: absolute;
+    left: 5px;
+    top: 14px;
+    bottom: 0;
+    width: 1px;
+    background: #dce5de;
+}
+
+.release-marker {
+    z-index: 1;
+    width: 7px;
+    height: 7px;
+    flex-shrink: 0;
+    margin-top: 4px;
+    border: 2px solid #c5d2c9;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.release-item.current .release-marker {
+    border-color: #f36b3c;
+    background: #f36b3c;
+}
+
+.release-item p {
+    margin: 5px 0;
+    color: #69776f;
+    font-size: 11px;
+}
+
+.release-item small {
+    color: #9aa49f;
+    font: 9px 'DM Mono', monospace;
+}
+
+.release-button {
+    width: 100%;
+    justify-content: center;
+}
+
+.terminal-output {
+    padding: 14px;
+    border-radius: 5px;
+    background: #1d2b28;
+}
+
+.terminal-output p {
+    margin: 0 0 9px;
+    color: #b4c9bc;
+    font: 10px/1.4 'DM Mono', monospace;
+}
+
+.terminal-output p:last-child {
+    margin-bottom: 0;
+}
+
+.terminal-output p span {
+    margin-right: 12px;
+    color: #718c7f;
+}
+
+.terminal-active {
+    color: #f2c878 !important;
+}
+
+.config-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 12px 0;
+    border-bottom: 1px solid #edf0ed;
+    color: #7b8780;
+    font-size: 11px;
+}
+
+.config-row:last-child {
+    border-bottom: 0;
+}
+
+.config-row strong {
+    color: #16211e;
+    text-align: right;
+    font-size: 11px;
+}
+
+.mono-value {
+    font: 10px 'DM Mono', monospace;
+}
+
+.dependency-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    margin-top: 25px;
+    overflow: hidden;
+    border: 1px solid #e7ebe7;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.dependency-list>div {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    column-gap: 11px;
+    align-items: center;
+    padding: 17px;
+    border-right: 1px solid #e7ebe7;
+}
+
+.dependency-list>div:last-child {
+    border-right: 0;
+}
+
+.dependency-list .file-icon {
+    grid-row: 1 / span 2;
+}
+
+.dependency-list strong {
+    font-size: 12px;
+}
+
+.dependency-list small {
+    color: #929e96;
+    font-size: 10px;
+}
+
+@media (max-width: 1050px) {
+    .firmware-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .dependency-list {
+        grid-template-columns: 1fr;
+    }
+
+    .dependency-list>div {
+        border-right: 0;
+        border-bottom: 1px solid #e7ebe7;
+    }
+
+    .dependency-list>div:last-child {
+        border-bottom: 0;
+    }
+}
+
+@media (max-width: 700px) {
+    .heading-actions {
+        width: 100%;
+        justify-content: space-between;
+        gap: 8px;
+    }
+
+    .code-window {
+        top: 36px;
+        transform: translateX(-50%) scale(.88) rotate(-4deg);
+    }
+
+    .code-card,
+    .release-card {
+        padding: 17px;
+    }
+
+    .dependency-list>div {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .code-toolbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .code-footer {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .release-item {
+        gap: 10px;
+    }
+
+    .terminal-output p {
+        font-size: 9px;
+    }
+}
