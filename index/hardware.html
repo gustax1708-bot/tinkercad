@@ -1,46 +1,209 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Hardware da Estação Ambiental.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../style/hardware.css">
     <link rel="stylesheet" href="../style/home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="../script/home.js" defer></script>
     <script src="../script/hardware.js" defer></script>
 </head>
+
 <body>
     <div class="app-shell">
         <aside class="sidebar" id="sidebar">
-            <div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span class="brand-dot">.</span></span></div>
-            <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>Estação Ambiental</strong><small>EMB-2026-001</small></div>
+            <div class="brand">
+                <div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span
+                        class="brand-dot">.</span></span>
+            </div>
+            <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>Estação
+                    Ambiental</strong><small>EMB-2026-001</small></div>
             <nav class="main-nav" aria-label="Navegação do projeto">
                 <p class="nav-label">Projeto</p>
-                <a class="nav-item" data-section="overview" href="home.html"><i data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
-                <button class="nav-item active" data-section="hardware"><i data-lucide="cpu"></i><span>Hardware</span></button>
-                <a class="nav-item" data-section="software" href="firmware.html"><i data-lucide="code-2"></i><span>Firmware</span></a>
-                <a class="nav-item" data-section="documents" href="#documents"><i data-lucide="file-text"></i><span>Documentação</span></a>
+                <a class="nav-item" data-section="overview" href="home.html"><i
+                        data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
+                <button class="nav-item active" data-section="hardware"><i
+                        data-lucide="cpu"></i><span>Hardware</span></button>
+                <a class="nav-item" data-section="software" href="firmware.html"><i
+                        data-lucide="code-2"></i><span>Firmware</span></a>
+                <a class="nav-item" data-section="documents" href="#documents"><i
+                        data-lucide="file-text"></i><span>Documentação</span></a>
                 <p class="nav-label resources-label">Ações</p>
-                <button class="nav-item" id="shareButton"><i data-lucide="share-2"></i><span>Compartilhar</span></button>
-                <button class="nav-item" id="downloadButton"><i data-lucide="download"></i><span>Exportar projeto</span></button>
+                <button class="nav-item" id="shareButton"><i
+                        data-lucide="share-2"></i><span>Compartilhar</span></button>
+                <button class="nav-item" id="downloadButton"><i data-lucide="download"></i><span>Exportar
+                        projeto</span></button>
             </nav>
-            <div class="sidebar-footer"><div class="storage-card"><div class="storage-heading"><i data-lucide="cloud"></i><span>Armazenamento</span><strong>2,4 GB</strong></div><div class="progress"><span></span></div><small>Projeto salvo na nuvem</small></div><button class="profile-mini"><span class="avatar avatar-small">GS</span><span class="profile-copy"><strong>Gustavo Silva</strong><small>Autor do projeto</small></span><i data-lucide="more-horizontal"></i></button></div>
+            <div class="sidebar-footer">
+                <div class="storage-card">
+                    <div class="storage-heading"><i data-lucide="cloud"></i><span>Armazenamento</span><strong>2,4
+                            GB</strong></div>
+                    <div class="progress"><span></span></div><small>Projeto salvo na nuvem</small>
+                </div><button class="profile-mini"><span class="avatar avatar-small">GS</span><span
+                        class="profile-copy"><strong>Gustavo Silva</strong><small>Autor do projeto</small></span><i
+                        data-lucide="more-horizontal"></i></button>
+            </div>
         </aside>
         <main class="main-content">
-            <header class="topbar"><button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i data-lucide="menu"></i></button><div class="breadcrumbs"><span>Meu projeto</span><i data-lucide="chevron-right"></i><strong>Hardware</strong></div><div class="topbar-actions"><button class="icon-button" id="helpButton" aria-label="Ajuda"><i data-lucide="circle-help"></i></button><button class="icon-button notification-button" aria-label="Atualização disponível"><i data-lucide="bell"></i><span></span></button><div class="avatar">GS</div></div></header>
+            <header class="topbar"><button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i
+                        data-lucide="menu"></i></button>
+                <div class="breadcrumbs"><span>Meu projeto</span><i
+                        data-lucide="chevron-right"></i><strong>Hardware</strong></div>
+                <div class="topbar-actions"><button class="icon-button" id="helpButton" aria-label="Ajuda"><i
+                            data-lucide="circle-help"></i></button><button class="icon-button notification-button"
+                        aria-label="Atualização disponível"><i data-lucide="bell"></i><span></span></button>
+                    <div class="avatar">GS</div>
+                </div>
+            </header>
             <div class="content-wrap">
-                <section class="welcome-row"><div><p class="eyebrow"><span class="status-dot"></span> BANCADA DE HARDWARE · ONLINE</p><h1>Hardware da<br><span class="headline-accent">estação.</span></h1><p class="welcome-copy">Placas, sensores e conexões que dão vida ao monitoramento ambiental.</p></div><div class="project-actions"><button class="outline-button" id="shareTopButton"><i data-lucide="share-2"></i> Compartilhar</button><button class="solid-button" id="openWorkbench"><i data-lucide="cable"></i> Abrir bancada</button></div></section>
-                <section class="hero-panel project-hero hardware-hero" aria-label="Resumo do hardware"><div class="hero-copy"><div class="hero-tag">ARQUITETURA EMBARCADA <span>///</span></div><h2>Monte.<br><em>Monitore.</em></h2><p>Uma base compacta conecta o ESP32 aos sensores que transformam o ambiente em dados úteis.</p><div class="hero-meta"><span><i class="live-dot"></i> 4 módulos ativos</span><span>Última inspeção · hoje</span></div></div><div class="hero-graphic" aria-hidden="true"><div class="graphic-grid"></div><div class="hardware-board"><span class="board-label">ESP32</span><i class="board-pin pin-one"></i><i class="board-pin pin-two"></i><i class="board-pin pin-three"></i><i class="board-led"></i><span class="board-trace trace-one"></span><span class="board-trace trace-two"></span></div><span class="graphic-label hardware-label-one">GPIO 04</span><span class="graphic-label hardware-label-two">I2C BUS</span></div></section>
-                <section class="project-section" id="hardware"><div class="section-heading"><div><p class="eyebrow">MAPA DE COMPONENTES</p><h2>Inventário conectado</h2></div><span class="online-pill"><i></i> sistema saudável</span></div><div class="hardware-layout"><article class="component-card"><div class="card-heading"><div><span class="card-kicker">CONTROLADOR PRINCIPAL</span><h3>ESP32 DevKit v1</h3></div><button class="icon-button" id="uploadButton" aria-label="Mais opções"><i data-lucide="more-horizontal"></i></button></div><div class="component-visual"><div class="mini-board"><span>ESP32</span><i></i><i></i><i></i></div><div class="pin-line pin-line-one"><b>3V3</b><span></span></div><div class="pin-line pin-line-two"><b>GND</b><span></span></div><div class="pin-line pin-line-three"><b>GPIO 04</b><span></span></div></div><div class="component-meta"><span>Microcontrolador</span><strong>Wi-Fi + Bluetooth</strong></div><div class="component-meta"><span>Alimentação</span><strong>5V USB</strong></div></article><article class="sensor-card"><div class="card-heading"><div><span class="card-kicker">SENSORES INSTALADOS</span><h3>Leitura ambiental</h3></div><i data-lucide="radio-tower" class="heading-icon"></i></div><div class="sensor-item"><span class="sensor-badge orange"><i data-lucide="thermometer"></i></span><span><strong>DHT22</strong><small>Temperatura e umidade</small></span><span class="sensor-pin">GPIO 04</span></div><div class="sensor-item"><span class="sensor-badge green"><i data-lucide="wind"></i></span><span><strong>MQ-135</strong><small>Qualidade do ar</small></span><span class="sensor-pin">GPIO 34</span></div><div class="sensor-item"><span class="sensor-badge yellow"><i data-lucide="sun"></i></span><span><strong>BH1750</strong><small>Intensidade luminosa</small></span><span class="sensor-pin">I2C</span></div></article></div></section>
-                <section class="project-section lower-section" id="overview"><div class="section-heading"><div><p class="eyebrow">DIAGNÓSTICO DA BANCADA</p><h2>Conexões e energia</h2></div><button class="text-button" id="runDiagnosticsButton">Executar diagnóstico <i data-lucide="arrow-right"></i></button></div><div class="diagnostics-grid"><article class="wiring-card"><div class="card-heading"><div><span class="card-kicker">DIAGRAMA DE PINOS</span><h3>Rotas de comunicação</h3></div><i data-lucide="git-merge" class="heading-icon"></i></div><div class="wiring-map"><div class="wiring-node"><span class="node-icon orange"><i data-lucide="cpu"></i></span><strong>ESP32</strong><small>controlador</small></div><div class="wire wire-orange"><span>GPIO 04</span></div><div class="wiring-node"><span class="node-icon green"><i data-lucide="droplets"></i></span><strong>DHT22</strong><small>clima</small></div><div class="wire wire-yellow"><span>I2C</span></div><div class="wiring-node"><span class="node-icon purple"><i data-lucide="sun"></i></span><strong>BH1750</strong><small>luz</small></div></div></article><article class="power-card"><div class="card-heading"><div><span class="card-kicker">CONSUMO ATUAL</span><h3>Energia do sistema</h3></div><i data-lucide="zap" class="heading-icon"></i></div><div class="power-reading"><strong>420</strong><span>mA</span><small>consumo médio</small></div><div class="power-bar"><span></span></div><div class="power-footer"><span><i class="green-dot"></i> Dentro do limite</span><strong>62% da fonte</strong></div><div class="power-stats"><span><small>Tensão</small><b>5.02 V</b></span><span><small>Temperatura</small><b>31.4 °C</b></span></div></article></div></section>
-                <section class="project-section" id="documents"><div class="section-heading"><div><p class="eyebrow">REGISTRO DE MANUTENÇÃO</p><h2>Peças e documentação</h2></div><button class="text-button" id="viewDocsButton">Abrir documentação <i data-lucide="arrow-right"></i></button></div><div class="hardware-docs"><button class="hardware-doc"><span class="file-icon green"><i data-lucide="file-text"></i></span><span><strong>pinout-esp32.pdf</strong><small>Esquema de conexões · 820 KB</small></span><i data-lucide="arrow-up-right"></i></button><button class="hardware-doc"><span class="file-icon orange"><i data-lucide="wrench"></i></span><span><strong>lista-de-materiais.csv</strong><small>4 itens · atualizado hoje</small></span><i data-lucide="arrow-up-right"></i></button><button class="hardware-doc"><span class="file-icon purple"><i data-lucide="history"></i></span><span><strong>Histórico de inspeção</strong><small>Última revisão · 11 set 2026</small></span><i data-lucide="arrow-up-right"></i></button></div></section>
+                <section class="welcome-row">
+                    <div>
+                        <p class="eyebrow"><span class="status-dot"></span> BANCADA DE HARDWARE · ONLINE</p>
+                        <h1>Hardware da<br><span class="headline-accent">estação.</span></h1>
+                        <p class="welcome-copy">Placas, sensores e conexões que dão vida ao monitoramento ambiental.</p>
+                    </div>
+                    <div class="project-actions"><button class="outline-button" id="shareTopButton"><i
+                                data-lucide="share-2"></i> Compartilhar</button><button class="solid-button"
+                            id="openWorkbench"><i data-lucide="cable"></i> Abrir bancada</button></div>
+                </section>
+                <section class="hero-panel project-hero hardware-hero" aria-label="Resumo do hardware">
+                    <div class="hero-copy">
+                        <div class="hero-tag">ARQUITETURA EMBARCADA <span>///</span></div>
+                        <h2>Monte.<br><em>Monitore.</em></h2>
+                        <p>Uma base compacta conecta o ESP32 aos sensores que transformam o ambiente em dados úteis.</p>
+                        <div class="hero-meta"><span><i class="live-dot"></i> 4 módulos ativos</span><span>Última
+                                inspeção · hoje</span></div>
+                    </div>
+                    <div class="hero-graphic" aria-hidden="true">
+                        <div class="graphic-grid"></div>
+                        <div class="hardware-board"><span class="board-label">ESP32</span><i
+                                class="board-pin pin-one"></i><i class="board-pin pin-two"></i><i
+                                class="board-pin pin-three"></i><i class="board-led"></i><span
+                                class="board-trace trace-one"></span><span class="board-trace trace-two"></span></div>
+                        <span class="graphic-label hardware-label-one">GPIO 04</span><span
+                            class="graphic-label hardware-label-two">I2C BUS</span>
+                    </div>
+                </section>
+                <section class="project-section" id="hardware">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">MAPA DE COMPONENTES</p>
+                            <h2>Inventário conectado</h2>
+                        </div><span class="online-pill"><i></i> sistema saudável</span>
+                    </div>
+                    <div class="hardware-layout">
+                        <article class="component-card">
+                            <div class="card-heading">
+                                <div><span class="card-kicker">CONTROLADOR PRINCIPAL</span>
+                                    <h3>ESP32 DevKit v1</h3>
+                                </div><button class="icon-button" id="uploadButton" aria-label="Mais opções"><i
+                                        data-lucide="more-horizontal"></i></button>
+                            </div>
+                            <div class="component-visual">
+                                <div class="mini-board"><span>ESP32</span><i></i><i></i><i></i></div>
+                                <div class="pin-line pin-line-one"><b>3V3</b><span></span></div>
+                                <div class="pin-line pin-line-two"><b>GND</b><span></span></div>
+                                <div class="pin-line pin-line-three"><b>GPIO 04</b><span></span></div>
+                            </div>
+                            <div class="component-meta"><span>Microcontrolador</span><strong>Wi-Fi + Bluetooth</strong>
+                            </div>
+                            <div class="component-meta"><span>Alimentação</span><strong>5V USB</strong></div>
+                        </article>
+                        <article class="sensor-card">
+                            <div class="card-heading">
+                                <div><span class="card-kicker">SENSORES INSTALADOS</span>
+                                    <h3>Leitura ambiental</h3>
+                                </div><i data-lucide="radio-tower" class="heading-icon"></i>
+                            </div>
+                            <div class="sensor-item"><span class="sensor-badge orange"><i
+                                        data-lucide="thermometer"></i></span><span><strong>DHT22</strong><small>Temperatura
+                                        e umidade</small></span><span class="sensor-pin">GPIO 04</span></div>
+                            <div class="sensor-item"><span class="sensor-badge green"><i
+                                        data-lucide="wind"></i></span><span><strong>MQ-135</strong><small>Qualidade do
+                                        ar</small></span><span class="sensor-pin">GPIO 34</span></div>
+                            <div class="sensor-item"><span class="sensor-badge yellow"><i
+                                        data-lucide="sun"></i></span><span><strong>BH1750</strong><small>Intensidade
+                                        luminosa</small></span><span class="sensor-pin">I2C</span></div>
+                        </article>
+                    </div>
+                </section>
+                <section class="project-section lower-section" id="overview">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">DIAGNÓSTICO DA BANCADA</p>
+                            <h2>Conexões e energia</h2>
+                        </div><button class="text-button" id="runDiagnosticsButton">Executar diagnóstico <i
+                                data-lucide="arrow-right"></i></button>
+                    </div>
+                    <div class="diagnostics-grid">
+                        <article class="wiring-card">
+                            <div class="card-heading">
+                                <div><span class="card-kicker">DIAGRAMA DE PINOS</span>
+                                    <h3>Rotas de comunicação</h3>
+                                </div><i data-lucide="git-merge" class="heading-icon"></i>
+                            </div>
+                            <div class="wiring-map">
+                                <div class="wiring-node"><span class="node-icon orange"><i
+                                            data-lucide="cpu"></i></span><strong>ESP32</strong><small>controlador</small>
+                                </div>
+                                <div class="wire wire-orange"><span>GPIO 04</span></div>
+                                <div class="wiring-node"><span class="node-icon green"><i
+                                            data-lucide="droplets"></i></span><strong>DHT22</strong><small>clima</small>
+                                </div>
+                                <div class="wire wire-yellow"><span>I2C</span></div>
+                                <div class="wiring-node"><span class="node-icon purple"><i
+                                            data-lucide="sun"></i></span><strong>BH1750</strong><small>luz</small></div>
+                            </div>
+                        </article>
+                        <article class="power-card">
+                            <div class="card-heading">
+                                <div><span class="card-kicker">CONSUMO ATUAL</span>
+                                    <h3>Energia do sistema</h3>
+                                </div><i data-lucide="zap" class="heading-icon"></i>
+                            </div>
+                            <div class="power-reading"><strong>420</strong><span>mA</span><small>consumo médio</small>
+                            </div>
+                            <div class="power-bar"><span></span></div>
+                            <div class="power-footer"><span><i class="green-dot"></i> Dentro do limite</span><strong>62%
+                                    da fonte</strong></div>
+                            <div class="power-stats"><span><small>Tensão</small><b>5.02
+                                        V</b></span><span><small>Temperatura</small><b>31.4 °C</b></span></div>
+                        </article>
+                    </div>
+                </section>
+                <section class="project-section" id="documents">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">REGISTRO DE MANUTENÇÃO</p>
+                            <h2>Peças e documentação</h2>
+                        </div><button class="text-button" id="viewDocsButton">Abrir documentação <i
+                                data-lucide="arrow-right"></i></button>
+                    </div>
+                    <div class="hardware-docs"><button class="hardware-doc"><span class="file-icon green"><i
+                                    data-lucide="file-text"></i></span><span><strong>pinout-esp32.pdf</strong><small>Esquema
+                                    de conexões · 820 KB</small></span><i
+                                data-lucide="arrow-up-right"></i></button><button class="hardware-doc"><span
+                                class="file-icon orange"><i
+                                    data-lucide="wrench"></i></span><span><strong>lista-de-materiais.csv</strong><small>4
+                                    itens · atualizado hoje</small></span><i
+                                data-lucide="arrow-up-right"></i></button><button class="hardware-doc"><span
+                                class="file-icon purple"><i data-lucide="history"></i></span><span><strong>Histórico de
+                                    inspeção</strong><small>Última revisão · 11 set 2026</small></span><i
+                                data-lucide="arrow-up-right"></i></button></div>
+                </section>
             </div>
         </main>
     </div>
-    <div class="toast" id="toast" role="status" aria-live="polite"><i data-lucide="check-circle-2"></i><span>Link copiado para a área de transferência.</span></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"><i data-lucide="check-circle-2"></i><span>Link
+            copiado para a área de transferência.</span></div>
 </body>
+
 </html>

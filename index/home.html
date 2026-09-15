@@ -1,43 +1,197 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Documentação e apresentação do Sistema de Monitoramento Ambiental.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="../style/home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="../script/home.js" defer></script>
 </head>
+
 <body>
     <div class="app-shell">
         <aside class="sidebar" id="sidebar">
-            <div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span class="brand-dot">.</span></span></div>
-            <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>Estação Ambiental</strong><small>EMB-2026-001</small></div>
+            <div class="brand">
+                <div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span
+                        class="brand-dot">.</span></span>
+            </div>
+            <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>Estação
+                    Ambiental</strong><small>EMB-2026-001</small></div>
             <nav class="main-nav" aria-label="Navegação do projeto">
                 <p class="nav-label">Projeto</p>
-                <a class="nav-item active" data-section="overview" href="home.html"><i data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
-                <a class="nav-item" data-section="hardware" href="hardware.html"><i data-lucide="cpu"></i><span>Hardware</span></a>
-                <a class="nav-item" data-section="software" href="firmware.html"><i data-lucide="code-2"></i><span>Firmware</span></a>
-                <a class="nav-item" data-section="documents" href="#documents"><i data-lucide="file-text"></i><span>Documentação</span></a>
+                <a class="nav-item active" data-section="overview" href="home.html"><i
+                        data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
+                <a class="nav-item" data-section="hardware" href="hardware.html"><i
+                        data-lucide="cpu"></i><span>Hardware</span></a>
+                <a class="nav-item" data-section="software" href="firmware.html"><i
+                        data-lucide="code-2"></i><span>Firmware</span></a>
+                <a class="nav-item" data-section="documents" href="#documents"><i
+                        data-lucide="file-text"></i><span>Documentação</span></a>
                 <p class="nav-label resources-label">Ações</p>
-                <button class="nav-item" id="shareButton"><i data-lucide="share-2"></i><span>Compartilhar</span></button>
-                <button class="nav-item" id="downloadButton"><i data-lucide="download"></i><span>Exportar projeto</span></button>
+                <button class="nav-item" id="shareButton"><i
+                        data-lucide="share-2"></i><span>Compartilhar</span></button>
+                <button class="nav-item" id="downloadButton"><i data-lucide="download"></i><span>Exportar
+                        projeto</span></button>
             </nav>
-            <div class="sidebar-footer"><div class="storage-card"><div class="storage-heading"><i data-lucide="cloud"></i><span>Armazenamento</span><strong>2,4 GB</strong></div><div class="progress"><span></span></div><small>Projeto salvo na nuvem</small></div><button class="profile-mini"><span class="avatar avatar-small">GS</span><span class="profile-copy"><strong>Gustavo Silva</strong><small>Autor do projeto</small></span><i data-lucide="more-horizontal"></i></button></div>
+            <div class="sidebar-footer">
+                <div class="storage-card">
+                    <div class="storage-heading"><i data-lucide="cloud"></i><span>Armazenamento</span><strong>2,4
+                            GB</strong></div>
+                    <div class="progress"><span></span></div><small>Projeto salvo na nuvem</small>
+                </div><button class="profile-mini"><span class="avatar avatar-small">GS</span><span
+                        class="profile-copy"><strong>Gustavo Silva</strong><small>Autor do projeto</small></span><i
+                        data-lucide="more-horizontal"></i></button>
+            </div>
         </aside>
         <main class="main-content">
-            <header class="topbar"><button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i data-lucide="menu"></i></button><div class="breadcrumbs"><span>Meu projeto</span><i data-lucide="chevron-right"></i><strong>Visão geral</strong></div><div class="topbar-actions"><button class="icon-button" id="helpButton" aria-label="Ajuda"><i data-lucide="circle-help"></i></button><button class="icon-button notification-button" aria-label="Atualização disponível"><i data-lucide="bell"></i><span></span></button><div class="avatar">GS</div></div></header>
+            <header class="topbar"><button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i
+                        data-lucide="menu"></i></button>
+                <div class="breadcrumbs"><span>Meu projeto</span><i data-lucide="chevron-right"></i><strong>Visão
+                        geral</strong></div>
+                <div class="topbar-actions"><button class="icon-button" id="helpButton" aria-label="Ajuda"><i
+                            data-lucide="circle-help"></i></button><button class="icon-button notification-button"
+                        aria-label="Atualização disponível"><i data-lucide="bell"></i><span></span></button>
+                    <div class="avatar">GS</div>
+                </div>
+            </header>
             <div class="content-wrap">
-                <section class="welcome-row"><div><p class="eyebrow"><span class="status-dot"></span> ÚLTIMA ATUALIZAÇÃO · HOJE, 09:42</p><h1>Sistema de Monitoramento<br><span class="headline-accent">Ambiental.</span></h1><p class="welcome-copy">Uma estação embarcada para acompanhar o ambiente em tempo real.</p></div><div class="project-actions"><button class="outline-button" id="shareTopButton"><i data-lucide="share-2"></i> Compartilhar</button><button class="solid-button" id="openWorkbench"><i data-lucide="play"></i> Abrir bancada</button></div></section>
-                <section class="hero-panel project-hero" aria-label="Resumo do projeto"><div class="hero-copy"><div class="hero-tag">SISTEMA EMBARCADO <span>///</span></div><h2>Observe.<br><em>Entenda.</em></h2><p>O dispositivo coleta temperatura, umidade e qualidade do ar para orientar decisões mais inteligentes no cultivo.</p><div class="hero-meta"><span><i class="live-dot"></i> Sistema online</span><span>v1.4.2</span></div></div><div class="hero-graphic" aria-hidden="true"><div class="graphic-grid"></div><div class="device-board"><div class="board-chip">ESP32</div><div class="board-sensor sensor-one"></div><div class="board-sensor sensor-two"></div><div class="board-line line-one"></div><div class="board-line line-two"></div><div class="board-light"></div></div><div class="graphic-label label-x">TEMP 24.8°C</div><div class="graphic-label label-y">UMID 61%</div><div class="axis axis-x"></div><div class="axis axis-y"></div></div></section>
-                <section class="project-section" id="overview"><div class="section-heading"><div><p class="eyebrow">PAINEL DO PROJETO</p><h2>Visão geral</h2></div><span class="version-badge"><i data-lucide="git-branch"></i> v1.4.2 · estável</span></div><div class="dashboard-grid"><article class="telemetry-card"><div class="card-heading"><div><span class="card-kicker">TELEMETRIA AO VIVO</span><h3>Leituras do ambiente</h3></div><span class="online-pill"><i></i> ao vivo</span></div><div class="telemetry-list"><div class="telemetry-item"><span class="telemetry-icon orange"><i data-lucide="thermometer"></i></span><span><strong>Temperatura</strong><small>Sensor DHT22</small></span><b>24.8<small>°C</small></b></div><div class="telemetry-item"><span class="telemetry-icon green"><i data-lucide="droplets"></i></span><span><strong>Umidade do ar</strong><small>Sensor DHT22</small></span><b>61<small>%</small></b></div><div class="telemetry-item"><span class="telemetry-icon purple"><i data-lucide="wind"></i></span><span><strong>Qualidade do ar</strong><small>Sensor MQ-135</small></span><b>Bom</b></div></div></article><article class="status-card" id="hardware"><div class="card-heading"><div><span class="card-kicker">SAÚDE DO SISTEMA</span><h3>Componentes</h3></div><i data-lucide="activity" class="heading-icon"></i></div><div class="health-score"><div class="score-ring"><strong>98</strong><small>%</small></div><div><strong>Operação normal</strong><p>Todos os módulos respondendo</p></div></div><div class="component-row"><span><i class="component-dot green-dot"></i> ESP32 DevKit</span><small>conectado</small></div><div class="component-row"><span><i class="component-dot green-dot"></i> DHT22 + MQ-135</span><small>conectado</small></div></article></div></section>
-                <section class="project-section lower-section" id="documents"><div class="section-heading"><div><p class="eyebrow">REGISTROS DO PROJETO</p><h2>Arquivos e atividade</h2></div><button class="text-button" id="viewDocsButton">Abrir documentação <i data-lucide="arrow-right"></i></button></div><div class="records-grid"><article class="files-card" id="software"><div class="card-heading"><h3>Arquivos principais</h3><button class="icon-button" id="uploadButton" aria-label="Adicionar arquivo"><i data-lucide="plus"></i></button></div><button class="file-row"><span class="file-icon orange"><i data-lucide="file-code-2"></i></span><span><strong>estacao-ambiental.ino</strong><small>Arduino · 8.4 KB</small></span><i data-lucide="download"></i></button><button class="file-row"><span class="file-icon green"><i data-lucide="workflow"></i></span><span><strong>esquema-eletrico.fzz</strong><small>Fritzing · 1.2 MB</small></span><i data-lucide="download"></i></button><button class="file-row"><span class="file-icon purple"><i data-lucide="file-text"></i></span><span><strong>README.md</strong><small>Markdown · 4.1 KB</small></span><i data-lucide="download"></i></button></article><article class="activity-card"><div class="card-heading"><h3>Últimas atividades</h3><span class="activity-count">3 eventos</span></div><div class="activity-item"><span class="activity-marker orange-marker"></span><div><strong>Firmware atualizado</strong><p>Versão 1.4.2 enviada ao dispositivo</p><small>Hoje, 09:42</small></div></div><div class="activity-item"><span class="activity-marker green-marker"></span><div><strong>Sensor calibrado</strong><p>Rotina de calibração concluída</p><small>Ontem, 16:20</small></div></div><div class="activity-item"><span class="activity-marker gray-marker"></span><div><strong>Projeto compartilhado</strong><p>Link público criado por Gustavo</p><small>06 set, 11:08</small></div></div></article></div></section>
+                <section class="welcome-row">
+                    <div>
+                        <p class="eyebrow"><span class="status-dot"></span> ÚLTIMA ATUALIZAÇÃO · HOJE, 09:42</p>
+                        <h1>Sistema de Monitoramento<br><span class="headline-accent">Ambiental.</span></h1>
+                        <p class="welcome-copy">Uma estação embarcada para acompanhar o ambiente em tempo real.</p>
+                    </div>
+                    <div class="project-actions"><button class="outline-button" id="shareTopButton"><i
+                                data-lucide="share-2"></i> Compartilhar</button><button class="solid-button"
+                            id="openWorkbench"><i data-lucide="play"></i> Abrir bancada</button></div>
+                </section>
+                <section class="hero-panel project-hero" aria-label="Resumo do projeto">
+                    <div class="hero-copy">
+                        <div class="hero-tag">SISTEMA EMBARCADO <span>///</span></div>
+                        <h2>Observe.<br><em>Entenda.</em></h2>
+                        <p>O dispositivo coleta temperatura, umidade e qualidade do ar para orientar decisões mais
+                            inteligentes no cultivo.</p>
+                        <div class="hero-meta"><span><i class="live-dot"></i> Sistema online</span><span>v1.4.2</span>
+                        </div>
+                    </div>
+                    <div class="hero-graphic" aria-hidden="true">
+                        <div class="graphic-grid"></div>
+                        <div class="device-board">
+                            <div class="board-chip">ESP32</div>
+                            <div class="board-sensor sensor-one"></div>
+                            <div class="board-sensor sensor-two"></div>
+                            <div class="board-line line-one"></div>
+                            <div class="board-line line-two"></div>
+                            <div class="board-light"></div>
+                        </div>
+                        <div class="graphic-label label-x">TEMP 24.8°C</div>
+                        <div class="graphic-label label-y">UMID 61%</div>
+                        <div class="axis axis-x"></div>
+                        <div class="axis axis-y"></div>
+                    </div>
+                </section>
+                <section class="project-section" id="overview">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">PAINEL DO PROJETO</p>
+                            <h2>Visão geral</h2>
+                        </div><span class="version-badge"><i data-lucide="git-branch"></i> v1.4.2 · estável</span>
+                    </div>
+                    <div class="dashboard-grid">
+                        <article class="telemetry-card">
+                            <div class="card-heading">
+                                <div><span class="card-kicker">TELEMETRIA AO VIVO</span>
+                                    <h3>Leituras do ambiente</h3>
+                                </div><span class="online-pill"><i></i> ao vivo</span>
+                            </div>
+                            <div class="telemetry-list">
+                                <div class="telemetry-item"><span class="telemetry-icon orange"><i
+                                            data-lucide="thermometer"></i></span><span><strong>Temperatura</strong><small>Sensor
+                                            DHT22</small></span><b>24.8<small>°C</small></b></div>
+                                <div class="telemetry-item"><span class="telemetry-icon green"><i
+                                            data-lucide="droplets"></i></span><span><strong>Umidade do
+                                            ar</strong><small>Sensor DHT22</small></span><b>61<small>%</small></b></div>
+                                <div class="telemetry-item"><span class="telemetry-icon purple"><i
+                                            data-lucide="wind"></i></span><span><strong>Qualidade do
+                                            ar</strong><small>Sensor MQ-135</small></span><b>Bom</b></div>
+                            </div>
+                        </article>
+                        <article class="status-card" id="hardware">
+                            <div class="card-heading">
+                                <div><span class="card-kicker">SAÚDE DO SISTEMA</span>
+                                    <h3>Componentes</h3>
+                                </div><i data-lucide="activity" class="heading-icon"></i>
+                            </div>
+                            <div class="health-score">
+                                <div class="score-ring"><strong>98</strong><small>%</small></div>
+                                <div><strong>Operação normal</strong>
+                                    <p>Todos os módulos respondendo</p>
+                                </div>
+                            </div>
+                            <div class="component-row"><span><i class="component-dot green-dot"></i> ESP32
+                                    DevKit</span><small>conectado</small></div>
+                            <div class="component-row"><span><i class="component-dot green-dot"></i> DHT22 +
+                                    MQ-135</span><small>conectado</small></div>
+                        </article>
+                    </div>
+                </section>
+                <section class="project-section lower-section" id="documents">
+                    <div class="section-heading">
+                        <div>
+                            <p class="eyebrow">REGISTROS DO PROJETO</p>
+                            <h2>Arquivos e atividade</h2>
+                        </div><button class="text-button" id="viewDocsButton">Abrir documentação <i
+                                data-lucide="arrow-right"></i></button>
+                    </div>
+                    <div class="records-grid">
+                        <article class="files-card" id="software">
+                            <div class="card-heading">
+                                <h3>Arquivos principais</h3><button class="icon-button" id="uploadButton"
+                                    aria-label="Adicionar arquivo"><i data-lucide="plus"></i></button>
+                            </div><button class="file-row"><span class="file-icon orange"><i
+                                        data-lucide="file-code-2"></i></span><span><strong>estacao-ambiental.ino</strong><small>Arduino
+                                        · 8.4 KB</small></span><i data-lucide="download"></i></button><button
+                                class="file-row"><span class="file-icon green"><i
+                                        data-lucide="workflow"></i></span><span><strong>esquema-eletrico.fzz</strong><small>Fritzing
+                                        · 1.2 MB</small></span><i data-lucide="download"></i></button><button
+                                class="file-row"><span class="file-icon purple"><i
+                                        data-lucide="file-text"></i></span><span><strong>README.md</strong><small>Markdown
+                                        · 4.1 KB</small></span><i data-lucide="download"></i></button>
+                        </article>
+                        <article class="activity-card">
+                            <div class="card-heading">
+                                <h3>Últimas atividades</h3><span class="activity-count">3 eventos</span>
+                            </div>
+                            <div class="activity-item"><span class="activity-marker orange-marker"></span>
+                                <div><strong>Firmware atualizado</strong>
+                                    <p>Versão 1.4.2 enviada ao dispositivo</p><small>Hoje, 09:42</small>
+                                </div>
+                            </div>
+                            <div class="activity-item"><span class="activity-marker green-marker"></span>
+                                <div><strong>Sensor calibrado</strong>
+                                    <p>Rotina de calibração concluída</p><small>Ontem, 16:20</small>
+                                </div>
+                            </div>
+                            <div class="activity-item"><span class="activity-marker gray-marker"></span>
+                                <div><strong>Projeto compartilhado</strong>
+                                    <p>Link público criado por Gustavo</p><small>06 set, 11:08</small>
+                                </div>
+                            </div>
+                        </article>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
-    <div class="toast" id="toast" role="status" aria-live="polite"><i data-lucide="check-circle-2"></i><span>Link copiado para a área de transferência.</span></div>
+    <div class="toast" id="toast" role="status" aria-live="polite"><i data-lucide="check-circle-2"></i><span>Link
+            copiado para a área de transferência.</span></div>
 </body>
+
 </html>
