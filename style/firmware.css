@@ -1,5 +1,67 @@
 .firmware-hero .hero-graphic {
-    background: #28695c;
+    background: #086bb5;
+}
+
+.firmware-hero .code-window {
+    background: rgba(4, 53, 107, .76);
+    border-color: rgba(190, 239, 255, .4);
+    box-shadow: 11px 14px 0 rgba(3, 54, 111, .2);
+}
+
+.code-window pre {
+    color: #c8f1ff;
+}
+
+.code-window b {
+    color: #7fe6ee;
+}
+
+.code-window em {
+    color: #ff9a83;
+}
+
+.code-dot.orange {
+    background: #f04b3e;
+}
+
+.code-dot.yellow {
+    background: #09b7c7;
+}
+
+.code-dot.green {
+    background: #59d39a;
+}
+
+.code-block,
+.terminal-output {
+    background: #062c5d;
+}
+
+.code-toolbar {
+    color: #086bb5;
+    background: #eefaff;
+    border-color: #c7eafa;
+}
+
+.code-keyword {
+    color: #7fe6ee;
+}
+
+.code-string {
+    color: #9ce5bd;
+}
+
+.code-number {
+    color: #ff9a83;
+}
+
+.code-function {
+    color: #9bd7ff;
+}
+
+.release-item.current .release-marker {
+    border-color: #f04b3e;
+    background: #f04b3e;
 }
 
 .code-window {
@@ -81,7 +143,7 @@
     padding: 9px 11px;
     border: 1px solid #dce8df;
     border-radius: 5px 5px 0 0;
-    color: #236557;
+    color: #086bb5;
     background: #f4faf5;
     font: 10px 'DM Mono', monospace;
 }

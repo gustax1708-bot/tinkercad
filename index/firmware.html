@@ -4,7 +4,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta name="description" content="Firmware da Estação Ambiental.">
+	<meta name="description" content="Firmware do dispositivo vestível CUIDA+.">
 	<link rel="preconnect" href="https://fonts.googleapis.com">
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 	<link
@@ -21,19 +21,26 @@
 	<div class="app-shell">
 		<aside class="sidebar" id="sidebar">
 			<div class="brand">
-				<div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span
-						class="brand-dot">.</span></span>
+				<div class="brand-mark"><span></span><span></span><span></span></div><span>CUIDA<span
+						class="brand-dot">+</span></span>
 			</div>
-			<div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>AgroSense</strong><small>EMB-2026-001</small></div>
+			<div class="project-identity"><span class="project-status"><i></i> PROJETO
+					ATIVO</span><strong>CUIDA+</strong><small>CARE-2026-001</small></div>
 			<nav class="main-nav" aria-label="Navegação do projeto">
 				<p class="nav-label">Projeto</p>
-				<a class="nav-item" href="home.html" data-section="overview"><i data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
-				<a class="nav-item" href="hardware.html" data-section="hardware"><i data-lucide="cpu"></i><span>Hardware</span></a>
-				<a class="nav-item active" href="firmware.html" data-section="software"><i data-lucide="code-2"></i><span>Firmware</span></a>
-				<a class="nav-item" href="#documents" data-section="documents"><i data-lucide="file-text"></i><span>Documentação</span></a>
+				<a class="nav-item" href="home.html" data-section="overview"><i
+						data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
+				<a class="nav-item" href="hardware.html" data-section="hardware"><i
+						data-lucide="cpu"></i><span>Hardware</span></a>
+				<a class="nav-item active" href="firmware.html" data-section="software"><i
+						data-lucide="code-2"></i><span>Firmware</span></a>
+				<a class="nav-item" href="#documents" data-section="documents"><i
+						data-lucide="file-text"></i><span>Documentação</span></a>
 				<p class="nav-label resources-label">Ações</p>
-				<button class="nav-item" id="shareButton" type="button"><i data-lucide="share-2"></i><span>Compartilhar</span></button>
-				<button class="nav-item" id="downloadButton" type="button"><i data-lucide="download"></i><span>Exportar projeto</span></button>
+				<button class="nav-item" id="shareButton" type="button"><i
+						data-lucide="share-2"></i><span>Compartilhar</span></button>
+				<button class="nav-item" id="downloadButton" type="button"><i data-lucide="download"></i><span>Exportar
+						projeto</span></button>
 			</nav>
 		</aside>
 		<main class="main-content">
@@ -46,8 +53,9 @@
 				<section class="welcome-row">
 					<div>
 						<p class="eyebrow"><span class="status-dot"></span> AMBIENTE DE DESENVOLVIMENTO · CONECTADO</p>
-						<h1>Firmware do<br><span class="headline-accent">dispositivo.</span></h1>
-						<p class="welcome-copy">Código, versões e telemetria para manter sua estação funcionando.</p>
+						<h1>Firmware do<br><span class="headline-accent">cuidado.</span></h1>
+						<p class="welcome-copy">Código, versões e telemetria para manter o acompanhamento sempre ativo.
+						</p>
 					</div>
 					<div class="project-actions"><button class="outline-button" id="shareTopButton"><i
 								data-lucide="share-2"></i> Compartilhar</button><button class="solid-button"
@@ -57,10 +65,10 @@
 					<div class="hero-copy">
 						<div class="hero-tag">FIRMWARE EMBARCADO <span>///</span></div>
 						<h2>Compile.<br><em>Conecte.</em></h2>
-						<p>O firmware coordena os sensores, processa as leituras e mantém os dados sincronizados com a
-							nuvem.</p>
-						<div class="hero-meta"><span><i class="live-dot"></i> ESP32 conectado</span><span>Arduino · 8.4
-								KB</span></div>
+						<p>O firmware coordena os sensores da pulseira, processa os sinais e mantém a família conectada.
+						</p>
+						<div class="hero-meta"><span><i class="live-dot"></i> Pulseira conectada</span><span>Arduino ·
+								8.4 KB</span></div>
 					</div>
 					<div class="hero-graphic" aria-hidden="true">
 						<div class="graphic-grid"></div>
@@ -86,7 +94,7 @@
 					<div class="firmware-layout">
 						<article class="code-card">
 							<div class="card-heading">
-								<div><span class="card-kicker">ESTACAO-AMBIENTAL.INO</span>
+								<div><span class="card-kicker">CUIDA-PULSEIRA.INO</span>
 									<h3>Sketch atual</h3>
 								</div><button class="icon-button" id="uploadButton" aria-label="Mais opções"><i
 										data-lucide="more-horizontal"></i></button>
@@ -95,7 +103,7 @@
 									aprovada</span><button class="code-action" id="copyCodeButton"><i
 										data-lucide="copy"></i> Copiar código</button></div>
 							<pre
-								class="code-block"><code><span class="code-comment">// Estação Ambiental · firmware v1.4.2</span><br><span class="code-keyword">#include</span> <span class="code-string">&lt;WiFi.h&gt;</span><br><span class="code-keyword">#include</span> <span class="code-string">&lt;DHT.h&gt;</span><br><br><span class="code-keyword">const int</span> DHT_PIN = <span class="code-number">4</span>;<br><span class="code-keyword">const int</span> AIR_PIN = <span class="code-number">34</span>;<br>DHT sensor(DHT_PIN, DHT22);<br><br><span class="code-keyword">void</span> <span class="code-function">setup</span>() {<br>  Serial.begin(<span class="code-number">115200</span>);<br>  sensor.begin();<br>  connectToCloud();<br>}<br><br><span class="code-keyword">void</span> <span class="code-function">loop</span>() {<br>  publishReadings(sensor.readTemperature());<br>  delay(<span class="code-number">30000</span>);<br>}</code></pre>
+								class="code-block"><code><span class="code-comment">// CUIDA+ Pulseira · firmware v1.4.2</span><br><span class="code-keyword">#include</span> <span class="code-string">&lt;WiFi.h&gt;</span><br><span class="code-keyword">#include</span> <span class="code-string">&lt;MAX30102.h&gt;</span><br><br><span class="code-keyword">const int</span> PANIC_PIN = <span class="code-number">4</span>;<br><span class="code-keyword">const int</span> PULSE_PIN = <span class="code-number">34</span>;<br>MAX30102 sensor(PULSE_PIN);<br><br><span class="code-keyword">void</span> <span class="code-function">setup</span>() {<br>  Serial.begin(<span class="code-number">115200</span>);<br>  sensor.begin();<br>  connectToCloud();<br>}<br><br><span class="code-keyword">void</span> <span class="code-function">loop</span>() {<br>  publishReadings(sensor.readPulse());<br>  delay(<span class="code-number">30000</span>);<br>}</code></pre>
 							<div class="code-footer"><span><i data-lucide="clock-3"></i> Atualizado hoje,
 									09:42</span><span>24 linhas</span></div>
 						</article>
@@ -108,7 +116,7 @@
 							<div class="release-item current">
 								<div class="release-marker"></div>
 								<div><strong>v1.4.2 · ATUAL</strong>
-									<p>Leitura de qualidade do ar otimizada</p><small>Hoje, 09:42 · Gustavo
+									<p>Leitura dos sinais vitais otimizada</p><small>Hoje, 09:42 · Gustavo
 										Silva</small>
 								</div>
 							</div>
@@ -122,7 +130,7 @@
 							<div class="release-item">
 								<div class="release-marker"></div>
 								<div><strong>v1.3.0</strong>
-									<p>Suporte ao sensor MQ-135</p><small>18 ago, 11:06 · Gustavo Silva</small>
+									<p>Alertas do botão de pânico</p><small>18 ago, 11:06 · Gustavo Silva</small>
 								</div>
 							</div><button class="outline-button release-button" id="releaseButton"><i
 									data-lucide="tag"></i> Criar nova release</button>
@@ -156,7 +164,7 @@
 									<h3>Configuração</h3>
 								</div><i data-lucide="sliders-horizontal" class="heading-icon"></i>
 							</div>
-							<div class="config-row"><span>Placa</span><strong>ESP32 DevKit v1</strong></div>
+							<div class="config-row"><span>Dispositivo</span><strong>Pulseira CUIDA+ v1</strong></div>
 							<div class="config-row"><span>Porta serial</span><strong
 									class="mono-value">/dev/ttyUSB0</strong></div>
 							<div class="config-row"><span>Baud rate</span><strong class="mono-value">115200</strong>

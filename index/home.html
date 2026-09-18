@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Documentação e apresentação do Sistema de Monitoramento Ambiental.">
+    <meta name="description" content="Painel do CUIDA+ para monitoramento remoto e cuidado conectado.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -19,10 +19,11 @@
     <div class="app-shell">
         <aside class="sidebar" id="sidebar">
             <div class="brand">
-                <div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span
-                        class="brand-dot">.</span></span>
+                <div class="brand-mark"><span></span><span></span><span></span></div><span>CUIDA<span
+                        class="brand-dot">+</span></span>
             </div>
-            <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>AgroSense</strong><small>EMB-2026-001</small></div>
+            <div class="project-identity"><span class="project-status"><i></i> PROJETO
+                    ATIVO</span><strong>CUIDA+</strong><small>CARE-2026-001</small></div>
             <nav class="main-nav" aria-label="Navegação do projeto">
                 <p class="nav-label">Projeto</p>
                 <a class="nav-item active" data-section="overview" href="home.html"><i
@@ -50,8 +51,8 @@
                 <section class="welcome-row">
                     <div>
                         <p class="eyebrow"><span class="status-dot"></span> ÚLTIMA ATUALIZAÇÃO · HOJE, 09:42</p>
-                        <h1>Sistema de Monitoramento<br><span class="headline-accent">Ambiental.</span></h1>
-                        <p class="welcome-copy">Uma estação embarcada para acompanhar o ambiente em tempo real.</p>
+                        <h1>Monitoramento<br><span class="headline-accent">que cuida.</span></h1>
+                        <p class="welcome-copy">Informações em tempo real para aproximar pessoas e cuidadores.</p>
                     </div>
                     <div class="project-actions"><button class="outline-button" id="shareTopButton"><i
                                 data-lucide="share-2"></i> Compartilhar</button><button class="solid-button"
@@ -61,15 +62,15 @@
                     <div class="hero-copy">
                         <div class="hero-tag">SISTEMA EMBARCADO <span>///</span></div>
                         <h2>Observe.<br><em>Entenda.</em></h2>
-                        <p>O dispositivo coleta temperatura, umidade e qualidade do ar para orientar decisões mais
-                            inteligentes no cultivo.</p>
+                        <p>A pulseira acompanha sinais importantes e envia alertas para que a família cuide de quem
+                            precisa.</p>
                         <div class="hero-meta"><span><i class="live-dot"></i> Sistema online</span><span>v1.4.2</span>
                         </div>
                     </div>
                     <div class="hero-graphic" aria-hidden="true">
                         <div class="graphic-grid"></div>
                         <div class="device-board">
-                            <div class="board-chip">ESP32</div>
+                            <div class="board-chip">CUIDA+</div>
                             <div class="board-sensor sensor-one"></div>
                             <div class="board-sensor sensor-two"></div>
                             <div class="board-line line-one"></div>
@@ -93,19 +94,22 @@
                         <article class="telemetry-card">
                             <div class="card-heading">
                                 <div><span class="card-kicker">TELEMETRIA AO VIVO</span>
-                                    <h3>Leituras do ambiente</h3>
+                                    <h3>Sinais acompanhados</h3>
                                 </div><span class="online-pill"><i></i> ao vivo</span>
                             </div>
                             <div class="telemetry-list">
                                 <div class="telemetry-item"><span class="telemetry-icon orange"><i
-                                            data-lucide="thermometer"></i></span><span><strong>Temperatura</strong><small>Sensor
-                                            DHT22</small></span><b>24.8<small>°C</small></b></div>
+                                            data-lucide="thermometer"></i></span><span><strong>Temperatura da
+                                            pele</strong><small>Sensor óptico</small></span><b>36.4<small>°C</small></b>
+                                </div>
                                 <div class="telemetry-item"><span class="telemetry-icon green"><i
-                                            data-lucide="droplets"></i></span><span><strong>Umidade do
-                                            ar</strong><small>Sensor DHT22</small></span><b>61<small>%</small></b></div>
+                                            data-lucide="heart-pulse"></i></span><span><strong>Frequência de
+                                            pulso</strong><small>Monitor
+                                            contínuo</small></span><b>72<small>bpm</small></b></div>
                                 <div class="telemetry-item"><span class="telemetry-icon purple"><i
-                                            data-lucide="wind"></i></span><span><strong>Qualidade do
-                                            ar</strong><small>Sensor MQ-135</small></span><b>Bom</b></div>
+                                            data-lucide="bell-ring"></i></span><span><strong>Botão de
+                                            alerta</strong><small>Contato com cuidadores</small></span><b>Inativo</b>
+                                </div>
                             </div>
                         </article>
                         <article class="status-card" id="hardware">
@@ -122,8 +126,8 @@
                             </div>
                             <div class="component-row"><span><i class="component-dot green-dot"></i> ESP32
                                     DevKit</span><small>conectado</small></div>
-                            <div class="component-row"><span><i class="component-dot green-dot"></i> DHT22 +
-                                    MQ-135</span><small>conectado</small></div>
+                            <div class="component-row"><span><i class="component-dot green-dot"></i> Sensores
+                                    vitais</span><small>conectados</small></div>
                         </article>
                     </div>
                 </section>
@@ -141,7 +145,7 @@
                                 <h3>Arquivos principais</h3><button class="icon-button" id="uploadButton"
                                     aria-label="Adicionar arquivo"><i data-lucide="plus"></i></button>
                             </div><button class="file-row"><span class="file-icon orange"><i
-                                        data-lucide="file-code-2"></i></span><span><strong>estacao-ambiental.ino</strong><small>Arduino
+                                        data-lucide="file-code-2"></i></span><span><strong>cuida-pulseira.ino</strong><small>Arduino
                                         · 8.4 KB</small></span><i data-lucide="download"></i></button><button
                                 class="file-row"><span class="file-icon green"><i
                                         data-lucide="workflow"></i></span><span><strong>esquema-eletrico.fzz</strong><small>Fritzing

@@ -1,15 +1,15 @@
  :root {
-     --ink: #16211e;
-     --muted: #74817b;
-     --line: #e5e9e5;
-     --paper: #f7f8f4;
+     --ink: #073b72;
+     --muted: #4e7094;
+     --line: #d7e9f5;
+     --paper: #f3fbff;
      --white: #ffffff;
-     --orange: #f36b3c;
-     --orange-dark: #d9512e;
-     --mint: #b5d8c9;
-     --deep-mint: #236557;
-     --yellow: #f5d477;
-     --shadow: 0 18px 40px rgba(25, 53, 43, .08);
+     --orange: #f04b3e;
+     --orange-dark: #d83b32;
+     --mint: #bceafa;
+     --deep-mint: #064d91;
+     --yellow: #09b7c7;
+     --shadow: 0 18px 40px rgba(6, 77, 145, .1);
  }
 
  * {
@@ -509,7 +509,7 @@
      width: 48%;
      height: 100%;
      overflow: hidden;
-     background: #2b7062;
+     background: #086bb5;
  }
 
  .graphic-grid {
@@ -579,7 +579,7 @@
      bottom: 35px;
      border-radius: 50%;
      border: 2px solid var(--yellow);
-     box-shadow: 0 23px 0 -1px #2b7062, 0 24px 0 0 var(--yellow);
+     box-shadow: 0 23px 0 -1px #086bb5, 0 24px 0 0 var(--yellow);
      transform: rotate(-20deg);
  }
 
@@ -1583,7 +1583,7 @@
  }
 
  .project-hero .hero-graphic {
-     background: #28695c;
+     background: #086bb5;
  }
 
  .device-board {
@@ -2052,4 +2052,48 @@
 
  .nav-item {
      text-decoration: none;
+ }
+
+ .sidebar {
+     background: #eaf7fd;
+     border-color: #d7e9f5;
+ }
+
+ .topbar {
+     background: rgba(243, 251, 255, .88);
+     border-color: #d7e9f5;
+ }
+
+ .hero-panel {
+     background: #064d91;
+ }
+
+ .hero-graphic {
+     background: #086bb5;
+ }
+
+ .graphic-grid {
+     background-image: linear-gradient(rgba(190, 239, 255, .32) 1px, transparent 1px), linear-gradient(90deg, rgba(190, 239, 255, .32) 1px, transparent 1px);
+ }
+
+ .shape-cube {
+     background: #f04b3e;
+     box-shadow: 16px 13px 0 -1px #c83e38;
+ }
+
+ .shape-ring,
+ .shape-cylinder {
+     border-color: #7fe6ee;
+ }
+
+ .axis-x {
+     background: #7fe6ee;
+ }
+
+ .axis-y {
+     background: #f04b3e;
+ }
+
+ .green-dot {
+     background: #08a86a;
  }

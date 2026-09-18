@@ -1,5 +1,28 @@
 .hardware-hero .hero-graphic {
-    background: #28695c;
+    background: #086bb5;
+}
+
+.hardware-hero .hardware-board {
+    background: #07579d;
+    border-color: #b9e9f5;
+    box-shadow: 13px 15px 0 rgba(4, 53, 107, .25);
+}
+
+.hardware-hero .board-label {
+    color: #d9f7ff;
+    background: #04356b;
+}
+
+.hardware-hero .board-light {
+    background: #7fe6ee;
+    box-shadow: 0 0 13px #7fe6ee;
+}
+
+.sensor-badge.orange,
+.sensor-badge.green,
+.sensor-badge.yellow {
+    background: #e8f8ff;
+    color: #086bb5;
 }
 
 .hardware-board {

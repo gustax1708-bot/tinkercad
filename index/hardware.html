@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Hardware da Estação Ambiental.">
+    <meta name="description" content="Hardware vestível do sistema CUIDA+.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -21,10 +21,11 @@
     <div class="app-shell">
         <aside class="sidebar" id="sidebar">
             <div class="brand">
-                <div class="brand-mark"><span></span><span></span><span></span></div><span>WALL-E<span
-                        class="brand-dot">.</span></span>
+                <div class="brand-mark"><span></span><span></span><span></span></div><span>CUIDA<span
+                        class="brand-dot">+</span></span>
             </div>
-            <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>AgroSense</strong><small>EMB-2026-001</small></div>
+            <div class="project-identity"><span class="project-status"><i></i> PROJETO
+                    ATIVO</span><strong>CUIDA+</strong><small>CARE-2026-001</small></div>
             <nav class="main-nav" aria-label="Navegação do projeto">
                 <p class="nav-label">Projeto</p>
                 <a class="nav-item" data-section="overview" href="home.html"><i
@@ -52,8 +53,9 @@
                 <section class="welcome-row">
                     <div>
                         <p class="eyebrow"><span class="status-dot"></span> BANCADA DE HARDWARE · ONLINE</p>
-                        <h1>Hardware da<br><span class="headline-accent">estação.</span></h1>
-                        <p class="welcome-copy">Placas, sensores e conexões que dão vida ao monitoramento ambiental.</p>
+                        <h1>Hardware do<br><span class="headline-accent">cuidado.</span></h1>
+                        <p class="welcome-copy">Sensores e conexões que mantêm o monitoramento próximo de quem precisa.
+                        </p>
                     </div>
                     <div class="project-actions"><button class="outline-button" id="shareTopButton"><i
                                 data-lucide="share-2"></i> Compartilhar</button><button class="solid-button"
@@ -63,13 +65,14 @@
                     <div class="hero-copy">
                         <div class="hero-tag">ARQUITETURA EMBARCADA <span>///</span></div>
                         <h2>Monte.<br><em>Monitore.</em></h2>
-                        <p>Uma base compacta conecta o ESP32 aos sensores que transformam o ambiente em dados úteis.</p>
+                        <p>A pulseira reúne sinais vitais e conectividade para compartilhar informações com a família.
+                        </p>
                         <div class="hero-meta"><span><i class="live-dot"></i> 4 módulos ativos</span><span>Última
                                 inspeção · hoje</span></div>
                     </div>
                     <div class="hero-graphic" aria-hidden="true">
                         <div class="graphic-grid"></div>
-                        <div class="hardware-board"><span class="board-label">ESP32</span><i
+                        <div class="hardware-board"><span class="board-label">CUIDA+</span><i
                                 class="board-pin pin-one"></i><i class="board-pin pin-two"></i><i
                                 class="board-pin pin-three"></i><i class="board-led"></i><span
                                 class="board-trace trace-one"></span><span class="board-trace trace-two"></span></div>
@@ -88,12 +91,12 @@
                         <article class="component-card">
                             <div class="card-heading">
                                 <div><span class="card-kicker">CONTROLADOR PRINCIPAL</span>
-                                    <h3>ESP32 DevKit v1</h3>
+                                    <h3>Pulseira CUIDA+ v1</h3>
                                 </div><button class="icon-button" id="uploadButton" aria-label="Mais opções"><i
                                         data-lucide="more-horizontal"></i></button>
                             </div>
                             <div class="component-visual">
-                                <div class="mini-board"><span>ESP32</span><i></i><i></i><i></i></div>
+                                <div class="mini-board"><span>CUIDA+</span><i></i><i></i><i></i></div>
                                 <div class="pin-line pin-line-one"><b>3V3</b><span></span></div>
                                 <div class="pin-line pin-line-two"><b>GND</b><span></span></div>
                                 <div class="pin-line pin-line-three"><b>GPIO 04</b><span></span></div>
@@ -105,15 +108,17 @@
                         <article class="sensor-card">
                             <div class="card-heading">
                                 <div><span class="card-kicker">SENSORES INSTALADOS</span>
-                                    <h3>Leitura ambiental</h3>
+                                    <h3>Sinais vitais</h3>
                                 </div><i data-lucide="radio-tower" class="heading-icon"></i>
                             </div>
                             <div class="sensor-item"><span class="sensor-badge orange"><i
-                                        data-lucide="thermometer"></i></span><span><strong>DHT22</strong><small>Temperatura
-                                        e umidade</small></span><span class="sensor-pin">GPIO 04</span></div>
+                                        data-lucide="thermometer"></i></span><span><strong>Sensor
+                                        óptico</strong><small>Temperatura da pele</small></span><span
+                                    class="sensor-pin">I2C</span></div>
                             <div class="sensor-item"><span class="sensor-badge green"><i
-                                        data-lucide="wind"></i></span><span><strong>MQ-135</strong><small>Qualidade do
-                                        ar</small></span><span class="sensor-pin">GPIO 34</span></div>
+                                        data-lucide="heart-pulse"></i></span><span><strong>Sensor de
+                                        pulso</strong><small>Frequência cardíaca</small></span><span
+                                    class="sensor-pin">I2C</span></div>
                             <div class="sensor-item"><span class="sensor-badge yellow"><i
                                         data-lucide="sun"></i></span><span><strong>BH1750</strong><small>Intensidade
                                         luminosa</small></span><span class="sensor-pin">I2C</span></div>
@@ -141,7 +146,8 @@
                                 </div>
                                 <div class="wire wire-orange"><span>GPIO 04</span></div>
                                 <div class="wiring-node"><span class="node-icon green"><i
-                                            data-lucide="droplets"></i></span><strong>DHT22</strong><small>clima</small>
+                                            data-lucide="heart-pulse"></i></span><strong>Sensor
+                                        óptico</strong><small>sinais vitais</small>
                                 </div>
                                 <div class="wire wire-yellow"><span>I2C</span></div>
                                 <div class="wiring-node"><span class="node-icon purple"><i
