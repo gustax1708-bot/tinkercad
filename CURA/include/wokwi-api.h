@@ -1,8 +1,15 @@
 #ifndef WOKWI_API_H
 #define WOKWI_API_H
 
+#if defined(__wasm__)
+typedef _Bool bool;
+typedef unsigned char uint8_t;
+typedef unsigned int uint32_t;
+typedef signed int int32_t;
+#else
 #include <stdbool.h>
 #include <stdint.h>
+#endif
 
 enum pin_mode {
   INPUT = 0,

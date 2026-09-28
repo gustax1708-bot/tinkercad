@@ -41,7 +41,14 @@ python -m unittest discover -s test -v
 
 ## Simular no Wokwi
 
-Compile o firmware do alvo `wokwi` (`pio run -e wokwi`) e o chip customizado (`make` dentro do Dev Container com Docker). O `wokwi.toml` aponta para esses artefatos; então use `Wokwi: Start Simulator`. O MAX30102 está configurado a 100 Hz com média de 4 amostras, resultando em 25 amostras/s, como no exemplo oficial SparkFun/Maxim; o modelo de simulação também gera amostras a 25 Hz.
+Compile o firmware do alvo `wokwi` e o chip customizado com a imagem oficial do Wokwi:
+
+```bash
+pio run -e wokwi
+docker run --rm -v "$PWD":/workspace -w /workspace wokwi/builder-clang-wasm make build-chip
+```
+
+O comando gera `Sensor_Saturacao.chip.wasm`, que é o binário referenciado por `wokwi.toml`. Depois use `Wokwi: Start Simulator`. O MAX30102 está configurado a 100 Hz com média de 4 amostras, resultando em 25 amostras/s, como no exemplo oficial SparkFun/Maxim; o modelo de simulação também gera amostras a 25 Hz.
 
 Para que o ESP32 simulado envie dados à API local, o Wokwi Private IoT Gateway precisa estar instalado e habilitado; o endpoint usa `host.wokwi.internal`. Com o gateway público, a simulação de sensores ainda pode ser feita, mas o POST não alcança o servidor local.
 

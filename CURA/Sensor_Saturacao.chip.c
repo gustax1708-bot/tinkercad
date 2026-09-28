@@ -5,16 +5,11 @@
 // Copyright 2023 
 
 #include <wokwi-api.h>
-#include <math.h>
 #include <stdbool.h>
-#include <stdint.h>
-#include <stdlib.h>
 
 #define MAX30102_ADDRESS 0x57
 #define FIFO_SIZE 32
 #define RED_IR_BYTES_PER_SAMPLE 6
-#define PI 3.14159265358979323846
-
 typedef struct {
   uint8_t registers[256];
   uint8_t register_pointer;
@@ -26,6 +21,8 @@ typedef struct {
   uint32_t ir_fifo[FIFO_SIZE];
   bool expect_register;
 } chip_state_t;
+
+static chip_state_t chip_storage;
 
 static bool on_i2c_connect(void *user_data, uint32_t address, bool read) {
   chip_state_t *chip = user_data;
@@ -91,18 +88,18 @@ static void on_sample_timer(void *user_data) {
   const uint8_t next_pointer = (chip->fifo_write_pointer + 1) % FIFO_SIZE;
   if (next_pointer == chip->fifo_read_pointer) return;
 
-  const double phase = 2.0 * PI * 72.0 * chip->sample_index / (60.0 * 25.0);
-  const double pulse = sin(phase);
+  const uint32_t phase = chip->sample_index % 21;
+  const int32_t pulse = phase < 11 ? (int32_t)(phase * 10) - 50
+                                   : 50 - (int32_t)((phase - 11) * 10);
   const uint8_t slot = chip->fifo_write_pointer;
-  chip->ir_fifo[slot] = (uint32_t)(100000 + 7000 * pulse);
-  chip->red_fifo[slot] = (uint32_t)(90000 + 3000 * pulse);
+  chip->ir_fifo[slot] = (uint32_t)(100000 + 7000 * pulse / 100);
+  chip->red_fifo[slot] = (uint32_t)(90000 + 3000 * pulse / 100);
   ++chip->sample_index;
   chip->fifo_write_pointer = next_pointer;
 }
 
 void chip_init(void) {
-  chip_state_t *chip = calloc(1, sizeof(chip_state_t));
-  if (!chip) return;
+  chip_state_t *chip = &chip_storage;
 
   chip->registers[0xFF] = 0x15;
   chip->registers[0xFE] = 0x01;
@@ -114,7 +111,7 @@ void chip_init(void) {
       .connect = on_i2c_connect,
       .read = on_i2c_read,
       .write = on_i2c_write,
-      .disconnect = NULL,
+      .disconnect = 0,
       .user_data = chip,
   };
   i2c_init(&i2c_config);
