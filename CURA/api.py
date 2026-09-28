@@ -10,73 +10,10 @@ from urllib.parse import urlparse
 
 HOST = os.getenv("API_HOST", "0.0.0.0")
 PORT = int(os.getenv("API_PORT", "8000"))
+SITE_URL = os.getenv("SITE_URL", "http://localhost:8080/frontend/pages/home.html")
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 API_CORS_ORIGIN = os.getenv("API_CORS_ORIGIN", "*")
 DATABASE = Path(os.getenv("DATABASE_PATH", str(Path(__file__).resolve().parent / "readings.sqlite3")))
-
-PAGE = """<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Monitor da pulseira</title>
-  <style>
-    body{font:16px system-ui,sans-serif;max-width:900px;margin:40px auto;padding:0 20px;background:#f2f5f3;color:#17211b}
-    h1{font-size:1.7rem}main{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
-    article{padding:18px;background:white;border:1px solid #d9e1dc;border-radius:6px}
-    article strong{display:block;font-size:1.7rem;margin-top:8px}#status{font-weight:700}
-    #panic{color:#a21d24;font-weight:700}#panic:empty{display:none}.muted{color:#5c6a61;font-size:.9rem}
-  </style>
-</head>
-<body>
-  <h1>Monitor da pulseira</h1>
-  <p id="status">Carregando...</p>
-  <main>
-    <article>Saturacao estimada<strong id="spo2">--</strong></article>
-    <article>Frequencia do pulso<strong id="heart">--</strong></article>
-    <article>Temperatura de contato<strong id="temperature">--</strong></article>
-    <article>Tendencia termica<strong id="trend">--</strong></article>
-  </main>
-  <p id="panic" aria-live="assertive"></p><p class="muted" id="updated"></p>
-  <script>
-    const show = (id, value, suffix = "") => {
-      document.getElementById(id).textContent = value == null ? "Sem leitura" : `${value}${suffix}`;
-    };
-    async function refresh() {
-      try {
-        const response = await fetch('/api/v1/latest');
-        const data = await response.json();
-        if (!data.reading) {
-          document.getElementById('status').textContent = 'Aguardando dados da pulseira';
-          return;
-        }
-        const item = data.reading;
-        show('spo2', item.spo2_percent, '%');
-        show('heart', item.heart_rate_bpm, ' bpm');
-        show('temperature', item.temperature_c, ' C');
-        show('trend', item.temperature_trend);
-        document.getElementById('status').textContent = `Estado: ${item.status}`;
-        const alert = data.latest_panic;
-        if (alert) {
-          const details = [
-            alert.spo2_percent == null ? 'SpO2 sem leitura' : `SpO2 ${alert.spo2_percent}%`,
-            alert.heart_rate_bpm == null ? 'pulso sem leitura' : `${alert.heart_rate_bpm} bpm`,
-            alert.temperature_c == null ? 'temperatura sem leitura' : `${alert.temperature_c} C`
-          ].join(' | ');
-          document.getElementById('panic').textContent = `ALERTA MANUAL (${alert.received_at}): ${details}`;
-        } else {
-          document.getElementById('panic').textContent = '';
-        }
-        document.getElementById('updated').textContent = `Recebido em ${item.received_at}`;
-      } catch {
-        document.getElementById('status').textContent = 'API indisponivel';
-      }
-    }
-    refresh();
-    setInterval(refresh, 10000);
-  </script>
-</body>
-</html>"""
 
 
 @contextmanager
@@ -164,6 +101,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
         self.send_header("Access-Control-Allow-Origin", API_CORS_ORIGIN)
         self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Device-Token")
         self.send_header("Content-Length", str(len(body)))
@@ -180,13 +118,10 @@ class ApiHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == "/":
-            body = PAGE.encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.send_header("Access-Control-Allow-Origin", API_CORS_ORIGIN)
-            self.send_header("Content-Length", str(len(body)))
+            self.send_response(302)
+            self.send_header("Location", SITE_URL)
+            self.send_header("Cache-Control", "no-store")
             self.end_headers()
-            self.wfile.write(body)
             return
 
         if path not in ("/api/v1/latest", "/api/v1/history"):
@@ -245,11 +180,23 @@ class ApiHandler(BaseHTTPRequestHandler):
                     ),
                 )
                 reading["id"] = cursor.lastrowid
+            print(
+                "[API] Leitura recebida: "
+                f"device={reading['device_id']} "
+                f"SpO2={reading['spo2_percent']}% "
+                f"pulso={reading['heart_rate_bpm']} bpm "
+                f"temperatura={reading['temperature_c']} C "
+                f"panico={reading['panic']}",
+                flush=True,
+            )
             self.send_json(201, {"reading": reading})
         except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as error:
             self.send_json(400, {"error": str(error)})
 
     def log_message(self, format_string, *args):
+        request_line = args[0] if args else ""
+        if request_line.startswith(("GET /api/v1/latest", "GET /api/v1/history")):
+            return
         print(f"{self.address_string()} - {format_string % args}")
 
 

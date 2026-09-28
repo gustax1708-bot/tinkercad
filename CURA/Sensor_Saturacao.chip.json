@@ -7,5 +7,22 @@
     "SDA",
     "SCL"
   ],
-  "controls": []
+  "controls": [
+    {
+      "id": "heartRateBpm",
+      "label": "Frequencia cardiaca (bpm)",
+      "type": "range",
+      "min": 40,
+      "max": 180,
+      "step": 1
+    },
+    {
+      "id": "spo2Percent",
+      "label": "Saturacao SpO2 (%)",
+      "type": "range",
+      "min": 80,
+      "max": 100,
+      "step": 1
+    }
+  ]
 }

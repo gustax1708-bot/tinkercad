@@ -46,6 +46,21 @@ class ApiHttpTests(unittest.TestCase):
         response = self.connection.getresponse()
         return response.status, json.loads(response.read())
 
+    def test_api_root_redirects_to_frontend(self):
+        self.connection.request("GET", "/")
+        response = self.connection.getresponse()
+        response.read()
+        self.assertEqual(response.status, 302)
+        self.assertEqual(response.getheader("Location"), api.SITE_URL)
+
+    def test_telemetry_endpoints_are_not_cached(self):
+        for path in ("/api/v1/latest", "/api/v1/history"):
+            self.connection.request("GET", path)
+            response = self.connection.getresponse()
+            response.read()
+            self.assertEqual(response.status, 200)
+            self.assertEqual(response.getheader("Cache-Control"), "no-store")
+
     def test_manual_panic_is_saved_and_remains_visible(self):
         panic = {
             "device_id": "pulseira-01",

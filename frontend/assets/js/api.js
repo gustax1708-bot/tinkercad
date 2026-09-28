@@ -1,4 +1,5 @@
 (function () {
+	const staleAfterMs = 45000;
 	const configuredBaseUrl = document.documentElement.dataset.apiBase || window.CUIDA_API_URL || 'http://localhost:8000';
 	const apiBaseUrl = configuredBaseUrl.replace(/\/$/, '');
 
@@ -18,8 +19,18 @@
 
 	const updateReading = (reading, latestPanic) => {
 		if (!reading) {
+			setText('[data-reading="temperature"]', '--');
+			setText('[data-reading="heart-rate"]', '--');
+			setText('[data-reading="spo2"]', '--');
+			setText('[data-reading="panic"]', '--');
+			setText('[data-reading-device]', 'pulseira-01');
+			setText('[data-reading-alert]', 'Nenhum alerta manual registrado');
 			setText('[data-reading-status]', 'Aguardando dados da pulseira');
 			setText('[data-reading-updated]', 'Nenhuma leitura recebida');
+			setText('[data-health-state]', 'Aguardando');
+			setText('[data-health-detail]', 'Nenhuma telemetria recebida');
+			setText('[data-component-esp32]', 'sem telemetria');
+			setText('[data-component-sensors]', 'sem leitura');
 			return;
 		}
 
@@ -27,8 +38,23 @@
 		setText('[data-reading="heart-rate"]', formatValue(reading.heart_rate_bpm, ' bpm'));
 		setText('[data-reading="spo2"]', formatValue(reading.spo2_percent, '%'));
 		setText('[data-reading="panic"]', reading.panic ? 'Ativo' : 'Inativo');
-		setText('[data-reading-status]', reading.status === 'panico' ? 'Alerta manual ativo' :
-			(reading.sensor_contact ? 'Pulseira conectada' : 'Sem contato com o sensor'));
+		const receivedAt = Date.parse(reading.received_at);
+		const readingIsFresh = Number.isFinite(receivedAt) && Date.now() - receivedAt <= staleAfterMs;
+		const sensorConnected = readingIsFresh && reading.sensor_contact;
+		const status = readingIsFresh
+			? reading.status === 'panico' ? 'Alerta manual ativo' :
+				(reading.sensor_contact ? 'Pulseira conectada' : 'Sem contato com o sensor')
+			: 'Leitura desatualizada';
+		setText('[data-reading-status]', status);
+		document.documentElement.dataset.readingStale = String(!readingIsFresh);
+		setText('[data-health-state]', sensorConnected ? 'OK' : 'OFF');
+		setText('[data-health-detail]', readingIsFresh
+			? (reading.sensor_contact ? 'Última telemetria recente' : 'MAX30102 sem contato')
+			: 'Última leitura há mais de 45 segundos');
+		setText('[data-component-esp32]', readingIsFresh ? 'telemetria recente' : 'sem telemetria');
+		setText('[data-component-sensors]', readingIsFresh
+			? `MAX30102 ${reading.sensor_contact ? 'com contato' : 'sem contato'} · DS18B20 ${reading.temperature_c == null ? 'sem leitura' : 'ativo'}`
+			: 'sem leitura');
 		setText('[data-reading-updated]', `Recebido em ${formatTime(reading.received_at)}`);
 		setText('[data-reading-trend]', reading.temperature_trend || 'estavel');
 		setText('[data-reading-device]', reading.device_id || 'pulseira-01');
@@ -41,27 +67,76 @@
 
 	const updateHistory = (readings) => {
 		const log = document.querySelector('[data-reading-log]');
-		if (!log || !readings.length) return;
-		log.innerHTML = readings.slice(0, 4).map((reading) =>
-			`<p><span>${formatTime(reading.received_at)}</span> ${reading.panic ? 'Alerta manual' : 'Leitura enviada'} · ${reading.status}</p>`
-		).join('');
+		const activityList = document.querySelector('[data-reading-history]');
+		const activityCount = document.querySelector('[data-reading-count]');
+		const recentReadings = readings.slice(0, 4);
+		if (activityCount) activityCount.textContent = `${readings.length} registros`;
+
+		if (log) {
+			log.replaceChildren();
+			if (!recentReadings.length) {
+				const empty = document.createElement('p');
+				empty.textContent = 'Aguardando leitura da pulseira';
+				log.append(empty);
+			} else {
+				recentReadings.forEach((reading) => {
+					const line = document.createElement('p');
+					const time = document.createElement('span');
+					time.textContent = formatTime(reading.received_at);
+					line.append(time, ` ${reading.panic ? 'Alerta manual' : 'Leitura enviada'} · ${reading.status}`);
+					log.append(line);
+				});
+			}
+		}
+
+		if (!activityList) return;
+		activityList.replaceChildren();
+		if (!recentReadings.length) {
+			const empty = document.createElement('p');
+			empty.className = 'activity-empty';
+			empty.textContent = 'Aguardando eventos do dispositivo';
+			activityList.append(empty);
+			return;
+		}
+
+		recentReadings.slice(0, 3).forEach((reading) => {
+			const item = document.createElement('div');
+			item.className = 'activity-item';
+			const marker = document.createElement('span');
+			marker.className = `activity-marker ${reading.panic ? 'orange-marker' : 'green-marker'}`;
+			const content = document.createElement('div');
+			const title = document.createElement('strong');
+			title.textContent = reading.panic ? 'Alerta manual' : 'Leitura recebida';
+			const details = document.createElement('p');
+			details.textContent = `SpO₂ ${formatValue(reading.spo2_percent, '%')} · pulso ${formatValue(reading.heart_rate_bpm, ' bpm')} · temperatura ${formatValue(reading.temperature_c, ' °C')}`;
+			const time = document.createElement('small');
+			time.textContent = formatTime(reading.received_at);
+			content.append(title, details, time);
+			item.append(marker, content);
+			activityList.append(item);
+		});
 	};
 
 	const refreshDeviceData = async () => {
 		try {
-			const [latestResponse, historyResponse] = await Promise.all([
-				fetch(`${apiBaseUrl}/api/v1/latest`),
-				fetch(`${apiBaseUrl}/api/v1/history`)
-			]);
-			if (!latestResponse.ok || !historyResponse.ok) throw new Error('API indisponivel');
+			const latestResponse = await fetch(`${apiBaseUrl}/api/v1/latest`, { cache: 'no-store' });
+			if (!latestResponse.ok) throw new Error('API indisponivel');
 			const latest = await latestResponse.json();
-			const history = await historyResponse.json();
 			updateReading(latest.reading, latest.latest_panic);
-			updateHistory(history.readings || []);
 			document.documentElement.dataset.apiStatus = 'online';
 		} catch {
 			setText('[data-reading-status]', 'API indisponivel');
 			document.documentElement.dataset.apiStatus = 'offline';
+			return;
+		}
+
+		try {
+			const historyResponse = await fetch(`${apiBaseUrl}/api/v1/history`, { cache: 'no-store' });
+			if (!historyResponse.ok) throw new Error('Historico indisponivel');
+			const history = await historyResponse.json();
+			updateHistory(history.readings || []);
+		} catch {
+			setText('[data-reading-count]', 'Histórico indisponível');
 		}
 	};
 

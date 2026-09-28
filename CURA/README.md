@@ -1,6 +1,6 @@
 # Pulseira de monitoramento remoto
 
-Projeto PlatformIO com ESP32 DOIT, MAX30102, DS18B20, botão de pânico, API Python e painel local. As leituras são enviadas a cada 15 s; ao clicar no botão, o firmware captura os valores mais recentes e enfileira um alerta manual até receber confirmação HTTP. A fila tem quatro eventos em RAM e se perde se o ESP32 reiniciar.
+Projeto PlatformIO com ESP32 DOIT, MAX30102, DS18B20, botão de pânico, API Python e painel local. O firmware envia a primeira leitura quando um sensor entrega um valor e depois envia dados regularmente a cada 15 s. Ao clicar no botão, captura os valores disponíveis e enfileira um alerta manual até receber confirmação HTTP. A fila tem quatro eventos em RAM e se perde se o ESP32 reiniciar.
 
 ## Hardware e ligações
 
@@ -22,21 +22,21 @@ O botão usa pull-up interno, sem resistor externo. O firmware evita GPIO15 para
 
 Copie `include/secrets.example.h` para `include/secrets.h` e edite SSID, senha, URL e token. `secrets.h` é ignorado pelo Git. A URL precisa usar o IPv4 do computador servidor na rede local, não `localhost`; confirme também que o firewall permite conexões de entrada na porta 8000.
 
-Inicie a API com o mesmo token:
+Para iniciar apenas a API, configure o mesmo token do firmware:
 
-```powershell
-$env:DEVICE_TOKEN = "dev-token"
-python api.py
+```bash
+export DEVICE_TOKEN=dev-token
+python3 api.py
 ```
 
-Abra `http://localhost:8000`. A API oferece `POST /api/v1/readings`, `GET /api/v1/latest` e `GET /api/v1/history`, e persiste em `readings.sqlite3` ao lado de `api.py`. Não expor esta API HTTP de demonstração diretamente à internet.
+O dashboard completo é servido na porta `8080` pelo launcher do workspace (`python3 ../tools/dev_services.py`, a partir de `CURA/`). A raiz da API na porta `8000` redireciona para ele. A API oferece `POST /api/v1/readings`, `GET /api/v1/latest` e `GET /api/v1/history`, e persiste em `readings.sqlite3` ao lado de `api.py`. A API é de demonstração, usa token de desenvolvimento por padrão e não deve ser exposta à internet.
 
 ## Compilar e carregar
 
-```powershell
+```bash
 pio run -e esp32doit-devkit-v1
 pio run -e esp32doit-devkit-v1 -t upload
-python -m unittest discover -s test -v
+python3 -m unittest discover -s test -v
 ```
 
 ## Simular no Wokwi
@@ -48,7 +48,17 @@ pio run -e wokwi
 docker run --rm -v "$PWD":/workspace -w /workspace wokwi/builder-clang-wasm make build-chip
 ```
 
-O comando gera `Sensor_Saturacao.chip.wasm`, que é o binário referenciado por `wokwi.toml`. Depois use `Wokwi: Start Simulator`. O MAX30102 está configurado a 100 Hz com média de 4 amostras, resultando em 25 amostras/s, como no exemplo oficial SparkFun/Maxim; o modelo de simulação também gera amostras a 25 Hz.
+Se `pio` não estiver instalado no ambiente local, compile o firmware pelo Docker:
+
+```bash
+docker run --rm -v "$PWD":/workspace -w /workspace \
+	python:3.12-slim sh -lc \
+	'python -m pip install --no-cache-dir platformio && pio run -e wokwi'
+```
+
+Os comandos geram `Sensor_Saturacao.chip.wasm` e `.pio/build/wokwi/firmware.bin`, os artefatos referenciados por `wokwi.toml`. Depois use `Wokwi: Start Simulator`. O MAX30102 está configurado a 100 Hz com média de 4 amostras, resultando em 25 amostras/s, como no exemplo oficial SparkFun/Maxim; o modelo customizado também produz amostras a 25 Hz.
+
+O chip customizado oferece controles deslizantes para frequência cardíaca (40-180 bpm) e SpO2 (80-100%). Eles ajustam as amostras I2C simuladas; após recompilar o chip, reinicie a simulação para recarregar os controles.
 
 Para que o ESP32 simulado envie dados à API local, o Wokwi Private IoT Gateway precisa estar instalado e habilitado; o endpoint usa `host.wokwi.internal`. Com o gateway público, a simulação de sensores ainda pode ser feita, mas o POST não alcança o servidor local.
 

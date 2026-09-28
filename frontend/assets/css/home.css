@@ -81,7 +81,7 @@
      padding: 0 13px 35px;
      font-size: 25px;
      font-weight: 700;
-     letter-spacing: -1.5px;
+    letter-spacing: 0;
  }
 
  .brand-dot,
@@ -405,7 +405,7 @@
  .welcome-row h1 {
      margin: 0;
      font-size: clamp(30px, 3vw, 42px);
-     letter-spacing: -2px;
+    letter-spacing: 0;
      line-height: 1.05;
  }
 
@@ -469,7 +469,7 @@
      margin: 17px 0 11px;
      font-size: clamp(34px, 4vw, 48px);
      line-height: .98;
-     letter-spacing: -2px;
+    letter-spacing: 0;
  }
 
  .hero-copy h2 em {
@@ -642,7 +642,7 @@
  .section-heading h2 {
      margin: 0;
      font-size: 24px;
-     letter-spacing: -1px;
+    letter-spacing: 0;
  }
 
  .heading-actions {
@@ -1074,7 +1074,7 @@
      text-overflow: ellipsis;
      white-space: nowrap;
      font-size: 14px;
-     letter-spacing: -.3px;
+    letter-spacing: 0;
  }
 
  .project-info p {
@@ -1203,7 +1203,7 @@
  .modal h2 {
      margin: 0 0 9px;
      font-size: 27px;
-     letter-spacing: -1px;
+    letter-spacing: 0;
  }
 
  .modal>p:not(.eyebrow) {
@@ -1704,7 +1704,7 @@
  .card-heading h3 {
      margin: 5px 0 0;
      font-size: 16px;
-     letter-spacing: -.5px;
+    letter-spacing: 0;
  }
 
  .card-kicker {
@@ -1754,7 +1754,7 @@
      margin-left: auto;
      color: var(--ink);
      font-size: 20px;
-     letter-spacing: -1px;
+    letter-spacing: 0;
  }
 
  .telemetry-icon,

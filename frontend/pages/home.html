@@ -12,7 +12,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="../assets/css/home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../assets/js/api.js" defer></script>
+    <script src="../assets/js/api.js?v=2" defer></script>
     <script src="../assets/js/home.js" defer></script>
 </head>
 
@@ -78,8 +78,8 @@
                             <div class="board-line line-two"></div>
                             <div class="board-light"></div>
                         </div>
-                        <div class="graphic-label label-x">TEMP 24.8°C</div>
-                        <div class="graphic-label label-y">UMID 61%</div>
+                        <div class="graphic-label label-x">MAX30102 · I2C</div>
+                        <div class="graphic-label label-y">DS18B20 · GPIO 04</div>
                         <div class="axis axis-x"></div>
                         <div class="axis axis-y"></div>
                     </div>
@@ -89,24 +89,27 @@
                         <div>
                             <p class="eyebrow">PAINEL DO PROJETO</p>
                             <h2>Visão geral</h2>
-                        </div><span class="version-badge"><i data-lucide="git-branch"></i> v1.4.2 · estável</span>
+                        </div><span class="version-badge"><i data-lucide="git-branch"></i> ESP32 · PlatformIO / Wokwi</span>
                     </div>
                     <div class="dashboard-grid">
                         <article class="telemetry-card">
                             <div class="card-heading">
                                 <div><span class="card-kicker">TELEMETRIA AO VIVO</span>
                                     <h3>Sinais acompanhados</h3>
-                                </div><span class="online-pill"><i></i> ao vivo</span>
+                                </div><span class="online-pill" data-reading-status><i></i>Conectando à pulseira</span>
                             </div>
                             <div class="telemetry-list">
                                 <div class="telemetry-item"><span class="telemetry-icon orange"><i
-                                            data-lucide="thermometer"></i></span><span><strong>Temperatura da
-                                            pele</strong><small>DS18B20</small></span><b data-reading="temperature">--</b>
+                                            data-lucide="thermometer"></i></span><span><strong>Temperatura de
+                                            contato</strong><small>DS18B20</small></span><b data-reading="temperature">--</b>
                                 </div>
                                 <div class="telemetry-item"><span class="telemetry-icon green"><i
                                             data-lucide="heart-pulse"></i></span><span><strong>Frequência de
                                             pulso</strong><small>Monitor
                                             contínuo</small></span><b data-reading="heart-rate">--</b></div>
+                                <div class="telemetry-item"><span class="telemetry-icon orange"><i
+                                            data-lucide="activity"></i></span><span><strong>Saturação de
+                                            oxigênio</strong><small>MAX30102</small></span><b data-reading="spo2">--</b></div>
                                 <div class="telemetry-item"><span class="telemetry-icon purple"><i
                                             data-lucide="bell-ring"></i></span><span><strong>Botão de
                                             alerta</strong><small data-reading-alert>Sem alerta registrado</small></span><b data-reading="panic">--</b>
@@ -120,15 +123,15 @@
                                 </div><i data-lucide="activity" class="heading-icon"></i>
                             </div>
                             <div class="health-score">
-                                <div class="score-ring"><strong>98</strong><small>%</small></div>
-                                <div><strong>Operação normal</strong>
-                                    <p>Todos os módulos respondendo</p>
+                                <div class="score-ring"><strong data-health-state>--</strong></div>
+                                <div><strong>Estado da telemetria</strong>
+                                    <p data-health-detail>Aguardando leitura</p>
                                 </div>
                             </div>
                             <div class="component-row"><span><i class="component-dot green-dot"></i> ESP32
-                                    DevKit</span><small>conectado</small></div>
+                                    DevKit</span><small data-component-esp32>aguardando</small></div>
                             <div class="component-row"><span><i class="component-dot green-dot"></i> Sensores
-                                    vitais</span><small>conectados</small></div>
+                                    vitais</span><small data-component-sensors>aguardando</small></div>
                         </article>
                     </div>
                 </section>
@@ -142,38 +145,19 @@
                     </div>
                     <div class="records-grid">
                         <article class="files-card" id="software">
-                            <div class="card-heading">
-                                <h3>Arquivos principais</h3><button class="icon-button" id="uploadButton"
-                                    aria-label="Adicionar arquivo"><i data-lucide="plus"></i></button>
-                            </div><button class="file-row"><span class="file-icon orange"><i
-                                        data-lucide="file-code-2"></i></span><span><strong>cuida-pulseira.ino</strong><small>Arduino
-                                        · 8.4 KB</small></span><i data-lucide="download"></i></button><button
-                                class="file-row"><span class="file-icon green"><i
-                                        data-lucide="workflow"></i></span><span><strong>esquema-eletrico.fzz</strong><small>Fritzing
-                                        · 1.2 MB</small></span><i data-lucide="download"></i></button><button
-                                class="file-row"><span class="file-icon purple"><i
-                                        data-lucide="file-text"></i></span><span><strong>README.md</strong><small>Markdown
-                                        · 4.1 KB</small></span><i data-lucide="download"></i></button>
+                            <div class="card-heading"><h3>Arquivos do projeto</h3></div>
+                            <div class="file-row"><span class="file-icon orange"><i
+                                        data-lucide="file-code-2"></i></span><span><strong>CURA/src/main.cpp</strong><small>Firmware ESP32 · C++</small></span></div>
+                            <div class="file-row"><span class="file-icon green"><i
+                                        data-lucide="workflow"></i></span><span><strong>CURA/api.py</strong><small>API e persistência · Python</small></span></div>
+                            <div class="file-row"><span class="file-icon purple"><i
+                                        data-lucide="file-text"></i></span><span><strong>CURA/diagram.json</strong><small>Ligações do simulador Wokwi</small></span></div>
                         </article>
                         <article class="activity-card">
                             <div class="card-heading">
-                                <h3>Últimas atividades</h3><span class="activity-count">3 eventos</span>
+                                <h3>Últimas leituras</h3><span class="activity-count" data-reading-count>Carregando</span>
                             </div>
-                            <div class="activity-item"><span class="activity-marker orange-marker"></span>
-                                <div><strong>Firmware atualizado</strong>
-                                    <p>Versão 1.4.2 enviada ao dispositivo</p><small>Hoje, 09:42</small>
-                                </div>
-                            </div>
-                            <div class="activity-item"><span class="activity-marker green-marker"></span>
-                                <div><strong>Sensor calibrado</strong>
-                                    <p>Rotina de calibração concluída</p><small>Ontem, 16:20</small>
-                                </div>
-                            </div>
-                            <div class="activity-item"><span class="activity-marker gray-marker"></span>
-                                <div><strong>Projeto compartilhado</strong>
-                                    <p>Link público criado por Gustavo</p><small>06 set, 11:08</small>
-                                </div>
-                            </div>
+                            <div data-reading-history><p class="activity-empty">Aguardando eventos do dispositivo</p></div>
                         </article>
                     </div>
                 </section>

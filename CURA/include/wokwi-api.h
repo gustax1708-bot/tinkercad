@@ -34,6 +34,7 @@ extern "C" {
 
 typedef int32_t pin_t;
 typedef uint32_t timer_t;
+typedef uint32_t attr_t;
 
 extern __attribute__((export_name("chipInit"))) void chip_init(void);
 extern __attribute__((import_name("pinInit"))) pin_t pin_init(const char *name, uint32_t mode);
@@ -60,6 +61,8 @@ typedef struct {
 
 extern __attribute__((import_name("timerInit"))) timer_t timer_init(const timer_config_t *config);
 extern __attribute__((import_name("timerStart"))) void timer_start(timer_t timer, uint32_t micros, bool repeat);
+extern __attribute__((import_name("attrInitFloat"))) attr_t attr_init_float(const char *name, float default_value);
+extern __attribute__((import_name("attrReadFloat"))) float attr_read_float(attr_t attr);
 
 #ifdef __cplusplus
 }

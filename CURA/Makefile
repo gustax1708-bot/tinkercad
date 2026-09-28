@@ -7,7 +7,7 @@ OFFICIAL_EXAMPLE := https://github.com/wokwi/inverter-chip.git
 
 .PHONY: all test-official build-chip clean
 
-all: test-official build-chip
+all: build-chip
 
 test-official:
 	@set -eu; temp_dir=$$(mktemp -d); trap 'rm -rf "$$temp_dir"' EXIT; \

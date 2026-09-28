@@ -17,6 +17,8 @@ typedef struct {
   uint8_t fifo_write_pointer;
   uint8_t fifo_byte_index;
   uint32_t sample_index;
+  attr_t heart_rate_attr;
+  attr_t spo2_attr;
   uint32_t red_fifo[FIFO_SIZE];
   uint32_t ir_fifo[FIFO_SIZE];
   bool expect_register;
@@ -88,18 +90,25 @@ static void on_sample_timer(void *user_data) {
   const uint8_t next_pointer = (chip->fifo_write_pointer + 1) % FIFO_SIZE;
   if (next_pointer == chip->fifo_read_pointer) return;
 
-  const uint32_t phase = chip->sample_index % 21;
-  const int32_t pulse = phase < 11 ? (int32_t)(phase * 10) - 50
-                                   : 50 - (int32_t)((phase - 11) * 10);
+  const uint32_t heart_rate = (uint32_t)attr_read_float(chip->heart_rate_attr);
+  const uint32_t period = 1500 / (heart_rate ? heart_rate : 72);
+  const uint32_t phase = chip->sample_index % period;
+  const int32_t pulse = phase < period / 2
+                            ? (int32_t)(phase * 200 / period) - 50
+                            : 150 - (int32_t)(phase * 200 / period);
+  const uint32_t spo2 = (uint32_t)attr_read_float(chip->spo2_attr);
+  const uint32_t red_amplitude = 3000 + (100 - spo2) * 300;
   const uint8_t slot = chip->fifo_write_pointer;
   chip->ir_fifo[slot] = (uint32_t)(100000 + 7000 * pulse / 100);
-  chip->red_fifo[slot] = (uint32_t)(90000 + 3000 * pulse / 100);
+  chip->red_fifo[slot] = (uint32_t)(90000 + red_amplitude * pulse / 100);
   ++chip->sample_index;
   chip->fifo_write_pointer = next_pointer;
 }
 
 void chip_init(void) {
   chip_state_t *chip = &chip_storage;
+  chip->heart_rate_attr = attr_init_float("heartRateBpm", 72.0f);
+  chip->spo2_attr = attr_init_float("spo2Percent", 98.0f);
 
   chip->registers[0xFF] = 0x15;
   chip->registers[0xFE] = 0x01;

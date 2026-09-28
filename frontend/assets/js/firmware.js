@@ -11,16 +11,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const copyCodeButton = document.querySelector('#copyCodeButton');
 	if (copyCodeButton) {
-		copyCodeButton.addEventListener('click', () => showToast('Código do firmware copiado para a área de transferência.'));
-	}
-
-	const releaseButton = document.querySelector('#releaseButton');
-	if (releaseButton) {
-		releaseButton.addEventListener('click', () => showToast('Formulário de nova release pronto para preencher.'));
+		copyCodeButton.addEventListener('click', async () => {
+			const source = document.querySelector('.code-block code');
+			if (!source || !navigator.clipboard) {
+				showToast('A cópia não está disponível neste navegador.');
+				return;
+			}
+			try {
+				await navigator.clipboard.writeText(source.innerText);
+				showToast('Trecho copiado para a área de transferência.');
+			} catch {
+				showToast('Não foi possível acessar a área de transferência.');
+			}
+		});
 	}
 
 	const viewDependenciesButton = document.querySelector('#viewDependenciesButton');
 	if (viewDependenciesButton) {
-		viewDependenciesButton.addEventListener('click', () => showToast('Todas as dependências estão instaladas e atualizadas.'));
+		viewDependenciesButton.addEventListener('click', () => {
+			document.querySelector('.dependency-list')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		});
 	}
 });

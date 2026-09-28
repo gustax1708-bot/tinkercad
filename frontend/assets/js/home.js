@@ -19,12 +19,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const shareProject = async () => {
 		try {
-			if (navigator.clipboard && window.location.href) {
-				await navigator.clipboard.writeText(window.location.href);
-			}
+			if (!navigator.clipboard || !window.location.href) throw new Error('Clipboard indisponível');
+			await navigator.clipboard.writeText(window.location.href);
 			showToast('Link do projeto copiado para a área de transferência.');
 		} catch {
-			showToast('Link público pronto para compartilhar.');
+			showToast('Não foi possível copiar o link neste navegador.');
 		}
 	};
 
@@ -38,22 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 	const downloadButton = document.querySelector('#downloadButton');
 	if (downloadButton) {
-		downloadButton.addEventListener('click', () => showToast('Pacote do projeto preparado para exportação.'));
-	}
-
-	const uploadButton = document.querySelector('#uploadButton');
-	if (uploadButton) {
-		uploadButton.addEventListener('click', () => showToast('Área de arquivos pronta para receber um novo documento.'));
+		downloadButton.addEventListener('click', () => showToast('A exportação do projeto ainda não está implementada.'));
 	}
 
 	const openWorkbench = document.querySelector('#openWorkbench');
 	if (openWorkbench) {
-		openWorkbench.addEventListener('click', () => showToast('Bancada de testes conectada ao ESP32.'));
+		openWorkbench.addEventListener('click', () => showToast('Inicie Wokwi: Start Simulator pelo VS Code.'));
 	}
 
 	const viewDocsButton = document.querySelector('#viewDocsButton');
 	if (viewDocsButton) {
-		viewDocsButton.addEventListener('click', () => showToast('A documentação completa está disponível no README.md.'));
+		viewDocsButton.addEventListener('click', () => {
+			document.querySelector('#documents')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		});
 	}
 
 	document.querySelectorAll('.nav-item[data-section]').forEach((item) => {
@@ -93,10 +89,4 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	});
 
-	document.querySelectorAll('.file-row').forEach((file) => {
-		file.addEventListener('click', () => {
-			const strong = file.querySelector('strong');
-			showToast(strong ? `${strong.textContent} selecionado.` : 'Arquivo selecionado.');
-		});
-	});
 });

@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Iniciar CUIDA+ para Wokwi",
+      "type": "process",
+      "command": "python3",
+      "args": ["${workspaceFolder}/tools/dev_services.py"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "cuida-services",
+        "pattern": {
+          "regexp": "^(CUIDA_TASK_DIAGNOSTIC_ONLY): (.*)$",
+          "kind": "file",
+          "file": 1,
+          "message": 2
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Iniciando servicos CUIDA\\+",
+          "endsPattern": "^CUIDA\\+ pronto:"
+        }
+      },
+      "runOptions": {
+        "runOn": "folderOpen",
+        "instanceLimit": 1
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "focus": false,
+        "clear": false
+      }
+    }
+  ]
+}

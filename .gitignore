@@ -1,0 +1,9 @@
+# PlatformIO build output
+CURA/.pio/
+
+# Local secrets and runtime artifacts
+CURA/include/secrets.h
+CURA/readings.sqlite3
+__pycache__/
+*.py[cod]
+.DS_Store

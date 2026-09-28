@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../assets/css/hardware.css">
     <link rel="stylesheet" href="../assets/css/home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../assets/js/api.js" defer></script>
+    <script src="../assets/js/api.js?v=2" defer></script>
     <script src="../assets/js/home.js" defer></script>
     <script src="../assets/js/hardware.js" defer></script>
 </head>
@@ -53,7 +53,7 @@
             <div class="content-wrap">
                 <section class="welcome-row">
                     <div>
-                        <p class="eyebrow"><span class="status-dot"></span> BANCADA DE HARDWARE · ONLINE</p>
+                        <p class="eyebrow"><span class="status-dot"></span> BANCADA DE HARDWARE · <span data-reading-status>AGUARDANDO DADOS</span></p>
                         <h1>Hardware do<br><span class="headline-accent">cuidado.</span></h1>
                         <p class="welcome-copy">Sensores e conexões que mantêm o monitoramento próximo de quem precisa.
                         </p>
@@ -68,8 +68,7 @@
                         <h2>Monte.<br><em>Monitore.</em></h2>
                         <p>A pulseira reúne sinais vitais e conectividade para compartilhar informações com a família.
                         </p>
-                        <div class="hero-meta"><span><i class="live-dot"></i> 4 módulos ativos</span><span>Última
-                                inspeção · hoje</span></div>
+                        <div class="hero-meta"><span><i class="live-dot"></i> ESP32 · MAX30102 · DS18B20</span><span data-reading-updated>Sem leitura</span></div>
                     </div>
                     <div class="hero-graphic" aria-hidden="true">
                         <div class="graphic-grid"></div>
@@ -86,15 +85,14 @@
                         <div>
                             <p class="eyebrow">MAPA DE COMPONENTES</p>
                             <h2>Inventário conectado</h2>
-                        </div><span class="online-pill"><i></i> sistema saudável</span>
+                        </div><span class="online-pill" data-reading-status><i></i>Aguardando dados</span>
                     </div>
                     <div class="hardware-layout">
                         <article class="component-card">
                             <div class="card-heading">
                                 <div><span class="card-kicker">CONTROLADOR PRINCIPAL</span>
                                     <h3>Pulseira CUIDA+ v1</h3>
-                                </div><button class="icon-button" id="uploadButton" aria-label="Mais opções"><i
-                                        data-lucide="more-horizontal"></i></button>
+                                </div>
                             </div>
                             <div class="component-visual">
                                 <div class="mini-board"><span>CUIDA+</span><i></i><i></i><i></i></div>
@@ -137,33 +135,22 @@
                                     <h3>Rotas de comunicação</h3>
                                 </div><i data-lucide="git-merge" class="heading-icon"></i>
                             </div>
-                            <div class="wiring-map">
-                                <div class="wiring-node"><span class="node-icon orange"><i
-                                            data-lucide="cpu"></i></span><strong>ESP32</strong><small>controlador</small>
-                                </div>
-                                <div class="wire wire-orange"><span>GPIO 04</span></div>
-                                <div class="wiring-node"><span class="node-icon green"><i
-                                            data-lucide="heart-pulse"></i></span><strong>Sensor
-                                        óptico</strong><small>sinais vitais</small>
-                                </div>
-                                <div class="wire wire-yellow"><span>I2C</span></div>
-                                <div class="wiring-node"><span class="node-icon purple"><i
-                                            data-lucide="sun"></i></span><strong>BH1750</strong><small>luz</small></div>
+                            <div class="connection-list">
+                                <div><strong>MAX30102</strong><span>SDA GPIO 21 · SCL GPIO 22</span></div>
+                                <div><strong>DS18B20</strong><span>DQ GPIO 04 · pull-up 4,7 kΩ</span></div>
+                                <div><strong>Botão de alerta</strong><span>GPIO 27 · pull-up interno</span></div>
                             </div>
                         </article>
                         <article class="power-card">
                             <div class="card-heading">
-                                <div><span class="card-kicker">CONSUMO ATUAL</span>
-                                    <h3>Energia do sistema</h3>
+                                <div><span class="card-kicker">TELEMETRIA RECEBIDA</span>
+                                    <h3>Leituras dos sensores</h3>
                                 </div><i data-lucide="zap" class="heading-icon"></i>
                             </div>
-                            <div class="power-reading"><strong>420</strong><span>mA</span><small>consumo médio</small>
+                            <div class="power-reading"><strong data-reading="temperature">--</strong><small>temperatura DS18B20</small>
                             </div>
-                            <div class="power-bar"><span></span></div>
-                            <div class="power-footer"><span><i class="green-dot"></i> Dentro do limite</span><strong>62%
-                                    da fonte</strong></div>
-                            <div class="power-stats"><span><small>Tensão</small><b>5.02
-                                        V</b></span><span><small>Temperatura</small><b>31.4 °C</b></span></div>
+                            <div class="power-footer"><span data-reading-status>Aguardando dados</span><strong data-reading-updated>Sem leitura</strong></div>
+                            <div class="power-stats"><span><small>SpO₂ MAX30102</small><b data-reading="spo2">--</b></span><span><small>Pulso</small><b data-reading="heart-rate">--</b></span></div>
                         </article>
                     </div>
                 </section>
@@ -175,17 +162,11 @@
                         </div><button class="text-button" id="viewDocsButton">Abrir documentação <i
                                 data-lucide="arrow-right"></i></button>
                     </div>
-                    <div class="hardware-docs"><button class="hardware-doc"><span class="file-icon green"><i
-                                    data-lucide="file-text"></i></span><span><strong>pinout-esp32.pdf</strong><small>Esquema
-                                    de conexões · 820 KB</small></span><i
-                                data-lucide="arrow-up-right"></i></button><button class="hardware-doc"><span
+                    <div class="hardware-docs"><div class="hardware-doc"><span class="file-icon green"><i
+                                    data-lucide="file-text"></i></span><span><strong>CURA/diagram.json</strong><small>Conexões da simulação Wokwi</small></span></div><div class="hardware-doc"><span
                                 class="file-icon orange"><i
-                                    data-lucide="wrench"></i></span><span><strong>lista-de-materiais.csv</strong><small>4
-                                    itens · atualizado hoje</small></span><i
-                                data-lucide="arrow-up-right"></i></button><button class="hardware-doc"><span
-                                class="file-icon purple"><i data-lucide="history"></i></span><span><strong>Histórico de
-                                    inspeção</strong><small>Última revisão · 11 set 2026</small></span><i
-                                data-lucide="arrow-up-right"></i></button></div>
+                                    data-lucide="cpu"></i></span><span><strong>CURA/Sensor_Saturacao.chip.json</strong><small>Definição do MAX30102 customizado</small></span></div><div class="hardware-doc"><span
+                                class="file-icon purple"><i data-lucide="book-open"></i></span><span><strong>CURA/README.md</strong><small>Montagem e execução do hardware</small></span></div></div>
                 </section>
             </div>
         </main>

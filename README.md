@@ -4,7 +4,7 @@ Dashboard em HTML, CSS e JavaScript conectado à pulseira do projeto `CURA`. A i
 
 ## Visão geral
 
-Este projeto simula uma interface administrativa para um sistema embarcado de monitoramento ambiental, com:
+Este projeto integra o dashboard CUIDA+ à pulseira vestível e sua telemetria, com:
 
 - painel de visão geral do projeto com telemetria da pulseira;
 - página de hardware com componentes e diagnósticos;
@@ -24,6 +24,10 @@ Este projeto simula uma interface administrativa para um sistema embarcado de mo
 
 ```text
 /
+├── .github/
+│   └── agents/
+├── .vscode/
+│   └── tasks.json
 ├── frontend/
 │   ├── pages/
 │   │   ├── home.html
@@ -41,39 +45,35 @@ Este projeto simula uma interface administrativa para um sistema embarcado de mo
 │           └── firmware.js
 ├── CURA/
 │   ├── api.py
+│   ├── Sensor_Saturacao.chip.c
+│   ├── platformio.ini
 │   ├── src/
 │   ├── include/
 │   └── test/
+├── tools/
+│   └── dev_services.py
 ├── README.md
 └── .gitignore
 ```
 
 ## Como executar
 
-1. Abra o projeto em um servidor local simples, por exemplo:
-   - VS Code Live Server
-   - Python HTTP Server
-
-2. No terminal, execute:
+Ao abrir o workspace no VS Code, aceite a tarefa automática **Iniciar CUIDA+ para Wokwi**. Ela mantém a API e o site ativos nas portas `8000` e `8080`; o servidor web entrega somente arquivos em `frontend/`, sem expor o banco, segredos ou metadados Git. Se os serviços seguros já estiverem ativos, a tarefa os reutiliza. Também pode iniciar manualmente:
 
 ```bash
 cd /workspaces/tinkercad
-python3 -m http.server 8080
+python3 tools/dev_services.py
 ```
 
-3. Em outro terminal, inicie a API:
-
-```bash
-cd /workspaces/tinkercad/CURA
-export DEVICE_TOKEN=dev-token
-python3 api.py
-```
-
-4. Acesse no navegador:
+Abra o dashboard em:
 
 ```text
 http://localhost:8080/frontend/pages/home.html
 ```
+
+Com a API ativa e o Wokwi Private IoT Gateway habilitado, inicie ou reinicie a simulação. O firmware envia a primeira leitura assim que um sensor fornece dados e depois envia leituras regulares a cada 15 segundos; o dashboard consulta a API a cada 10 segundos e sinaliza leituras mais antigas que 45 segundos.
+
+O terminal da tarefa mostra a inicialização e cada leitura recebida pela API. No terminal serial do Wokwi, acompanhe `[Wi-Fi] Conectado` e `[API] POST ... -> 201`; no dashboard, confira os valores e o horário da última leitura. O terminal da tarefa fica visível enquanto os serviços estiverem ativos.
 
 ## Páginas principais
 
@@ -97,7 +97,7 @@ Mostra sketch atual, releases, monitor serial, dependências e estado do disposi
 
 ## Observações
 
-O site usa `http://localhost:8000` como API quando aberto em um servidor separado. Para outro endereço, defina `window.CUIDA_API_URL` antes de `frontend/assets/js/api.js` ou use `data-api-base` no elemento `<html>`. A API permite CORS por padrão; em rede compartilhada, restrinja `API_CORS_ORIGIN` ao endereço do site.
+O site usa `http://localhost:8000` como API. Para outro endereço, defina `window.CUIDA_API_URL` antes de `frontend/assets/js/api.js` ou use `data-api-base` no elemento `<html>`. A API permite CORS por padrão para o ambiente local; restrinja `API_CORS_ORIGIN` e altere o token de desenvolvimento antes de usar em uma rede compartilhada.
 
 ## Autor
 

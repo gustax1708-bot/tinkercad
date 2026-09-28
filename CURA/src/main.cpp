@@ -29,6 +29,12 @@ constexpr uint32_t kTemperatureConversionMs = 200;
 constexpr uint32_t kPanicRetryIntervalMs = 1000;
 constexpr size_t kPanicQueueCapacity = 4;
 constexpr size_t kOximeterWindowSize = BUFFER_SIZE;
+constexpr float kMinimumHeartRateBpm = 25.0f;
+constexpr float kMaximumHeartRateBpm = 240.0f;
+constexpr float kMinimumSpo2Percent = 50.0f;
+constexpr float kMaximumSpo2Percent = 100.0f;
+constexpr float kMinimumTemperatureC = 0.0f;
+constexpr float kMaximumTemperatureC = 50.0f;
 
 MAX30105 pulseSensor;
 OneWire oneWire(kTemperaturePin);
@@ -51,6 +57,8 @@ uint8_t pendingPanicHead = 0;
 uint8_t pendingPanicCount = 0;
 PanicSnapshot pendingPanicEvents[kPanicQueueCapacity];
 bool sensorAvailable = false;
+bool wifiConnectionReported = false;
+bool initialReadingAttempted = false;
 bool buttonState = HIGH;
 bool lastButtonRead = HIGH;
 bool contactDetected = false;
@@ -86,6 +94,9 @@ void samplePulseSensor() {
           &heartRate, &heartRateValid);
       oxygenPercent = spo2Valid ? spo2 : NAN;
       heartRateBpm = heartRateValid ? heartRate : NAN;
+      Serial.printf("[MAX30102] HR=%s%d bpm, SpO2=%s%d%%\n",
+            heartRateValid ? "" : "invalido ", heartRate,
+            spo2Valid ? "" : "invalido ", spo2);
       sampleIndex = 0;
     }
   }
@@ -113,7 +124,17 @@ void updatePanicButton() {
 }
 
 void maintainWifi() {
-  if (WiFi.status() == WL_CONNECTED) return;
+  if (WiFi.status() == WL_CONNECTED) {
+    if (!wifiConnectionReported) {
+      Serial.printf("[Wi-Fi] Conectado: %s\n", WiFi.localIP().toString().c_str());
+      wifiConnectionReported = true;
+    }
+    return;
+  }
+  if (wifiConnectionReported) {
+    Serial.println("[Wi-Fi] Conexao perdida; tentando reconectar");
+    wifiConnectionReported = false;
+  }
   if (millis() - lastWifiAttemptAt < kWifiRetryIntervalMs) return;
 
   lastWifiAttemptAt = millis();
@@ -127,6 +148,9 @@ void updateTemperature() {
     const float reading = temperatureSensor.getTempCByIndex(0);
     if (reading != DEVICE_DISCONNECTED_C && reading >= 0 && reading <= 50) {
       skinTemperatureC = reading;
+      Serial.printf("[DS18B20] Temperatura: %.1f C\n", reading);
+    } else {
+      Serial.println("[DS18B20] Sem leitura valida");
     }
     temperatureConversionPending = false;
   }
@@ -147,17 +171,23 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
 
   JsonDocument payload;
   payload["device_id"] = kDeviceId;
-  if (isnan(reading.heartRateBpm)) {
+  if (isnan(reading.heartRateBpm) ||
+      reading.heartRateBpm < kMinimumHeartRateBpm ||
+      reading.heartRateBpm > kMaximumHeartRateBpm) {
     payload["heart_rate_bpm"] = nullptr;
   } else {
     payload["heart_rate_bpm"] = reading.heartRateBpm;
   }
-  if (isnan(reading.oxygenPercent)) {
+  if (isnan(reading.oxygenPercent) ||
+      reading.oxygenPercent < kMinimumSpo2Percent ||
+      reading.oxygenPercent > kMaximumSpo2Percent) {
     payload["spo2_percent"] = nullptr;
   } else {
     payload["spo2_percent"] = reading.oxygenPercent;
   }
-  if (isnan(reading.temperatureC)) {
+  if (isnan(reading.temperatureC) ||
+      reading.temperatureC < kMinimumTemperatureC ||
+      reading.temperatureC > kMaximumTemperatureC) {
     payload["temperature_c"] = nullptr;
   } else {
     payload["temperature_c"] = reading.temperatureC;
@@ -174,7 +204,8 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
   client.addHeader("Content-Type", "application/json");
   client.addHeader("X-Device-Token", kDeviceToken);
   const int status = client.POST(body);
-  Serial.printf("POST %d: %s\n", status, body.c_str());
+  Serial.printf("[API] POST /api/v1/readings -> %d | %s\n", status,
+                body.c_str());
   client.end();
   return status >= 200 && status < 300;
 }
@@ -229,10 +260,15 @@ void loop() {
       --pendingPanicCount;
       lastReadingAt = now;
     }
-  } else if (now - lastReadingAt >= kReadingIntervalMs) {
+  } else if (WiFi.status() == WL_CONNECTED &&
+             ((!initialReadingAttempted &&
+               (!isnan(heartRateBpm) || !isnan(oxygenPercent) ||
+                !isnan(skinTemperatureC))) ||
+              now - lastReadingAt >= kReadingIntervalMs)) {
     const PanicSnapshot currentReading = {
         heartRateBpm, oxygenPercent, skinTemperatureC, contactDetected};
     sendReading(false, currentReading);
+    initialReadingAttempted = true;
     lastReadingAt = now;
   }
 }
