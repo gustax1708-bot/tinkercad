@@ -1,0 +1,6 @@
+#pragma once
+
+#define DEVICE_WIFI_SSID "YOUR_WIFI_SSID"
+#define DEVICE_WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define DEVICE_API_URL "http://192.168.1.10:8000/api/v1/readings"
+#define DEVICE_API_TOKEN "dev-token"
