@@ -1,12 +1,12 @@
-# AgroSense Dashboard
+# CUIDA+ Dashboard
 
-Dashboard estático em HTML, CSS e JavaScript para apresentação de um projeto de monitoramento ambiental com páginas de visão geral, hardware e firmware.
+Dashboard em HTML, CSS e JavaScript conectado à pulseira do projeto `CURA`. A interface consulta a API Python para exibir telemetria real, alertas manuais e histórico de leituras.
 
 ## Visão geral
 
 Este projeto simula uma interface administrativa para um sistema embarcado de monitoramento ambiental, com:
 
-- painel de visão geral do projeto;
+- painel de visão geral do projeto com telemetria da pulseira;
 - página de hardware com componentes e diagnósticos;
 - página de firmware com código, releases e dependências;
 - navegação lateral, ações rápidas e sistema de notificações via toast;
@@ -16,7 +16,7 @@ Este projeto simula uma interface administrativa para um sistema embarcado de mo
 
 - HTML5
 - CSS3
-- JavaScript vanilla
+- JavaScript vanilla com cliente compartilhado em `frontend/assets/js/api.js`;
 - Lucide Icons via CDN
 - Google Fonts
 
@@ -24,18 +24,26 @@ Este projeto simula uma interface administrativa para um sistema embarcado de mo
 
 ```text
 /
-├── index/
-│   ├── home.html
-│   ├── hardware.html
-│   └── firmware.html
-├── style/
-│   ├── home.css
-│   ├── hardware.css
-│   └── firmware.css
-├── script/
-│   ├── home.js
-│   ├── hardware.js
-│   └── firmware.js
+├── frontend/
+│   ├── pages/
+│   │   ├── home.html
+│   │   ├── hardware.html
+│   │   └── firmware.html
+│   └── assets/
+│       ├── css/
+│       │   ├── home.css
+│       │   ├── hardware.css
+│       │   └── firmware.css
+│       └── js/
+│           ├── api.js
+│           ├── home.js
+│           ├── hardware.js
+│           └── firmware.js
+├── CURA/
+│   ├── api.py
+│   ├── src/
+│   ├── include/
+│   └── test/
 ├── README.md
 └── .gitignore
 ```
@@ -50,13 +58,21 @@ Este projeto simula uma interface administrativa para um sistema embarcado de mo
 
 ```bash
 cd /workspaces/tinkercad
-python3 -m http.server 8000
+python3 -m http.server 8080
 ```
 
-3. Acesse no navegador:
+3. Em outro terminal, inicie a API:
+
+```bash
+cd /workspaces/tinkercad/CURA
+export DEVICE_TOKEN=dev-token
+python3 api.py
+```
+
+4. Acesse no navegador:
 
 ```text
-http://localhost:8000/index/home.html
+http://localhost:8080/frontend/pages/home.html
 ```
 
 ## Páginas principais
@@ -81,7 +97,7 @@ Mostra sketch atual, releases, monitor serial, dependências e estado do disposi
 
 ## Observações
 
-O projeto foi desenvolvido como protótipo front-end, com foco em apresentação visual e interação básica. Ele não depende de backend nem de banco de dados.
+O site usa `http://localhost:8000` como API quando aberto em um servidor separado. Para outro endereço, defina `window.CUIDA_API_URL` antes de `frontend/assets/js/api.js` ou use `data-api-base` no elemento `<html>`. A API permite CORS por padrão; em rede compartilhada, restrinja `API_CORS_ORIGIN` ao endereço do site.
 
 ## Autor
 

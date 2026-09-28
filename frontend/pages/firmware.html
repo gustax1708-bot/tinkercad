@@ -10,11 +10,12 @@
 	<link
 		href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
 		rel="stylesheet">
-	<link rel="stylesheet" href="../style/home.css">
-	<link rel="stylesheet" href="../style/firmware.css">
+	<link rel="stylesheet" href="../assets/css/home.css">
+	<link rel="stylesheet" href="../assets/css/firmware.css">
 	<script src="https://unpkg.com/lucide@latest"></script>
-	<script src="../script/home.js" defer></script>
-	<script src="../script/firmware.js" defer></script>
+	<script src="../assets/js/api.js" defer></script>
+	<script src="../assets/js/home.js" defer></script>
+	<script src="../assets/js/firmware.js" defer></script>
 </head>
 
 <body>
@@ -151,11 +152,8 @@
 									<h3>Últimas mensagens</h3>
 								</div><i data-lucide="terminal" class="heading-icon"></i>
 							</div>
-							<div class="terminal-output">
-								<p><span>09:42:18</span> Wi-Fi conectado · 192.168.0.42</p>
-								<p><span>09:42:19</span> Sensores inicializados</p>
-								<p><span>09:42:20</span> Temperatura: 24.8 C</p>
-								<p><span>09:42:21</span> Dados enviados com sucesso_</p>
+							<div class="terminal-output" data-reading-log>
+								<p><span>--</span> Aguardando leitura da pulseira_</p>
 							</div>
 						</article>
 						<article class="status-card" id="hardware">

@@ -10,11 +10,12 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../style/hardware.css">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../assets/css/hardware.css">
+    <link rel="stylesheet" href="../assets/css/home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../script/home.js" defer></script>
-    <script src="../script/hardware.js" defer></script>
+    <script src="../assets/js/api.js" defer></script>
+    <script src="../assets/js/home.js" defer></script>
+    <script src="../assets/js/hardware.js" defer></script>
 </head>
 
 <body>
@@ -113,15 +114,11 @@
                             </div>
                             <div class="sensor-item"><span class="sensor-badge orange"><i
                                         data-lucide="thermometer"></i></span><span><strong>Sensor
-                                        óptico</strong><small>Temperatura da pele</small></span><span
+                                        MAX30102</strong><small>SpO2 e frequência cardíaca</small></span><span
                                     class="sensor-pin">I2C</span></div>
                             <div class="sensor-item"><span class="sensor-badge green"><i
-                                        data-lucide="heart-pulse"></i></span><span><strong>Sensor de
-                                        pulso</strong><small>Frequência cardíaca</small></span><span
-                                    class="sensor-pin">I2C</span></div>
-                            <div class="sensor-item"><span class="sensor-badge yellow"><i
-                                        data-lucide="sun"></i></span><span><strong>BH1750</strong><small>Intensidade
-                                        luminosa</small></span><span class="sensor-pin">I2C</span></div>
+                                        data-lucide="thermometer"></i></span><span><strong>DS18B20</strong><small>Temperatura de contato</small></span><span
+                                        class="sensor-pin">GPIO 04</span></div>
                         </article>
                     </div>
                 </section>

@@ -10,9 +10,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="../style/home.css">
+    <link rel="stylesheet" href="../assets/css/home.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../script/home.js" defer></script>
+    <script src="../assets/js/api.js" defer></script>
+    <script src="../assets/js/home.js" defer></script>
 </head>
 
 <body>
@@ -50,7 +51,7 @@
             <div class="content-wrap">
                 <section class="welcome-row">
                     <div>
-                        <p class="eyebrow"><span class="status-dot"></span> ÚLTIMA ATUALIZAÇÃO · HOJE, 09:42</p>
+                        <p class="eyebrow"><span class="status-dot"></span> <span data-reading-updated>Conectando à pulseira...</span></p>
                         <h1>Monitoramento<br><span class="headline-accent">que cuida.</span></h1>
                         <p class="welcome-copy">Informações em tempo real para aproximar pessoas e cuidadores.</p>
                     </div>
@@ -64,7 +65,7 @@
                         <h2>Observe.<br><em>Entenda.</em></h2>
                         <p>A pulseira acompanha sinais importantes e envia alertas para que a família cuide de quem
                             precisa.</p>
-                        <div class="hero-meta"><span><i class="live-dot"></i> Sistema online</span><span>v1.4.2</span>
+                        <div class="hero-meta"><span><i class="live-dot"></i> <span data-reading-status>Sistema online</span></span><span data-reading-device>pulseira-01</span>
                         </div>
                     </div>
                     <div class="hero-graphic" aria-hidden="true">
@@ -100,15 +101,15 @@
                             <div class="telemetry-list">
                                 <div class="telemetry-item"><span class="telemetry-icon orange"><i
                                             data-lucide="thermometer"></i></span><span><strong>Temperatura da
-                                            pele</strong><small>Sensor óptico</small></span><b>36.4<small>°C</small></b>
+                                            pele</strong><small>DS18B20</small></span><b data-reading="temperature">--</b>
                                 </div>
                                 <div class="telemetry-item"><span class="telemetry-icon green"><i
                                             data-lucide="heart-pulse"></i></span><span><strong>Frequência de
                                             pulso</strong><small>Monitor
-                                            contínuo</small></span><b>72<small>bpm</small></b></div>
+                                            contínuo</small></span><b data-reading="heart-rate">--</b></div>
                                 <div class="telemetry-item"><span class="telemetry-icon purple"><i
                                             data-lucide="bell-ring"></i></span><span><strong>Botão de
-                                            alerta</strong><small>Contato com cuidadores</small></span><b>Inativo</b>
+                                            alerta</strong><small data-reading-alert>Sem alerta registrado</small></span><b data-reading="panic">--</b>
                                 </div>
                             </div>
                         </article>

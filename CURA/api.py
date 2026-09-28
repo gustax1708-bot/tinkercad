@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 HOST = os.getenv("API_HOST", "0.0.0.0")
 PORT = int(os.getenv("API_PORT", "8000"))
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
+API_CORS_ORIGIN = os.getenv("API_CORS_ORIGIN", "*")
 DATABASE = Path(os.getenv("DATABASE_PATH", str(Path(__file__).resolve().parent / "readings.sqlite3")))
 
 PAGE = """<!doctype html>
@@ -163,9 +164,18 @@ class ApiHandler(BaseHTTPRequestHandler):
         body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Access-Control-Allow-Origin", API_CORS_ORIGIN)
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Device-Token")
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def do_OPTIONS(self):
+        self.send_response(204)
+        self.send_header("Access-Control-Allow-Origin", API_CORS_ORIGIN)
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type, X-Device-Token")
+        self.end_headers()
 
     def do_GET(self):
         path = urlparse(self.path).path
@@ -173,6 +183,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             body = PAGE.encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", API_CORS_ORIGIN)
             self.send_header("Content-Length", str(len(body)))
             self.end_headers()
             self.wfile.write(body)
