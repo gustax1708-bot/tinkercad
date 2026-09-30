@@ -5,6 +5,7 @@
 // Copyright 2023 
 
 #include <wokwi-api.h>
+#include <math.h>
 #include <stdbool.h>
 
 #define MAX30102_ADDRESS 0x57
@@ -90,17 +91,19 @@ static void on_sample_timer(void *user_data) {
   const uint8_t next_pointer = (chip->fifo_write_pointer + 1) % FIFO_SIZE;
   if (next_pointer == chip->fifo_read_pointer) return;
 
-  const uint32_t heart_rate = (uint32_t)attr_read_float(chip->heart_rate_attr);
-  const uint32_t period = 1500 / (heart_rate ? heart_rate : 72);
-  const uint32_t phase = chip->sample_index % period;
-  const int32_t pulse = phase < period / 2
-                            ? (int32_t)(phase * 200 / period) - 50
-                            : 150 - (int32_t)(phase * 200 / period);
-  const uint32_t spo2 = (uint32_t)attr_read_float(chip->spo2_attr);
-  const uint32_t red_amplitude = 3000 + (100 - spo2) * 300;
+  const float heart_rate = attr_read_float(chip->heart_rate_attr);
+  const float spo2 = attr_read_float(chip->spo2_attr);
+  const uint32_t phase = chip->sample_index % 48u;
+  const float pulse_cycle = phase < 24u ? (float)phase / 24.0f : (48.0f - (float)phase) / 24.0f;
+  const float oxygen_cycle = phase < 32u ? (float)phase / 32.0f : (64.0f - (float)phase) / 32.0f;
+  const float pulse_offset = (float)(heart_rate - 60.0f) / 30.0f;
+  const float red_amplitude = 14000.0f + (100.0f - spo2) * 150.0f;
   const uint8_t slot = chip->fifo_write_pointer;
-  chip->ir_fifo[slot] = (uint32_t)(100000 + 7000 * pulse / 100);
-  chip->red_fifo[slot] = (uint32_t)(90000 + red_amplitude * pulse / 100);
+
+  chip->ir_fifo[slot] =
+      (uint32_t)(98000.0f + 15000.0f * pulse_cycle * (1.0f + pulse_offset * 0.12f));
+  chip->red_fifo[slot] =
+      (uint32_t)(92000.0f + red_amplitude * (0.55f + oxygen_cycle * 0.45f));
   ++chip->sample_index;
   chip->fifo_write_pointer = next_pointer;
 }

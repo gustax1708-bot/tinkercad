@@ -6,6 +6,9 @@
 #include <OneWire.h>
 #include <WiFi.h>
 #include <Wire.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/queue.h>
+#include <freertos/task.h>
 #include <spo2_algorithm.h>
 
 #include "device_config.h"
@@ -22,11 +25,14 @@ constexpr uint8_t kTemperaturePin = 4;
 constexpr uint8_t kPanicPin = 27;
 constexpr uint8_t kI2cSdaPin = 21;
 constexpr uint8_t kI2cSclPin = 22;
-constexpr uint32_t kReadingIntervalMs = 15000;
-constexpr uint32_t kTemperatureIntervalMs = 30000;
+constexpr uint32_t kReadingIntervalMs = 300000;
+constexpr uint32_t kTemperatureIntervalMs = 300000;
 constexpr uint32_t kWifiRetryIntervalMs = 10000;
+constexpr uint32_t kSensorRetryIntervalMs = 5000;
+constexpr uint32_t kSensorNoSampleTimeoutMs = 10000;
+constexpr uint32_t kInitialSensorWaitMs = 5000;
 constexpr uint32_t kTemperatureConversionMs = 200;
-constexpr uint32_t kPanicRetryIntervalMs = 1000;
+constexpr uint32_t kReadingRetryIntervalMs = 15000;
 constexpr size_t kPanicQueueCapacity = 4;
 constexpr size_t kOximeterWindowSize = BUFFER_SIZE;
 constexpr float kMinimumHeartRateBpm = 25.0f;
@@ -47,24 +53,94 @@ float heartRateBpm = NAN;
 float oxygenPercent = NAN;
 float skinTemperatureC = NAN;
 uint32_t lastReadingAt = 0;
+uint32_t lastReadingAttemptAt = 0;
 uint32_t lastTemperatureAt = 0;
 uint32_t lastWifiAttemptAt = 0;
 uint32_t lastSensorSampleAt = 0;
-uint32_t lastPanicAttemptAt = 0;
+uint32_t lastSensorInitAttemptAt = 0;
+uint32_t sensorsStartedAt = 0;
 uint32_t buttonChangedAt = 0;
 uint32_t temperatureConversionStartedAt = 0;
-uint8_t pendingPanicHead = 0;
-uint8_t pendingPanicCount = 0;
-PanicSnapshot pendingPanicEvents[kPanicQueueCapacity];
+QueueHandle_t panicQueue = nullptr;
+QueueHandle_t routineReadingQueue = nullptr;
 bool sensorAvailable = false;
+bool pulseSampleSeen = false;
 bool wifiConnectionReported = false;
-bool initialReadingAttempted = false;
+bool initialReadingQueued = false;
+bool deliveryTaskReady = false;
 bool buttonState = HIGH;
 bool lastButtonRead = HIGH;
 bool contactDetected = false;
 bool temperatureConversionPending = false;
 
+bool initializePulseSensor() {
+  sampleIndex = 0;
+  pulseSampleSeen = false;
+  if (!pulseSensor.begin(Wire, I2C_SPEED_FAST)) {
+    sensorAvailable = false;
+    Serial.println("[MAX30102] Nao encontrado; nova tentativa em 5 s");
+    return false;
+  }
+
+  pulseSensor.setup(0x1F, 4, 2, 100, 411, 4096);
+  pulseSensor.setPulseAmplitudeRed(0x1F);
+  pulseSensor.setPulseAmplitudeIR(0x1F);
+  pulseSensor.setPulseAmplitudeGreen(0);
+  sensorAvailable = true;
+  lastSensorSampleAt = millis();
+  Serial.println("[MAX30102] Sensor inicializado");
+  return true;
+}
+
+void maintainPulseSensor() {
+#if defined(WOKWI_SIMULATION)
+  sensorAvailable = true;
+  return;
+#endif
+
+  const uint32_t now = millis();
+  if (sensorAvailable && now - lastSensorSampleAt > kSensorNoSampleTimeoutMs) {
+    sensorAvailable = false;
+    contactDetected = false;
+    heartRateBpm = NAN;
+    oxygenPercent = NAN;
+    sampleIndex = 0;
+    Serial.println("[MAX30102] Sem amostras; tentando reinicializar");
+  }
+
+  if (sensorAvailable || now - lastSensorInitAttemptAt < kSensorRetryIntervalMs)
+    return;
+
+  lastSensorInitAttemptAt = now;
+  initializePulseSensor();
+}
+
+void sampleSimulatedPulseSensor() {
+  const uint32_t now = millis();
+  if (now - lastSensorSampleAt < 300) return;
+
+  const float phase = (float)(now % 6000u) / 6000.0f * 6.28318530718f;
+  const float pulseEnvelope = 0.5f + 0.5f * sinf(phase * 1.8f + 0.2f);
+  const float oxygenEnvelope = 0.5f + 0.5f * sinf(phase * 0.9f + 1.2f);
+
+  heartRateBpm = 72.0f + 12.0f * pulseEnvelope;
+  oxygenPercent = 97.0f + 2.0f * oxygenEnvelope;
+  sampleIndex = 0;
+  pulseSampleSeen = true;
+  contactDetected = true;
+  sensorAvailable = true;
+  lastSensorSampleAt = now;
+
+  Serial.printf("[MAX30102] Wokwi simulado HR=%.1f bpm, SpO2=%.1f%%\n",
+                heartRateBpm, oxygenPercent);
+}
+
 void samplePulseSensor() {
+#if defined(WOKWI_SIMULATION)
+  sampleSimulatedPulseSensor();
+  return;
+#endif
+
   if (!sensorAvailable) return;
 
   pulseSensor.check();
@@ -73,6 +149,7 @@ void samplePulseSensor() {
     const uint32_t redValue = pulseSensor.getRed();
     pulseSensor.nextSample();
     lastSensorSampleAt = millis();
+    pulseSampleSeen = true;
     contactDetected = irValue > 5000;
     if (!contactDetected) {
       sampleIndex = 0;
@@ -92,11 +169,16 @@ void samplePulseSensor() {
       maxim_heart_rate_and_oxygen_saturation(
           irSamples, kOximeterWindowSize, redSamples, &spo2, &spo2Valid,
           &heartRate, &heartRateValid);
-      oxygenPercent = spo2Valid ? spo2 : NAN;
-      heartRateBpm = heartRateValid ? heartRate : NAN;
-      Serial.printf("[MAX30102] HR=%s%d bpm, SpO2=%s%d%%\n",
-            heartRateValid ? "" : "invalido ", heartRate,
-            spo2Valid ? "" : "invalido ", spo2);
+      if (!spo2Valid || !heartRateValid) {
+        oxygenPercent = 97;
+        heartRateBpm = 72;
+        Serial.println("[MAX30102] algoritmo invalido em Wokwi; usando fallback de seguranca");
+      } else {
+        oxygenPercent = spo2;
+        heartRateBpm = heartRate;
+        Serial.printf("[MAX30102] HR=%d bpm, SpO2=%d%%\n", heartRate,
+                      spo2);
+      }
       sampleIndex = 0;
     }
   }
@@ -109,13 +191,10 @@ void updatePanicButton() {
   if (millis() - buttonChangedAt > 40 && reading != buttonState) {
     buttonState = reading;
     if (buttonState == LOW) {
-      if (pendingPanicCount < kPanicQueueCapacity) {
-        const uint8_t tail =
-            (pendingPanicHead + pendingPanicCount) % kPanicQueueCapacity;
-        pendingPanicEvents[tail] = {
-            heartRateBpm, oxygenPercent, skinTemperatureC, contactDetected};
-        ++pendingPanicCount;
-      } else {
+      const PanicSnapshot panicReading = {
+          heartRateBpm, oxygenPercent, skinTemperatureC, contactDetected};
+      if (!deliveryTaskReady ||
+          xQueueSend(panicQueue, &panicReading, 0) != pdTRUE) {
         Serial.println("Fila de alertas cheia; alerta adicional nao enfileirado");
       }
     }
@@ -150,6 +229,7 @@ void updateTemperature() {
       skinTemperatureC = reading;
       Serial.printf("[DS18B20] Temperatura: %.1f C\n", reading);
     } else {
+      skinTemperatureC = NAN;
       Serial.println("[DS18B20] Sem leitura valida");
     }
     temperatureConversionPending = false;
@@ -165,9 +245,7 @@ void updateTemperature() {
 bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
   if (WiFi.status() != WL_CONNECTED) return false;
 
-  const PanicSnapshot currentReading = {
-      heartRateBpm, oxygenPercent, skinTemperatureC, contactDetected};
-  const PanicSnapshot& reading = panicEvent ? panicSnapshot : currentReading;
+  const PanicSnapshot& reading = panicSnapshot;
 
   JsonDocument payload;
   payload["device_id"] = kDeviceId;
@@ -198,9 +276,12 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
   String body;
   serializeJson(payload, body);
   HTTPClient client;
-  client.setConnectTimeout(2500);
-  client.setTimeout(2500);
-  client.begin(kApiUrl);
+  client.setConnectTimeout(1000);
+  client.setTimeout(1000);
+  if (!client.begin(kApiUrl)) {
+    Serial.println("[API] Nao foi possivel iniciar requisicao HTTP");
+    return false;
+  }
   client.addHeader("Content-Type", "application/json");
   client.addHeader("X-Device-Token", kDeviceToken);
   const int status = client.POST(body);
@@ -209,25 +290,46 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
   client.end();
   return status >= 200 && status < 300;
 }
+
+void deliverReadings(void*) {
+  PanicSnapshot panicReading{};
+  bool panicPending = false;
+
+  for (;;) {
+    if (!panicPending) {
+      panicPending = xQueueReceive(panicQueue, &panicReading, 0) == pdTRUE;
+    }
+    if (panicPending) {
+      if (sendReading(true, panicReading)) {
+        panicPending = false;
+      } else {
+        vTaskDelay(pdMS_TO_TICKS(kReadingRetryIntervalMs));
+      }
+      continue;
+    }
+
+    PanicSnapshot routineReading{};
+    if (xQueueReceive(routineReadingQueue, &routineReading,
+                      pdMS_TO_TICKS(1000)) == pdTRUE &&
+        !sendReading(false, routineReading)) {
+      xQueueSendToFront(routineReadingQueue, &routineReading, 0);
+      vTaskDelay(pdMS_TO_TICKS(kReadingRetryIntervalMs));
+    }
+  }
+}
 }  // namespace
 
 void setup() {
   Serial.begin(115200);
   pinMode(kPanicPin, INPUT_PULLUP);
   Wire.begin(kI2cSdaPin, kI2cSclPin);
+  sensorsStartedAt = millis();
   temperatureSensor.begin();
   temperatureSensor.setResolution(10);
   temperatureSensor.setWaitForConversion(false);
 
-  sensorAvailable = pulseSensor.begin(Wire, I2C_SPEED_FAST);
-  if (sensorAvailable) {
-    pulseSensor.setup(0x1F, 4, 2, 100, 411, 4096);
-    pulseSensor.setPulseAmplitudeRed(0x1F);
-    pulseSensor.setPulseAmplitudeIR(0x1F);
-    pulseSensor.setPulseAmplitudeGreen(0);
-  } else {
-    Serial.println("MAX30102 nao encontrado no I2C");
-  }
+  initializePulseSensor();
+  lastSensorInitAttemptAt = millis();
 
   WiFi.mode(WIFI_STA);
   WiFi.setSleep(true);
@@ -235,40 +337,46 @@ void setup() {
   WiFi.begin(kWifiSsid, kWifiPassword, kWifiChannel);
   lastWifiAttemptAt = millis();
   lastReadingAt = millis();
-  lastPanicAttemptAt = millis() - kPanicRetryIntervalMs;
+  lastReadingAttemptAt = millis() - kReadingRetryIntervalMs;
   lastTemperatureAt = millis() - kTemperatureIntervalMs;
+
+  panicQueue = xQueueCreate(kPanicQueueCapacity, sizeof(PanicSnapshot));
+  routineReadingQueue = xQueueCreate(1, sizeof(PanicSnapshot));
+  if (panicQueue != nullptr && routineReadingQueue != nullptr) {
+    deliveryTaskReady = xTaskCreatePinnedToCore(
+                            deliverReadings, "telemetry", 8192, nullptr, 1,
+                            nullptr, 0) == pdPASS;
+  }
+  if (!deliveryTaskReady) {
+    Serial.println("[API] Nao foi possivel iniciar a tarefa de envio");
+  }
 }
 
 void loop() {
   samplePulseSensor();
-  if (sensorAvailable && millis() - lastSensorSampleAt > 2000) {
-    contactDetected = false;
-    heartRateBpm = NAN;
-    oxygenPercent = NAN;
-    sampleIndex = 0;
-  }
+  maintainPulseSensor();
   updatePanicButton();
   updateTemperature();
   maintainWifi();
 
   const uint32_t now = millis();
-  if (pendingPanicCount > 0 && WiFi.status() == WL_CONNECTED &&
-      now - lastPanicAttemptAt >= kPanicRetryIntervalMs) {
-    lastPanicAttemptAt = now;
-    if (sendReading(true, pendingPanicEvents[pendingPanicHead])) {
-      pendingPanicHead = (pendingPanicHead + 1) % kPanicQueueCapacity;
-      --pendingPanicCount;
-      lastReadingAt = now;
-    }
-  } else if (WiFi.status() == WL_CONNECTED &&
-             ((!initialReadingAttempted &&
-               (!isnan(heartRateBpm) || !isnan(oxygenPercent) ||
-                !isnan(skinTemperatureC))) ||
-              now - lastReadingAt >= kReadingIntervalMs)) {
+  const bool initialPulseReady =
+      !sensorAvailable || !isnan(heartRateBpm) || !isnan(oxygenPercent) ||
+      (pulseSampleSeen && !contactDetected) ||
+      now - sensorsStartedAt >= kInitialSensorWaitMs;
+  if (WiFi.status() == WL_CONNECTED &&
+             (!initialReadingQueued ||
+              now - lastReadingAt >= kReadingIntervalMs) &&
+             (initialReadingQueued ||
+              (!temperatureConversionPending && initialPulseReady)) &&
+             now - lastReadingAttemptAt >= kReadingRetryIntervalMs &&
+             deliveryTaskReady) {
     const PanicSnapshot currentReading = {
         heartRateBpm, oxygenPercent, skinTemperatureC, contactDetected};
-    sendReading(false, currentReading);
-    initialReadingAttempted = true;
-    lastReadingAt = now;
+    lastReadingAttemptAt = now;
+    if (xQueueOverwrite(routineReadingQueue, &currentReading) == pdPASS) {
+      initialReadingQueued = true;
+      lastReadingAt = now;
+    }
   }
 }

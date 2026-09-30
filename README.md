@@ -97,7 +97,7 @@ Mostra sketch atual, releases, monitor serial, dependências e estado do disposi
 
 ## Observações
 
-O site usa `http://localhost:8000` como API. Para outro endereço, defina `window.CUIDA_API_URL` antes de `frontend/assets/js/api.js` ou use `data-api-base` no elemento `<html>`. A API permite CORS por padrão para o ambiente local; restrinja `API_CORS_ORIGIN` e altere o token de desenvolvimento antes de usar em uma rede compartilhada.
+O site servido por `tools/dev_services.py` consulta a API pela mesma origem, usando um proxy local para `/api/v1/latest` e `/api/v1/history`. Para hospedar frontend e API separadamente, defina `window.CUIDA_API_URL` antes de `frontend/assets/js/api.js` ou use `data-api-base` no elemento `<html>`. A API permite CORS por padrão para o ambiente local; restrinja `API_CORS_ORIGIN` e altere o token de desenvolvimento antes de usar em uma rede compartilhada.
 
 ## Autor
 

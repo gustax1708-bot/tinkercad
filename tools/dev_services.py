@@ -38,7 +38,7 @@ def api_is_running():
 
 def site_is_running():
     status, body = get_response(SITE_URL)
-    if status != 200 or b"<!DOCTYPE html>" not in body[:128]:
+    if status != 200 or b"<!doctype html>" not in body[:128].lower():
         return False
 
     for path in ("/CURA/readings.sqlite3", "/.git/config"):
@@ -71,6 +71,21 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         request_path = urlsplit(self.path).path
+        if request_path in ("/api/v1/latest", "/api/v1/history"):
+            status, body = get_response(f"http://127.0.0.1:8000{self.path}")
+            if status is None:
+                status = 503
+                body = json.dumps({"error": "api indisponivel"}).encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            try:
+                self.wfile.write(body)
+            except BrokenPipeError:
+                pass
+            return
         if request_path in ("/", "/frontend", "/frontend/"):
             self.send_response(302)
             self.send_header("Location", "/frontend/pages/home.html")

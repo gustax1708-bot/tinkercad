@@ -1,6 +1,6 @@
 # Pulseira de monitoramento remoto
 
-Projeto PlatformIO com ESP32 DOIT, MAX30102, DS18B20, botão de pânico, API Python e painel local. O firmware envia a primeira leitura quando um sensor entrega um valor e depois envia dados regularmente a cada 15 s. Ao clicar no botão, captura os valores disponíveis e enfileira um alerta manual até receber confirmação HTTP. A fila tem quatro eventos em RAM e se perde se o ESP32 reiniciar.
+Projeto PlatformIO com ESP32 DOIT, MAX30102, DS18B20, botão de pânico, API Python e painel local. O MAX30102 é amostrado continuamente; a telemetria de rotina e a leitura do DS18B20 são atualizadas a cada 5 min. A primeira telemetria aguarda a leitura inicial dos sensores, com limite de 5 s. O firmware tenta novamente inicializar o MAX30102 após falha e repete envios não confirmados a cada 15 s. Ao clicar no botão, captura os valores disponíveis e enfileira um alerta manual até receber confirmação HTTP; o painel mantém o alerta ativo por 10 min e conserva o evento no histórico. A fila tem quatro eventos em RAM e se perde se o ESP32 reiniciar.
 
 ## Hardware e ligações
 

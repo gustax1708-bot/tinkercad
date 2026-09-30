@@ -131,8 +131,12 @@ class ApiHandler(BaseHTTPRequestHandler):
         with database_session() as connection:
             if path.endswith("latest"):
                 latest = connection.execute(
-                    "SELECT * FROM readings ORDER BY id DESC LIMIT 1"
+                    "SELECT * FROM readings WHERE panic = 0 ORDER BY id DESC LIMIT 1"
                 ).fetchone()
+                if latest is None:
+                    latest = connection.execute(
+                        "SELECT * FROM readings ORDER BY id DESC LIMIT 1"
+                    ).fetchone()
                 latest_panic = connection.execute(
                     "SELECT * FROM readings WHERE panic = 1 ORDER BY id DESC LIMIT 1"
                 ).fetchone()

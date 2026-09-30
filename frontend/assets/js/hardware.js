@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const apiBase =
           document.documentElement.dataset.apiBase ||
           window.CUIDA_API_URL ||
-          "http://localhost:8000";
+          window.location.origin;
         const response = await fetch(
           `${apiBase.replace(/\/$/, "")}/api/v1/latest`,
           { cache: "no-store" },
@@ -32,9 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
           showToast("API online; MAX30102 sem contato com o sensor.");
         } else {
           const receivedAt = Date.parse(reading.received_at);
-          if (!Number.isFinite(receivedAt) || Date.now() - receivedAt > 45000) {
+          if (!Number.isFinite(receivedAt) || Date.now() - receivedAt > 6 * 60 * 1000) {
             showToast(
-              "API online; última leitura do dispositivo está desatualizada.",
+              "API online; última leitura do dispositivo está há mais de 6 minutos.",
             );
           } else {
             showToast(

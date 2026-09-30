@@ -85,6 +85,29 @@ class ApiHttpTests(unittest.TestCase):
         self.assertTrue(result["latest_panic"]["panic"])
         self.assertEqual(result["latest_panic"]["heart_rate_bpm"], 72)
 
+    def test_latest_valid_reading_is_kept_when_panic_is_logged(self):
+        normal = {
+            "device_id": "pulseira-01",
+            "spo2_percent": 97,
+            "heart_rate_bpm": 72,
+            "temperature_c": 36.5,
+            "panic": False,
+            "sensor_contact": True,
+        }
+        self.assertEqual(self.post_reading(normal)[0], 201)
+
+        panic = {**normal, "panic": True, "sensor_contact": False}
+        self.assertEqual(self.post_reading(panic)[0], 201)
+
+        self.connection.request("GET", "/api/v1/latest")
+        response = self.connection.getresponse()
+        result = json.loads(response.read())
+        self.assertEqual(response.status, 200)
+        self.assertFalse(result["reading"]["panic"])
+        self.assertTrue(result["latest_panic"]["panic"])
+        self.assertEqual(result["reading"]["heart_rate_bpm"], 72)
+        self.assertEqual(result["reading"]["spo2_percent"], 97)
+
     def test_abnormal_values_do_not_create_panic(self):
         status, result = self.post_reading(
             {
