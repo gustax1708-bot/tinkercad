@@ -28,6 +28,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
+  const downloadProjectData = async () => {
+    try {
+      const apiBase =
+        document.documentElement.dataset.apiBase ||
+        window.CUIDA_API_URL ||
+        window.location.origin;
+      const response = await fetch(`${apiBase.replace(/\/$/, "")}/api/v1/latest`, {
+        cache: "no-store",
+      });
+      if (!response.ok) throw new Error("API indisponível");
+      const payload = await response.json();
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "cuida-plus-ultima-leitura.json";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast("Arquivo JSON da última leitura foi exportado.");
+    } catch {
+      showToast("Não foi possível exportar a leitura. Verifique a API.");
+    }
+  };
+
   if (menuButton && sidebar) {
     menuButton.addEventListener("click", () =>
       sidebar.classList.toggle("open"),
@@ -42,24 +70,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const downloadButton = document.querySelector("#downloadButton");
   if (downloadButton) {
-    downloadButton.addEventListener("click", () =>
-      showToast("A exportação do projeto ainda não está implementada."),
-    );
+    downloadButton.addEventListener("click", downloadProjectData);
   }
 
   const openWorkbench = document.querySelector("#openWorkbench");
   if (openWorkbench) {
-    openWorkbench.addEventListener("click", () =>
-      showToast("Inicie Wokwi: Start Simulator pelo VS Code."),
-    );
+    openWorkbench.addEventListener("click", () => {
+      const workbenchPath = "workbench.html";
+      const currentPage = window.location.pathname.split("/").pop() || "home.html";
+      if (currentPage === workbenchPath) {
+        showToast("A bancada já está aberta.");
+        return;
+      }
+      window.location.assign(workbenchPath);
+    });
   }
 
   const viewDocsButton = document.querySelector("#viewDocsButton");
   if (viewDocsButton) {
     viewDocsButton.addEventListener("click", () => {
-      document
-        .querySelector("#documents")
-        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const docsPath = "docs.html";
+      const currentPage = window.location.pathname.split("/").pop() || "home.html";
+      if (currentPage === docsPath) {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      window.location.assign(docsPath);
     });
   }
 

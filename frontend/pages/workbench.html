@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Bancada de operação CUIDA+ e links do ambiente Wokwi." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../assets/css/home.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="../assets/js/home.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark"><span></span><span></span><span></span></div>
+          <span>CUIDA<span class="brand-dot">+</span></span>
+        </div>
+        <div class="project-identity">
+          <span class="project-status"><i></i> PROJETO ATIVO</span>
+          <strong>CUIDA+</strong>
+          <small>CARE-2026-001</small>
+        </div>
+        <nav class="main-nav" aria-label="Navegação do projeto">
+          <p class="nav-label">Projeto</p>
+          <a class="nav-item" data-section="overview" href="home.html">
+            <i data-lucide="layout-dashboard"></i><span>Visão geral</span>
+          </a>
+          <a class="nav-item" data-section="hardware" href="hardware.html">
+            <i data-lucide="cpu"></i><span>Hardware</span>
+          </a>
+          <a class="nav-item" data-section="software" href="firmware.html">
+            <i data-lucide="code-2"></i><span>Firmware</span>
+          </a>
+          <a class="nav-item" data-section="documents" href="docs.html">
+            <i data-lucide="file-text"></i><span>Documentação</span>
+          </a>
+          <a class="nav-item active" data-section="workbench" href="workbench.html">
+            <i data-lucide="play"></i><span>Bancada</span>
+          </a>
+          <p class="nav-label resources-label">Ações</p>
+          <button class="nav-item" id="shareButton">
+            <i data-lucide="share-2"></i><span>Compartilhar</span>
+          </button>
+          <button class="nav-item" id="downloadButton">
+            <i data-lucide="download"></i><span>Exportar projeto</span>
+          </button>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="breadcrumbs">
+            <span>Meu projeto</span><i data-lucide="chevron-right"></i><strong>Bancada</strong>
+          </div>
+        </header>
+
+        <div class="content-wrap">
+          <section class="welcome-row">
+            <div>
+              <p class="eyebrow"><span class="status-dot"></span> Ambiente de validação</p>
+              <h1>Bancada<br /><span class="headline-accent">CUIDA+.</span></h1>
+              <p class="welcome-copy">Status do simulador, fluxo de dados e próximos passos para operação.</p>
+            </div>
+            <div class="project-actions">
+              <button class="outline-button" id="shareTopButton">
+                <i data-lucide="share-2"></i> Compartilhar
+              </button>
+              <button class="solid-button" id="openWorkbench">
+                <i data-lucide="play"></i> Reabrir bancada
+              </button>
+            </div>
+          </section>
+
+          <section class="project-section">
+            <div class="section-heading">
+              <div>
+                <p class="eyebrow">SIMULADOR</p>
+                <h2>Estado da bancada</h2>
+              </div>
+            </div>
+            <div class="dashboard-grid">
+              <article class="telemetry-card">
+                <div class="card-heading">
+                  <div>
+                    <span class="card-kicker">WOKWI</span>
+                    <h3>Operação atual</h3>
+                  </div>
+                  <span class="online-pill"><i></i>Ativa</span>
+                </div>
+                <div class="telemetry-list">
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon green"><i data-lucide="wifi"></i></span>
+                    <span><strong>Wi‑Fi</strong><small>Conectado ao gateway local</small></span>
+                    <b>OK</b>
+                  </div>
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon orange"><i data-lucide="activity"></i></span>
+                    <span><strong>Leituras</strong><small>Envio periódico para API</small></span>
+                    <b>LIVE</b>
+                  </div>
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon purple"><i data-lucide="shield-alert"></i></span>
+                    <span><strong>Botão de pânico</strong><small>Ativação manual e persistência</small></span>
+                    <b>OK</b>
+                  </div>
+                </div>
+              </article>
+
+              <article class="status-card">
+                <div class="card-heading">
+                  <div>
+                    <span class="card-kicker">AÇÃO</span>
+                    <h3>Próximos passos</h3>
+                  </div>
+                  <i data-lucide="rocket" class="heading-icon"></i>
+                </div>
+                <div class="component-row">
+                  <span><i class="component-dot green-dot"></i> Validar dashboard</span>
+                  <small>auto-refresh</small>
+                </div>
+                <div class="component-row">
+                  <span><i class="component-dot blue-dot"></i> Validar API</span>
+                  <small>/api/v1/latest</small>
+                </div>
+                <div class="component-row">
+                  <span><i class="component-dot orange-dot"></i> Validar alertas</span>
+                  <small>botão de pânico</small>
+                </div>
+              </article>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite">
+      <i data-lucide="check-circle-2"></i
+      ><span>Link copiado para a área de transferência.</span>
+    </div>
+  </body>
+</html>

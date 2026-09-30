@@ -1,105 +1,129 @@
-# CUIDA+ Dashboard
+# CUIDA+ | Monitoramento remoto
 
-Dashboard em HTML, CSS e JavaScript conectado à pulseira do projeto `CURA`. A interface consulta a API Python para exibir telemetria real, alertas manuais e histórico de leituras.
+Projeto integrado de firmware ESP32, simulação Wokwi, API Python e dashboard web. Este é o README único do repositório; instruções de interface, hardware, firmware, execução e testes ficam centralizadas aqui.
 
-## Visão geral
+## Componentes
 
-Este projeto integra o dashboard CUIDA+ à pulseira vestível e sua telemetria, com:
+- Firmware PlatformIO para ESP32 DOIT DevKit v1.
+- Sensor MAX30102 para frequência cardíaca e SpO2; DS18B20 para temperatura de contato.
+- Botão de pânico ligado ao GPIO27.
+- API Python com persistência SQLite em `CURA/readings.sqlite3`.
+- Dashboard responsivo em HTML, CSS e JavaScript, servido em `frontend/`.
 
-- painel de visão geral do projeto com telemetria da pulseira;
-- página de hardware com componentes e diagnósticos;
-- página de firmware com código, releases e dependências;
-- navegação lateral, ações rápidas e sistema de notificações via toast;
-- layout responsivo para desktop, tablet e mobile.
+## Páginas do dashboard
 
-## Tecnologias
+As páginas compartilham um menu que conecta a Home, Hardware, Firmware, Documentação e Bancada:
 
-- HTML5
-- CSS3
-- JavaScript vanilla com cliente compartilhado em `frontend/assets/js/api.js`;
-- Lucide Icons via CDN
-- Google Fonts
+- `frontend/pages/home.html`: telemetria, estado dos sensores e histórico.
+- `frontend/pages/hardware.html`: componentes, ligações e diagnóstico da API.
+- `frontend/pages/firmware.html`: código, dependências e informações do firmware.
+- `frontend/pages/docs.html`: fluxo de operação e endpoints da API.
+- `frontend/pages/workbench.html`: resumo da bancada Wokwi.
 
-## Estrutura do projeto
+## Iniciar site e API
 
-```text
-/
-├── .github/
-│   └── agents/
-├── .vscode/
-│   └── tasks.json
-├── frontend/
-│   ├── pages/
-│   │   ├── home.html
-│   │   ├── hardware.html
-│   │   └── firmware.html
-│   └── assets/
-│       ├── css/
-│       │   ├── home.css
-│       │   ├── hardware.css
-│       │   └── firmware.css
-│       └── js/
-│           ├── api.js
-│           ├── home.js
-│           ├── hardware.js
-│           └── firmware.js
-├── CURA/
-│   ├── api.py
-│   ├── Sensor_Saturacao.chip.c
-│   ├── platformio.ini
-│   ├── src/
-│   ├── include/
-│   └── test/
-├── tools/
-│   └── dev_services.py
-├── README.md
-└── .gitignore
-```
-
-## Como executar
-
-Ao abrir o workspace no VS Code, aceite a tarefa automática **Iniciar CUIDA+ para Wokwi**. Ela mantém a API e o site ativos nas portas `8000` e `8080`; o servidor web entrega somente arquivos em `frontend/`, sem expor o banco, segredos ou metadados Git. Se os serviços seguros já estiverem ativos, a tarefa os reutiliza. Também pode iniciar manualmente:
+No VS Code, execute a tarefa **Iniciar CUIDA+ para Wokwi** ou inicie manualmente:
 
 ```bash
-cd /workspaces/tinkercad
 python3 tools/dev_services.py
 ```
 
-Abra o dashboard em:
+O launcher cria ou reutiliza os serviços locais:
 
-```text
-http://localhost:8080/frontend/pages/home.html
+| Serviço | Endereço | Uso |
+| --- | --- | --- |
+| Dashboard HTTPS | `https://localhost:8443/frontend/pages/home.html` | Acesso local recomendado |
+| Dashboard HTTP | `http://localhost:8080/frontend/pages/home.html` | Alternativa local |
+| API HTTP | `http://localhost:8000` | Firmware e Wokwi |
+
+O certificado HTTPS é autoassinado e gerado fora do repositório em `~/.cache/cuida-plus-dev/`. O navegador pode avisar que ele não é confiável. O proxy HTTPS encaminha `/api/v1/latest` e `/api/v1/history` para a API local; a comunicação do firmware com a API permanece em HTTP na porta `8000`.
+
+O servidor web entrega apenas arquivos de `frontend/` e não expõe arquivos do banco, segredos ou metadados Git. A API usa um token de desenvolvimento por padrão e não deve ser exposta à internet. Antes de usar em uma rede compartilhada, defina um token próprio e restrinja `API_CORS_ORIGIN`.
+
+## Configurar o firmware
+
+Crie `CURA/include/secrets.h` a partir do exemplo e configure SSID, senha, URL e token:
+
+```bash
+cd CURA
+cp include/secrets.example.h include/secrets.h
 ```
 
-Com a API ativa e o Wokwi Private IoT Gateway habilitado, inicie ou reinicie a simulação. O firmware envia a primeira leitura assim que um sensor fornece dados e depois envia leituras regulares a cada 15 segundos; o dashboard consulta a API a cada 10 segundos e sinaliza leituras mais antigas que 45 segundos.
+`secrets.h` é ignorado pelo Git. Para uma placa física, a URL deve apontar para o IPv4 do computador que executa a API, não para `localhost`; permita conexões de entrada na porta `8000` no firewall.
 
-O terminal da tarefa mostra a inicialização e cada leitura recebida pela API. No terminal serial do Wokwi, acompanhe `[Wi-Fi] Conectado` e `[API] POST ... -> 201`; no dashboard, confira os valores e o horário da última leitura. O terminal da tarefa fica visível enquanto os serviços estiverem ativos.
+### Ligações
 
-## Páginas principais
+| Componente | Ligação ao ESP32 DOIT |
+| --- | --- |
+| MAX30102 SDA | GPIO21 |
+| MAX30102 SCL | GPIO22 |
+| MAX30102 VCC/VIN | 3V3, conforme o breakout |
+| MAX30102 GND | GND |
+| DS18B20 DQ | GPIO4 |
+| DS18B20 VDD/GND | 3V3/GND |
+| Resistor 4,7 kOhm | Entre DQ/GPIO4 e 3V3 |
+| Botão, contato 1 | GPIO27 |
+| Botão, contato 2 | GND |
 
-### Home
-Apresenta a visão geral do sistema, telemetria, saúde do sistema e registros do projeto.
+O botão usa o pull-up interno do ESP32. O MAX30102 deve ser um breakout compatível com barramento I2C de 3,3 V; vários módulos já incluem resistores pull-up.
+O firmware evita usar GPIO15 para não interferir na configuração de boot do ESP32.
 
-### Hardware
-Exibe inventário de componentes, sensores conectados, diagnóstico de energia e documentação técnica.
+## Telemetria e alerta
 
-### Firmware
-Mostra sketch atual, releases, monitor serial, dependências e estado do dispositivo.
+- O firmware amostra o MAX30102 continuamente e envia telemetria de rotina a cada 10 segundos.
+- A temperatura DS18B20 é consultada a cada 10 segundos.
+- Envios não confirmados são tentados novamente após 15 segundos.
+- Ao pressionar o botão, o firmware enfileira um evento de pânico; a fila comporta até quatro eventos em RAM e é perdida se o ESP32 reiniciar.
+- O alerta confirmado permanece vigente no painel por 10 minutos. O botão físico é momentâneo; sua liberação não encerra o alerta remoto.
+- O dashboard consulta a API a cada 10 segundos.
 
-## Funcionalidades
+## Executar no Wokwi
 
-- navegação lateral com páginas internas;
-- menu mobile para telas pequenas;
-- ações de compartilhar e exportar;
-- toast de feedback visual;
-- layout com identidade visual consistente e profissional;
-- página responsiva sem dependência de framework.
+Inicie os serviços locais e habilite o **Wokwi Private IoT Gateway**. O firmware simulado usa `host.wokwi.internal` para alcançar a API local; o gateway público não encaminha o POST para o servidor local.
 
-## Observações
+Compile o firmware e o chip customizado a partir de `CURA/`:
 
-O site servido por `tools/dev_services.py` consulta a API pela mesma origem, usando um proxy local para `/api/v1/latest` e `/api/v1/history`. Para hospedar frontend e API separadamente, defina `window.CUIDA_API_URL` antes de `frontend/assets/js/api.js` ou use `data-api-base` no elemento `<html>`. A API permite CORS por padrão para o ambiente local; restrinja `API_CORS_ORIGIN` e altere o token de desenvolvimento antes de usar em uma rede compartilhada.
+```bash
+pio run -e wokwi
+docker run --rm -v "$PWD":/workspace -w /workspace \
+	wokwi/builder-clang-wasm make build-chip
+```
 
-## Autor
+Depois, use **Wokwi: Start Simulator** no VS Code. Os artefatos gerados são `CURA/.pio/build/wokwi/firmware.bin` e `CURA/Sensor_Saturacao.chip.wasm`. O MAX30102 simulado usa 100 Hz com média de quatro amostras, resultando em 25 amostras por segundo.
 
-Projeto de interface para demonstração de sistema embarcado de monitoramento ambiental.
+O chip customizado oferece controles de frequência cardíaca (40-180 bpm) e SpO2 (80-100%). Eles alteram as amostras I2C; após recompilar o chip, reinicie a simulação para carregar os controles.
+
+Se PlatformIO não estiver disponível no ambiente:
+
+```bash
+docker run --rm -v "$PWD":/workspace -w /workspace \
+	python:3.12-slim sh -lc \
+	'python -m pip install --no-cache-dir platformio && pio run -e wokwi'
+```
+
+## Compilar e testar
+
+Com PlatformIO instalado, a partir de `CURA/`:
+
+```bash
+pio run -e esp32doit-devkit-v1
+pio run -e esp32doit-devkit-v1 -t upload
+pio run -e wokwi
+python3 -m unittest discover -s test -v
+```
+
+A API oferece `POST /api/v1/readings`, `GET /api/v1/latest` e `GET /api/v1/history`. Os endpoints de leitura e histórico também são acessíveis pelo proxy do dashboard na mesma origem.
+
+Para executar apenas a API, configure o token correspondente ao firmware e inicie o servidor a partir de `CURA/`:
+
+```bash
+export DEVICE_TOKEN=dev-token
+python3 api.py
+```
+
+## Limites de uso
+
+Este protótipo não é um dispositivo médico. O pulso e a saturação não têm calibração ou validação clínica; o DS18B20 mede temperatura de contato, não temperatura corporal clínica.
+
+Para alimentação por bateria, use uma LiPo 1S protegida com carregador apropriado e regulação para VIN/5V do DevKit. Nunca conecte uma célula diretamente a 3V3 ou 5V; meça o consumo antes de uso prolongado.
 

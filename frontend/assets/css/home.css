@@ -1,15 +1,33 @@
 :root {
-  --ink: #073b72;
-  --muted: #4e7094;
-  --line: #d7e9f5;
-  --paper: #f3fbff;
+  --ink: #113b5a;
+  --muted: #4f6d86;
+  --line: #dfeef7;
+  --paper: #edf8ff;
   --white: #ffffff;
-  --orange: #f04b3e;
-  --orange-dark: #d83b32;
+  --orange: #f0624d;
+  --orange-dark: #d94a3a;
   --mint: #bceafa;
-  --deep-mint: #064d91;
-  --yellow: #09b7c7;
-  --shadow: 0 18px 40px rgba(6, 77, 145, 0.1);
+  --deep-mint: #0b4d86;
+  --deep-mint-strong: #072f54;
+  --yellow: #31d0c6;
+  --success: #1eb980;
+  --danger: #ea5b4b;
+  --shadow: 0 18px 40px rgba(9, 70, 125, 0.12);
+}
+
+body[data-reading-state='panic'] {
+  --accent-color: var(--danger);
+  --accent-soft: rgba(234, 91, 75, 0.14);
+}
+
+body[data-reading-state='live'] {
+  --accent-color: var(--success);
+  --accent-soft: rgba(30, 185, 128, 0.12);
+}
+
+body[data-reading-state='stale'] {
+  --accent-color: #d4a93c;
+  --accent-soft: rgba(212, 169, 60, 0.14);
 }
 
 * {
@@ -408,11 +426,12 @@ button {
 
 .status-dot {
   display: inline-block;
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   margin-right: 6px;
   border-radius: 50%;
-  background: var(--orange);
+  background: var(--accent-color, var(--orange));
+  box-shadow: 0 0 0 6px var(--accent-soft, rgba(240, 98, 77, 0.14));
   vertical-align: 1px;
 }
 
@@ -1765,10 +1784,28 @@ button {
 }
 
 .online-pill {
-  color: #469568;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(30, 185, 128, 0.09);
+  border: 1px solid rgba(30, 185, 128, 0.12);
+  color: #1a7b60;
   font:
     10px "DM Mono",
     monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.online-pill i {
+  width: 7px;
+  height: 7px;
+  display: inline-block;
+  border-radius: 50%;
+  background: var(--accent-color, var(--success));
+  box-shadow: 0 0 0 5px var(--accent-soft, rgba(30, 185, 128, 0.16));
 }
 
 .telemetry-list {
@@ -1808,6 +1845,7 @@ button {
   color: var(--ink);
   font-size: 20px;
   letter-spacing: 0;
+  font-family: "DM Mono", monospace;
 }
 
 .telemetry-icon,

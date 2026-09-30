@@ -1,6 +1,9 @@
 import argparse
 import functools
 import json
+import os
+import ssl
+import subprocess
 import sys
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -13,11 +16,16 @@ from urllib.request import urlopen
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "http://127.0.0.1:8000/api/v1/latest"
 SITE_URL = "http://127.0.0.1:8080/frontend/pages/home.html"
+HTTPS_PORT = int(os.getenv("HTTPS_PORT", "8443"))
+HTTPS_SITE_URL = f"https://localhost:{HTTPS_PORT}/frontend/pages/home.html"
+TLS_DIRECTORY = Path.home() / ".cache" / "cuida-plus-dev"
+TLS_CERTIFICATE = TLS_DIRECTORY / "localhost.crt"
+TLS_PRIVATE_KEY = TLS_DIRECTORY / "localhost.key"
 
 
-def get_response(url):
+def get_response(url, context=None):
     try:
-        with urlopen(url, timeout=1) as response:
+        with urlopen(url, timeout=1, context=context) as response:
             return response.status, response.read()
     except HTTPError as error:
         return error.code, error.read()
@@ -46,6 +54,12 @@ def site_is_running():
         if status not in (403, 404):
             return False
     return True
+
+
+def https_site_is_running():
+    context = ssl._create_unverified_context()
+    status, body = get_response(HTTPS_SITE_URL, context=context)
+    return status == 200 and b"<!doctype html>" in body[:128].lower()
 
 
 def make_api_server():
@@ -101,6 +115,37 @@ def make_site_server():
     return ThreadingHTTPServer(("0.0.0.0", 8080), FrontendOnlyHandler)
 
 
+def ensure_development_certificate():
+    if TLS_CERTIFICATE.is_file() and TLS_PRIVATE_KEY.is_file():
+        return
+
+    TLS_DIRECTORY.mkdir(mode=0o700, parents=True, exist_ok=True)
+    TLS_DIRECTORY.chmod(0o700)
+    subprocess.run(
+        [
+            "openssl", "req", "-x509", "-newkey", "rsa:2048", "-sha256",
+            "-nodes", "-days", "365", "-keyout", str(TLS_PRIVATE_KEY),
+            "-out", str(TLS_CERTIFICATE), "-subj", "/CN=localhost",
+            "-addext", "subjectAltName=DNS:localhost,IP:127.0.0.1",
+        ],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    TLS_PRIVATE_KEY.chmod(0o600)
+
+
+def make_https_site_server():
+    ensure_development_certificate()
+    server = ThreadingHTTPServer(("0.0.0.0", HTTPS_PORT), FrontendOnlyHandler)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
+    context.load_cert_chain(TLS_CERTIFICATE, TLS_PRIVATE_KEY)
+    server.socket = context.wrap_socket(server.socket, server_side=True)
+    return server
+
+
 def ensure_service(name, is_running, create_server, owned_servers):
     if is_running():
         print(f"{name}: ja ativo", flush=True)
@@ -121,16 +166,22 @@ def main():
     if args.check:
         api_ready = api_is_running()
         site_ready = site_is_running()
+        https_ready = https_site_is_running()
         print(f"API: {'online' if api_ready else 'offline'}")
         print(f"Site: {'online' if site_ready else 'offline'}")
-        return 0 if api_ready and site_ready else 1
+        print(f"HTTPS: {'online' if https_ready else 'offline'}")
+        return 0 if api_ready and site_ready and https_ready else 1
 
     owned_servers = []
     print("Iniciando servicos CUIDA+", flush=True)
     try:
         ensure_service("API", api_is_running, make_api_server, owned_servers)
         ensure_service("Site", site_is_running, make_site_server, owned_servers)
-        print(f"CUIDA+ pronto: site {SITE_URL} | API http://localhost:8000", flush=True)
+        ensure_service("HTTPS", https_site_is_running, make_https_site_server, owned_servers)
+        print(
+            f"CUIDA+ pronto: HTTPS {HTTPS_SITE_URL} | HTTP {SITE_URL} | API http://localhost:8000",
+            flush=True,
+        )
         print("Leituras recebidas aparecem neste terminal; valores ao vivo aparecem no dashboard.", flush=True)
         threading.Event().wait()
     except KeyboardInterrupt:

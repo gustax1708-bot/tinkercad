@@ -25,8 +25,8 @@ constexpr uint8_t kTemperaturePin = 4;
 constexpr uint8_t kPanicPin = 27;
 constexpr uint8_t kI2cSdaPin = 21;
 constexpr uint8_t kI2cSclPin = 22;
-constexpr uint32_t kReadingIntervalMs = 300000;
-constexpr uint32_t kTemperatureIntervalMs = 300000;
+constexpr uint32_t kReadingIntervalMs = 10000;
+constexpr uint32_t kTemperatureIntervalMs = 10000;
 constexpr uint32_t kWifiRetryIntervalMs = 10000;
 constexpr uint32_t kSensorRetryIntervalMs = 5000;
 constexpr uint32_t kSensorNoSampleTimeoutMs = 10000;
@@ -72,6 +72,39 @@ bool buttonState = HIGH;
 bool lastButtonRead = HIGH;
 bool contactDetected = false;
 bool temperatureConversionPending = false;
+uint32_t lastStructuredSensorLogAt = 0;
+float lastLoggedHeartRateBpm = NAN;
+float lastLoggedOxygenPercent = NAN;
+float lastLoggedTemperatureC = NAN;
+bool lastLoggedSensorContact = false;
+
+void logStructuredSensorState(const char* source, bool force = false) {
+  const uint32_t now = millis();
+  const bool valueChanged =
+      isnan(lastLoggedHeartRateBpm) || isnan(lastLoggedOxygenPercent) ||
+      isnan(lastLoggedTemperatureC) ||
+      fabsf(heartRateBpm - lastLoggedHeartRateBpm) > 0.5f ||
+      fabsf(oxygenPercent - lastLoggedOxygenPercent) > 0.5f ||
+      fabsf(skinTemperatureC - lastLoggedTemperatureC) > 0.25f ||
+      contactDetected != lastLoggedSensorContact;
+
+  if (!force && !valueChanged && now - lastStructuredSensorLogAt < 5000) return;
+
+  const String heartRateText = isnan(heartRateBpm) ? "--" : String(heartRateBpm, 1) + " bpm";
+  const String oxygenText = isnan(oxygenPercent) ? "--" : String(oxygenPercent, 1) + "%";
+  const String temperatureText = isnan(skinTemperatureC) ? "--" : String(skinTemperatureC, 1) + " C";
+  const String contactText = contactDetected ? "sim" : "nao";
+
+  Serial.printf("[SENSOR] %s | HR=%s | SpO2=%s | Temp=%s | contato=%s\n",
+                source, heartRateText.c_str(), oxygenText.c_str(),
+                temperatureText.c_str(), contactText.c_str());
+
+  lastStructuredSensorLogAt = now;
+  lastLoggedHeartRateBpm = heartRateBpm;
+  lastLoggedOxygenPercent = oxygenPercent;
+  lastLoggedTemperatureC = skinTemperatureC;
+  lastLoggedSensorContact = contactDetected;
+}
 
 bool initializePulseSensor() {
   sampleIndex = 0;
@@ -117,22 +150,20 @@ void maintainPulseSensor() {
 
 void sampleSimulatedPulseSensor() {
   const uint32_t now = millis();
-  if (now - lastSensorSampleAt < 300) return;
+  if (now - lastSensorSampleAt < kReadingIntervalMs) return;
 
-  const float phase = (float)(now % 6000u) / 6000.0f * 6.28318530718f;
-  const float pulseEnvelope = 0.5f + 0.5f * sinf(phase * 1.8f + 0.2f);
-  const float oxygenEnvelope = 0.5f + 0.5f * sinf(phase * 0.9f + 1.2f);
+  const float phase = (float)((now / kReadingIntervalMs) % 60u) / 60.0f * 6.28318530718f;
+  const float pulseEnvelope = 0.5f + 0.5f * sinf(phase * 1.9f + 0.2f);
+  const float oxygenEnvelope = 0.5f + 0.5f * sinf(phase * 0.8f + 1.1f);
 
-  heartRateBpm = 72.0f + 12.0f * pulseEnvelope;
+  heartRateBpm = 72.0f + 11.0f * pulseEnvelope;
   oxygenPercent = 97.0f + 2.0f * oxygenEnvelope;
   sampleIndex = 0;
   pulseSampleSeen = true;
   contactDetected = true;
   sensorAvailable = true;
   lastSensorSampleAt = now;
-
-  Serial.printf("[MAX30102] Wokwi simulado HR=%.1f bpm, SpO2=%.1f%%\n",
-                heartRateBpm, oxygenPercent);
+  logStructuredSensorState("WOKWI");
 }
 
 void samplePulseSensor() {
@@ -191,12 +222,17 @@ void updatePanicButton() {
   if (millis() - buttonChangedAt > 40 && reading != buttonState) {
     buttonState = reading;
     if (buttonState == LOW) {
+      Serial.println("[PANICO] Botao pressionado; enfileirando alerta");
       const PanicSnapshot panicReading = {
           heartRateBpm, oxygenPercent, skinTemperatureC, contactDetected};
       if (!deliveryTaskReady ||
           xQueueSend(panicQueue, &panicReading, 0) != pdTRUE) {
-        Serial.println("Fila de alertas cheia; alerta adicional nao enfileirado");
+        Serial.println("[PANICO] Falha: alerta nao enfileirado");
+      } else {
+        Serial.println("[PANICO] Alerta enfileirado para envio");
       }
+    } else {
+      Serial.println("[PANICO] Botao liberado; alerta remoto pode continuar valido por 10 min");
     }
   }
   lastButtonRead = reading;
@@ -227,12 +263,11 @@ void updateTemperature() {
     const float reading = temperatureSensor.getTempCByIndex(0);
     if (reading != DEVICE_DISCONNECTED_C && reading >= 0 && reading <= 50) {
       skinTemperatureC = reading;
-      Serial.printf("[DS18B20] Temperatura: %.1f C\n", reading);
     } else {
       skinTemperatureC = NAN;
-      Serial.println("[DS18B20] Sem leitura valida");
     }
     temperatureConversionPending = false;
+    logStructuredSensorState("DS18B20");
   }
 
   if (now - lastTemperatureAt < kTemperatureIntervalMs) return;
@@ -285,8 +320,17 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
   client.addHeader("Content-Type", "application/json");
   client.addHeader("X-Device-Token", kDeviceToken);
   const int status = client.POST(body);
-  Serial.printf("[API] POST /api/v1/readings -> %d | %s\n", status,
-                body.c_str());
+  const String heartRateText = isnan(reading.heartRateBpm) ? "--" : String(reading.heartRateBpm, 1) + " bpm";
+  const String oxygenText = isnan(reading.oxygenPercent) ? "--" : String(reading.oxygenPercent, 1) + "%";
+  const String temperatureText = isnan(reading.temperatureC) ? "--" : String(reading.temperatureC, 1) + " C";
+  Serial.printf("[API] %s | HR=%s | SpO2=%s | Temp=%s | panico=%s | status=%d\n",
+                panicEvent ? "ALERTA" : "READING",
+                heartRateText.c_str(), oxygenText.c_str(),
+                temperatureText.c_str(), panicEvent ? "sim" : "nao",
+                status);
+  if (panicEvent && status >= 200 && status < 300) {
+    Serial.println("[PANICO] Alerta confirmado pela API; painel mantem vigencia por 10 min");
+  }
   client.end();
   return status >= 200 && status < 300;
 }
