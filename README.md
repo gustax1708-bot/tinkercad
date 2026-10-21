@@ -86,7 +86,7 @@ O MAX17048 deve medir a célula, não a saída de 5 V do conversor. Os 12 h são
 
 - O firmware amostra o MAX30102 continuamente e envia telemetria de rotina a cada 10 segundos.
 - A temperatura MAX30205 é consultada a cada 10 segundos.
-- O MAX17048 informa tensão e carga estimada a cada 30 segundos.
+- O MAX17048 informa tensão e carga estimada a cada 10 segundos, sincronizado com a telemetria do dashboard.
 - O MPU6050 é amostrado a cada 100 ms; possível queda exige queda livre, impacto e imobilidade sustentada e precisa de calibração no dispositivo final.
 - Envios não confirmados são tentados novamente após 15 segundos.
 - Ao pressionar o botão, o firmware enfileira um evento de pânico; a fila comporta até quatro eventos em RAM e é perdida se o ESP32 reiniciar.
