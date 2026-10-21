@@ -101,7 +101,7 @@
                 <div class="telemetry-list">
                   <div class="telemetry-item">
                     <span class="telemetry-icon green"><i data-lucide="play-circle"></i></span>
-                    <span><strong>1. Iniciar serviços</strong><small>python3 tools/dev_services.py</small></span>
+                    <span><strong>1. Iniciar serviços</strong><small>py -3 tools/dev_services.py (Windows) · python3 tools/dev_services.py (Linux/macOS)</small></span>
                     <b>OK</b>
                   </div>
                   <div class="telemetry-item">
@@ -156,11 +156,11 @@
                 </div>
               </div>
               <p class="welcome-copy">
-                Este painel serve para acompanhar frequência cardíaca, saturação de oxigênio e temperatura de contato em tempo real.
+                Este painel acompanha pulso, saturação, temperatura de contato, movimento e carga estimada da bateria.
                 O firmware em PlatformIO envia leituras para a API, que salva os registros e entrega o histórico para o dashboard.
               </p>
               <p class="welcome-copy">
-                O foco principal da interface é manter a visualização estável, com atualização automática e com suporte ao comportamento de alerta manual.
+                O MPU6050 sinaliza possíveis quedas por uma heurística experimental. A meta de autonomia de 12 horas com LiPo 1S de 5.000 mAh deve ser validada medindo o consumo do protótipo.
               </p>
             </div>
           </section>

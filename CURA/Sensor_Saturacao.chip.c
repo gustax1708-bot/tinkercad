@@ -5,7 +5,6 @@
 // Copyright 2023 
 
 #include <wokwi-api.h>
-#include <math.h>
 #include <stdbool.h>
 
 #define MAX30102_ADDRESS 0x57
@@ -62,6 +61,8 @@ static uint8_t on_i2c_read(void *user_data) {
   chip_state_t *chip = user_data;
   const uint8_t reg = chip->register_pointer;
 
+  if (reg == 0xF0) return (uint8_t)attr_read_float(chip->heart_rate_attr);
+  if (reg == 0xF1) return (uint8_t)attr_read_float(chip->spo2_attr);
   if (reg == 0xFF) return 0x15;
   if (reg == 0xFE) return 0x01;
   if (reg == 0x04) return chip->fifo_write_pointer;

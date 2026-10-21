@@ -15,7 +15,7 @@
     />
     <link rel="stylesheet" href="../assets/css/home.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../assets/js/api.js?v=6" defer></script>
+    <script src="../assets/js/api.js?v=7" defer></script>
     <script src="../assets/js/home.js" defer></script>
   </head>
 
@@ -123,7 +123,7 @@
                 <div class="board-light"></div>
               </div>
               <div class="graphic-label label-x">MAX30102 · I2C</div>
-              <div class="graphic-label label-y">DS18B20 · GPIO 04</div>
+              <div class="graphic-label label-y">MAX30205 · I2C</div>
               <div class="axis axis-x"></div>
               <div class="axis axis-y"></div>
             </div>
@@ -156,7 +156,7 @@
                       ><i data-lucide="thermometer"></i></span
                     ><span
                       ><strong>Temperatura de contato</strong
-                      ><small>DS18B20</small></span
+                      ><small>MAX30205</small></span
                     ><b data-reading="temperature">--</b>
                   </div>
                   <div class="telemetry-item">
@@ -174,6 +174,30 @@
                       ><strong>Saturação de oxigênio</strong
                       ><small>MAX30102</small></span
                     ><b data-reading="spo2">--</b>
+                  </div>
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon green"
+                      ><i data-lucide="battery-medium"></i></span
+                    ><span
+                      ><strong>Bateria</strong
+                      ><small data-reading-battery-voltage>MAX17048</small></span
+                    ><b data-reading="battery">--</b>
+                  </div>
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon orange"
+                      ><i data-lucide="move-3d"></i></span
+                    ><span
+                      ><strong>Movimento</strong
+                      ><small data-reading="acceleration">MPU6050</small></span
+                    ><b data-reading="motion">--</b>
+                  </div>
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon purple"
+                      ><i data-lucide="triangle-alert"></i></span
+                    ><span
+                      ><strong>Queda</strong
+                      ><small>Detecção experimental</small></span
+                    ><b data-reading="fall">--</b>
                   </div>
                   <div class="telemetry-item">
                     <span class="telemetry-icon purple"

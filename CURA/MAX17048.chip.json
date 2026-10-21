@@ -1,0 +1,15 @@
+{
+  "name": "max17048",
+  "author": "CUIDA+",
+  "pins": ["VCC", "GND", "SDA", "SCL"],
+  "controls": [
+    {
+      "id": "batteryPercent",
+      "label": "Carga da bateria (%)",
+      "type": "range",
+      "min": 0,
+      "max": 100,
+      "step": 1
+    }
+  ]
+}

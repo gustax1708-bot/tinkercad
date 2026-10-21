@@ -1,23 +1,26 @@
 import argparse
 import functools
 import json
+import os
 import sys
 import threading
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "http://127.0.0.1:8000/api/v1/latest"
 SITE_URL = "http://127.0.0.1:8080/frontend/pages/home.html"
+DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 
 
-def get_response(url):
+def get_response(url, headers=None):
     try:
-        with urlopen(url, timeout=1) as response:
+        request = Request(url, headers=headers or {})
+        with urlopen(request, timeout=1) as response:
             return response.status, response.read()
     except HTTPError as error:
         return error.code, error.read()
@@ -26,7 +29,9 @@ def get_response(url):
 
 
 def api_is_running():
-    status, body = get_response(API_URL)
+    status, body = get_response(
+        API_URL, headers={"X-Device-Token": DEVICE_TOKEN}
+    )
     if status != 200:
         return False
     try:
@@ -52,6 +57,7 @@ def make_api_server():
     sys.path.insert(0, str(ROOT / "CURA"))
     import api
 
+    api.validate_security_configuration()
     return ThreadingHTTPServer((api.HOST, api.PORT), api.ApiHandler)
 
 
@@ -69,10 +75,20 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
             request_path = "/__not_found__"
         return super().translate_path(request_path)
 
+    def end_headers(self):
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
+        self.send_header("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+        super().end_headers()
+
     def do_GET(self):
         request_path = urlsplit(self.path).path
         if request_path in ("/api/v1/latest", "/api/v1/history"):
-            status, body = get_response(f"http://127.0.0.1:8000{self.path}")
+            status, body = get_response(
+                f"http://127.0.0.1:8000{self.path}",
+                headers={"X-Device-Token": DEVICE_TOKEN},
+            )
             if status is None:
                 status = 503
                 body = json.dumps({"error": "api indisponivel"}).encode("utf-8")
@@ -98,7 +114,7 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
 
 
 def make_site_server():
-    return ThreadingHTTPServer(("0.0.0.0", 8080), FrontendOnlyHandler)
+    return ThreadingHTTPServer(("127.0.0.1", 8080), FrontendOnlyHandler)
 
 
 def ensure_service(name, is_running, create_server, owned_servers):

@@ -52,7 +52,12 @@
       setText('[data-reading="temperature"]', "--");
       setText('[data-reading="heart-rate"]', "--");
       setText('[data-reading="spo2"]', "--");
-      setText('[data-reading="panic"]', "--");
+      setText('[data-reading="battery"]', "--");
+      setText('[data-reading="acceleration"]', "--");
+      setText('[data-reading="motion"]', "--");
+      setText('[data-reading="fall"]', "--");
+      setText("[data-reading-battery-voltage]", "MAX17048");
+      setText('[data-reading="panic"]', "Desativado");
       setText("[data-reading-device]", "pulseira-01");
       setText("[data-reading-alert]", "Nenhum alerta manual registrado");
       setText("[data-reading-status]", "Aguardando dados da pulseira");
@@ -74,6 +79,32 @@
       formatValue(reading.heart_rate_bpm, " bpm", 1),
     );
     setText('[data-reading="spo2"]', formatValue(reading.spo2_percent, "%", 1));
+    setText(
+      '[data-reading="battery"]',
+      formatValue(reading.battery_percent, "%", 0),
+    );
+    setText(
+      "[data-reading-battery-voltage]",
+      reading.battery_voltage == null
+        ? "MAX17048"
+        : `${formatValue(reading.battery_voltage, " V", 2)} · MAX17048`,
+    );
+    setText(
+      '[data-reading="acceleration"]',
+      formatValue(reading.acceleration_g, " g", 2),
+    );
+    setText(
+      '[data-reading="motion"]',
+      reading.acceleration_g == null
+        ? "--"
+        : reading.motion_active
+          ? "Ativo"
+          : "Repouso",
+    );
+    setText(
+      '[data-reading="fall"]',
+      reading.fall_detected ? "Possível" : "Não detectada",
+    );
     const panicReceivedAt = latestPanic
       ? Date.parse(latestPanic.received_at)
       : NaN;
@@ -94,6 +125,8 @@
     const sensorConnected = readingIsFresh && reading.sensor_contact;
     const status = panicActive
       ? "Alerta remoto vigente"
+      : readingIsFresh && reading.fall_detected
+        ? "Possível queda detectada"
       : readingIsFresh
         ? reading.sensor_contact
           ? "Monitoramento ativo"
@@ -122,7 +155,7 @@
     setText(
       "[data-component-sensors]",
       readingIsFresh
-        ? `MAX30102 ${reading.sensor_contact ? "com contato" : "sem contato"} · DS18B20 ${reading.temperature_c == null ? "sem leitura" : "ativo"}`
+        ? `MAX30102 ${reading.sensor_contact ? "com contato" : "sem contato"} · MAX30205 ${reading.temperature_c == null ? "sem leitura" : "ativo"} · MPU6050 ${reading.acceleration_g == null ? "indisponível" : "ativo"}`
         : "sem leitura",
     );
     setText(
@@ -164,7 +197,7 @@
           time.textContent = formatTime(reading.received_at);
           line.append(
             time,
-            ` ${reading.panic ? "Alerta manual" : "Leitura enviada"} · ${reading.status}`,
+            ` ${reading.fall_detected ? "Possível queda" : reading.panic ? "Alerta manual" : "Leitura enviada"} · ${reading.status}`,
           );
           log.append(line);
         });
@@ -190,7 +223,7 @@
       const title = document.createElement("strong");
       title.textContent = reading.panic ? "Alerta manual" : "Leitura recebida";
       const details = document.createElement("p");
-      details.textContent = `SpO₂ ${formatValue(reading.spo2_percent, "%")} · pulso ${formatValue(reading.heart_rate_bpm, " bpm")} · temperatura ${formatValue(reading.temperature_c, " °C")}`;
+      details.textContent = `SpO₂ ${formatValue(reading.spo2_percent, "%")} · pulso ${formatValue(reading.heart_rate_bpm, " bpm")} · temp. ${formatValue(reading.temperature_c, " °C")} · bateria ${formatValue(reading.battery_percent, "%", 0)}${reading.fall_detected ? " · possível queda" : ""}`;
       const time = document.createElement("small");
       time.textContent = formatTime(reading.received_at);
       content.append(title, details, time);

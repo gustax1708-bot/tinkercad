@@ -6,3 +6,11 @@ elf = '.pio/build/wokwi/firmware.elf'
 [[chip]]
 name = 'max-30102'
 binary = 'Sensor_Saturacao.chip.wasm'
+
+[[chip]]
+name = 'max30205'
+binary = 'MAX30205.chip.wasm'
+
+[[chip]]
+name = 'max17048'
+binary = 'MAX17048.chip.wasm'

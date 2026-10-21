@@ -1,0 +1,29 @@
+name: "MPU6050 possible fall sequence"
+version: 1
+author: "CUIDA+"
+steps:
+  - set-control:
+      part-id: imu1
+      name: accelX
+      value: 0
+  - set-control:
+      part-id: imu1
+      name: accelY
+      value: 0
+  - set-control:
+      part-id: imu1
+      name: accelZ
+      value: 0
+  - delay: 300ms
+  - set-control:
+      part-id: imu1
+      name: accelZ
+      value: 3
+  - delay: 300ms
+  - set-control:
+      part-id: imu1
+      name: accelZ
+      value: 1
+  - delay: 9s
+  - wait-serial:
+      text: "Possivel queda detectada"

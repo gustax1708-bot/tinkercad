@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../assets/css/hardware.css" />
     <link rel="stylesheet" href="../assets/css/home.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../assets/js/api.js?v=6" defer></script>
+    <script src="../assets/js/api.js?v=7" defer></script>
     <script src="../assets/js/home.js" defer></script>
     <script src="../assets/js/hardware.js" defer></script>
   </head>
@@ -107,7 +107,7 @@
                 informações com a família.
               </p>
               <div class="hero-meta">
-                <span><i class="live-dot"></i> ESP32 · MAX30102 · DS18B20</span
+                <span><i class="live-dot"></i> ESP32 · MAX30102 · MPU6050</span
                 ><span data-reading-updated>Sem leitura</span>
               </div>
             </div>
@@ -121,7 +121,7 @@
                 ><span class="board-trace trace-one"></span
                 ><span class="board-trace trace-two"></span>
               </div>
-              <span class="graphic-label hardware-label-one">GPIO 04</span
+              <span class="graphic-label hardware-label-one">MAX30205</span
               ><span class="graphic-label hardware-label-two">I2C BUS</span>
             </div>
           </section>
@@ -154,7 +154,7 @@
                     <b>GND</b><span></span>
                   </div>
                   <div class="pin-line pin-line-three">
-                    <b>GPIO 04</b><span></span>
+                    <b>I2C 21/22</b><span></span>
                   </div>
                 </div>
                 <div class="component-meta">
@@ -185,9 +185,9 @@
                   <span class="sensor-badge green"
                     ><i data-lucide="thermometer"></i></span
                   ><span
-                    ><strong>DS18B20</strong
+                    ><strong>MAX30205</strong
                     ><small>Temperatura de contato</small></span
-                  ><span class="sensor-pin">GPIO 04</span>
+                  ><span class="sensor-pin">I2C</span>
                 </div>
               </article>
             </div>
@@ -217,8 +217,8 @@
                     ><span>SDA GPIO 21 · SCL GPIO 22</span>
                   </div>
                   <div>
-                    <strong>DS18B20</strong
-                    ><span>DQ GPIO 04 · pull-up 4,7 kΩ</span>
+                    <strong>MAX30205 + MPU6050 + MAX17048</strong
+                    ><span>I2C SDA GPIO 21 · SCL GPIO 22</span>
                   </div>
                   <div>
                     <strong>Botão de alerta</strong
@@ -236,7 +236,7 @@
                 </div>
                 <div class="power-reading">
                   <strong data-reading="temperature">--</strong
-                  ><small>temperatura DS18B20</small>
+                  ><small>temperatura MAX30205</small>
                 </div>
                 <div class="power-footer">
                   <span data-reading-status>Aguardando dados</span
@@ -250,6 +250,26 @@
                     ><small>Pulso</small
                     ><b data-reading="heart-rate">--</b></span
                   >
+                </div>
+                <div class="component-row">
+                  <span>MAX17048 · bateria</span>
+                  <small data-reading="battery">--</small>
+                </div>
+                <div class="component-row">
+                  <span>Tensão da célula</span>
+                  <small data-reading-battery-voltage>--</small>
+                </div>
+                <div class="component-row">
+                  <span>Autonomia estimada</span>
+                  <small>meta de 12 h</small>
+                </div>
+                <div class="component-row">
+                  <span>MPU6050 · movimento</span>
+                  <small data-reading="motion">--</small>
+                </div>
+                <div class="component-row">
+                  <span>Possível queda</span>
+                  <small data-reading="fall">--</small>
                 </div>
               </article>
             </div>

@@ -6,6 +6,10 @@
       "type": "process",
       "command": "python3",
       "args": ["${workspaceFolder}/tools/dev_services.py"],
+      "windows": {
+        "command": "py",
+        "args": ["-3", "${workspaceFolder}/tools/dev_services.py"]
+      },
       "options": {
         "cwd": "${workspaceFolder}"
       },
