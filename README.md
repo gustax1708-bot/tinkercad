@@ -32,11 +32,10 @@ O launcher cria ou reutiliza os serviços locais:
 
 | Serviço | Endereço | Uso |
 | --- | --- | --- |
-| Dashboard HTTPS | `https://localhost:8443/frontend/pages/home.html` | Acesso local recomendado |
-| Dashboard HTTP | `http://localhost:8080/frontend/pages/home.html` | Alternativa local |
+| Dashboard | `http://localhost:8080/frontend/pages/home.html` | Acesso local |
 | API HTTP | `http://localhost:8000` | Firmware e Wokwi |
 
-O certificado HTTPS é autoassinado e gerado fora do repositório em `~/.cache/cuida-plus-dev/`. O navegador pode avisar que ele não é confiável. O proxy HTTPS encaminha `/api/v1/latest` e `/api/v1/history` para a API local; a comunicação do firmware com a API permanece em HTTP na porta `8000`.
+O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API. O firmware e o Wokwi também enviam telemetria à API HTTP na porta `8000`.
 
 O servidor web entrega apenas arquivos de `frontend/` e não expõe arquivos do banco, segredos ou metadados Git. A API usa um token de desenvolvimento por padrão e não deve ser exposta à internet. Antes de usar em uma rede compartilhada, defina um token próprio e restrinja `API_CORS_ORIGIN`.
 
