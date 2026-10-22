@@ -146,12 +146,20 @@
                   <small>última leitura</small>
                 </div>
                 <div class="component-row">
+                  <span><i class="component-dot green-dot"></i> /api/v1/health</span>
+                  <small>API e banco</small>
+                </div>
+                <div class="component-row">
                   <span><i class="component-dot blue-dot"></i> /api/v1/history</span>
                   <small>histórico</small>
                 </div>
                 <div class="component-row">
                   <span><i class="component-dot orange-dot"></i> POST /api/v1/readings</span>
                   <small>recebe telemetria</small>
+                </div>
+                <div class="component-row">
+                  <span><i class="component-dot orange-dot"></i> /api/v1/alerts/{id}</span>
+                  <small>reconhecer ou resolver</small>
                 </div>
               </article>
             </div>
@@ -176,7 +184,13 @@
                 O firmware em PlatformIO envia leituras para a API, que salva os registros e entrega o histórico para o dashboard.
               </p>
               <p class="welcome-copy">
+                Dados ausentes, sem contato, desatualizados e indisponibilidade da API são apresentados como estados diferentes. Alertas de queda e pânico ficam registrados até serem reconhecidos e resolvidos no painel.
+              </p>
+              <p class="welcome-copy">
                 O MPU6050 sinaliza possíveis quedas por uma heurística experimental. A meta de autonomia de 12 horas com LiPo 1S de 5.000 mAh deve ser validada medindo o consumo do protótipo.
+              </p>
+              <p class="care-note" role="note">
+                Protótipo em simulação: leituras, detecção de quedas e alertas são experimentais, não têm validação clínica e não devem ser usados para diagnóstico ou decisões médicas.
               </p>
             </div>
           </section>

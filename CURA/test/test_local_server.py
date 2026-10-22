@@ -1,9 +1,11 @@
 import http.client
+import json
 import sys
 import threading
 import unittest
 from pathlib import Path
 from urllib.parse import urljoin, urlsplit
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -37,6 +39,36 @@ class LocalServerTests(unittest.TestCase):
         response.read()
         self.assertEqual(response.status, 302)
         self.assertEqual(response.getheader("Location"), "/docs/pages/index.html")
+
+    def test_alert_actions_are_proxied_to_the_api(self):
+        response_body = json.dumps({"alert": {"id": 4, "status": "acknowledged"}})
+        with patch.object(
+            dev_services,
+            "get_response",
+            return_value=(200, response_body.encode("utf-8")),
+        ) as proxy_request:
+            self.connection.request("POST", "/api/v1/alerts/4/acknowledge")
+            response = self.connection.getresponse()
+            body = json.loads(response.read())
+
+        self.assertEqual(response.status, 200)
+        self.assertEqual(body["alert"]["status"], "acknowledged")
+        args, kwargs = proxy_request.call_args
+        self.assertEqual(
+            args[0], "http://127.0.0.1:8000/api/v1/alerts/4/acknowledge"
+        )
+        self.assertEqual(kwargs["method"], "POST")
+        self.assertEqual(kwargs["data"], b"")
+        self.assertIn("X-Device-Token", kwargs["headers"])
+
+    def test_api_outage_is_returned_as_service_unavailable(self):
+        with patch.object(dev_services, "get_response", return_value=(None, b"")):
+            self.connection.request("GET", "/api/v1/latest")
+            response = self.connection.getresponse()
+            body = json.loads(response.read())
+
+        self.assertEqual(response.status, 503)
+        self.assertEqual(body, {"error": "api indisponivel"})
 
     def test_dashboard_page_and_local_assets_are_served(self):
         self.connection.request("GET", "/docs/pages/index.html")

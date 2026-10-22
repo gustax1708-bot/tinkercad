@@ -1,18 +1,19 @@
 (function () {
   const staleAfterMs = 6 * 60 * 1000;
-  const panicDurationMs = 10 * 60 * 1000;
   const refreshIntervalMs = 10 * 1000;
   const configuredBaseUrl =
     document.documentElement.dataset.apiBase ||
     window.CUIDA_API_URL ||
     window.location.origin;
   const apiBaseUrl = configuredBaseUrl.replace(/\/$/, "");
-  const fetchWithTimeout = (url) => {
+  const fetchWithTimeout = (url, options = {}) => {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 5000);
-    return fetch(url, { cache: "no-store", signal: controller.signal }).finally(
-      () => window.clearTimeout(timeoutId),
-    );
+    return fetch(url, {
+      ...options,
+      cache: "no-store",
+      signal: controller.signal,
+    }).finally(() => window.clearTimeout(timeoutId));
   };
 
   const formatValue = (value, suffix = "", decimals = 1) => {
@@ -35,7 +36,7 @@
     const toast = document.querySelector("#toast");
     if (!toast) return;
     const toastText = toast.querySelector("span");
-    if (toastText) toastText.textContent = "Botão de pânico acionado. Alerta recebido.";
+    if (toastText) toastText.textContent = "Novo alerta de simulação recebido.";
     toast.classList.add("show");
     window.clearTimeout(panicToastTimer);
     panicToastTimer = window.setTimeout(() => toast.classList.remove("show"), 5000);
@@ -47,7 +48,46 @@
     return Number.isNaN(date.getTime()) ? value : date.toLocaleString("pt-BR");
   };
 
-  const updateReading = (reading, latestPanic) => {
+  const renderActiveAlerts = (alerts) => {
+    const panel = document.querySelector("[data-active-alerts]");
+    const list = document.querySelector("[data-active-alert-list]");
+    if (!panel || !list) return;
+    list.replaceChildren();
+    panel.hidden = alerts.length === 0;
+    alerts.forEach((alert) => {
+      const item = document.createElement("article");
+      item.className = "active-alert-item";
+      const details = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent =
+        alert.alert_type === "fall" ? "Possível queda detectada" : "Alerta manual de pânico";
+      const meta = document.createElement("p");
+      meta.textContent = `${alert.status === "acknowledged" ? "Reconhecido" : "Ativo"} · ${alert.device_id} · ${formatTime(alert.created_at)}`;
+      details.append(title, meta);
+      const actions = document.createElement("div");
+      actions.className = "active-alert-actions";
+      if (alert.status === "active") {
+        const acknowledge = document.createElement("button");
+        acknowledge.className = "care-button secondary";
+        acknowledge.type = "button";
+        acknowledge.textContent = "Reconhecer";
+        acknowledge.dataset.alertAction = "acknowledge";
+        acknowledge.dataset.alertId = alert.id;
+        actions.append(acknowledge);
+      }
+      const resolve = document.createElement("button");
+      resolve.className = "care-button";
+      resolve.type = "button";
+      resolve.textContent = "Resolver";
+      resolve.dataset.alertAction = "resolve";
+      resolve.dataset.alertId = alert.id;
+      actions.append(resolve);
+      item.append(details, actions);
+      list.append(item);
+    });
+  };
+
+  const updateReading = (reading, latestPanic, activeAlerts = []) => {
     if (!reading) {
       setText('[data-reading="temperature"]', "--");
       setText('[data-reading="heart-rate"]', "--");
@@ -66,67 +106,91 @@
       setText("[data-health-detail]", "Nenhuma telemetria recebida");
       setText("[data-component-esp32]", "sem telemetria");
       setText("[data-component-sensors]", "sem leitura");
+      renderActiveAlerts(activeAlerts);
       document.body.dataset.readingState = "idle";
       return;
     }
 
+    const receivedAt = Date.parse(reading.received_at);
+    const readingIsFresh =
+      Number.isFinite(receivedAt) &&
+      Date.now() >= receivedAt &&
+      Date.now() - receivedAt <= staleAfterMs;
+    const sensorConnected = readingIsFresh && reading.sensor_contact;
     setText(
       '[data-reading="temperature"]',
-      formatValue(reading.temperature_c, " °C", 1),
+      !readingIsFresh
+        ? "Desatualizado"
+        : formatValue(reading.temperature_c, " °C", 1),
     );
     setText(
       '[data-reading="heart-rate"]',
-      formatValue(reading.heart_rate_bpm, " bpm", 1),
+      !readingIsFresh
+        ? "Desatualizado"
+        : !reading.sensor_contact
+          ? "Sem contato"
+          : formatValue(reading.heart_rate_bpm, " bpm", 1),
     );
-    setText('[data-reading="spo2"]', formatValue(reading.spo2_percent, "%", 1));
+    setText(
+      '[data-reading="spo2"]',
+      !readingIsFresh
+        ? "Desatualizado"
+        : !reading.sensor_contact
+          ? "Sem contato"
+          : formatValue(reading.spo2_percent, "%", 1),
+    );
     setText(
       '[data-reading="battery"]',
-      formatValue(reading.battery_percent, "%", 0),
+      readingIsFresh
+        ? formatValue(reading.battery_percent, "%", 0)
+        : "Desatualizado",
     );
     setText(
       "[data-reading-battery-voltage]",
-      reading.battery_voltage == null
+      !readingIsFresh
+        ? "Leitura desatualizada"
+        : reading.battery_voltage == null
         ? "MAX17048"
         : `${formatValue(reading.battery_voltage, " V", 2)} · MAX17048`,
     );
     setText(
       '[data-reading="acceleration"]',
-      formatValue(reading.acceleration_g, " g", 2),
+      readingIsFresh
+        ? formatValue(reading.acceleration_g, " g", 2)
+        : "Desatualizado",
     );
     setText(
       '[data-reading="motion"]',
-      reading.acceleration_g == null
+      !readingIsFresh
+        ? "Desatualizado"
+        : reading.acceleration_g == null
         ? "--"
         : reading.motion_active
           ? "Ativo"
           : "Repouso",
     );
+    const fallAlert = activeAlerts.find((alert) => alert.alert_type === "fall");
     setText(
       '[data-reading="fall"]',
-      reading.fall_detected ? "Possível" : "Não detectada",
+      !readingIsFresh
+        ? "Desatualizado"
+        : fallAlert
+          ? fallAlert.status === "acknowledged" ? "Reconhecida" : "Alerta ativo"
+          : reading.fall_detected
+            ? "Evento resolvido"
+            : "Não detectada",
     );
-    const panicReceivedAt = latestPanic
-      ? Date.parse(latestPanic.received_at)
-      : NaN;
-    const panicActive =
-      Boolean(latestPanic && latestPanic.panic) &&
-      Number.isFinite(panicReceivedAt) &&
-      Date.now() >= panicReceivedAt &&
-      Date.now() - panicReceivedAt < panicDurationMs;
-    const panicLabel = panicActive
-      ? "Enviado"
+    const panicAlert = activeAlerts.find((alert) => alert.alert_type === "panic");
+    const panicLabel = panicAlert
+      ? panicAlert.status === "acknowledged" ? "Reconhecido" : "Ativo"
       : latestPanic && latestPanic.panic
-        ? "Expirado"
+        ? "Resolvido"
         : "Inativo";
     setText('[data-reading="panic"]', panicLabel);
-    const receivedAt = Date.parse(reading.received_at);
-    const readingIsFresh =
-      Number.isFinite(receivedAt) && Date.now() - receivedAt <= staleAfterMs;
-    const sensorConnected = readingIsFresh && reading.sensor_contact;
-    const status = panicActive
-      ? "Alerta remoto vigente"
-      : readingIsFresh && reading.fall_detected
-        ? "Possível queda detectada"
+    const status = activeAlerts.some((alert) => alert.status === "active")
+      ? "Alerta ativo — requer atenção"
+      : activeAlerts.length
+        ? "Alerta reconhecido"
       : readingIsFresh
         ? reading.sensor_contact
           ? "Monitoramento ativo"
@@ -134,7 +198,7 @@
         : "Leitura desatualizada";
     setText("[data-reading-status]", status);
     document.documentElement.dataset.readingStale = String(!readingIsFresh);
-    document.body.dataset.readingState = panicActive
+    document.body.dataset.readingState = activeAlerts.length
       ? "panic"
       : readingIsFresh
         ? "live"
@@ -145,7 +209,7 @@
       readingIsFresh
         ? reading.sensor_contact
           ? "Última telemetria recente"
-          : "MAX30102 sem contato"
+          : "Sem contato: pulso e SpO₂ não disponíveis"
         : "Última leitura há mais de 6 minutos",
     );
     setText(
@@ -160,20 +224,20 @@
     );
     setText(
       "[data-reading-updated]",
-      `Recebido em ${formatTime(reading.received_at)}`,
+      readingIsFresh
+        ? `Recebido em ${formatTime(reading.received_at)}`
+        : `Leitura antiga (${formatTime(reading.received_at)})`,
     );
     setText("[data-reading-trend]", reading.temperature_trend || "estavel");
     setText("[data-reading-device]", reading.device_id || "pulseira-01");
 
-    const panicEndsAt = Number.isFinite(panicReceivedAt)
-      ? formatTime(new Date(panicReceivedAt + panicDurationMs).toISOString())
-      : "";
-    const alertMessage = panicActive
-      ? `Alerta enviado; válido até ${panicEndsAt}`
+    const alertMessage = panicAlert
+      ? `Alerta ${panicAlert.status === "acknowledged" ? "reconhecido" : "ativo"} desde ${formatTime(panicAlert.created_at)}`
       : latestPanic && latestPanic.panic
-        ? `Último alerta expirou às ${panicEndsAt}`
+        ? "Último alerta resolvido"
         : "Nenhum alerta manual registrado";
     setText("[data-reading-alert]", alertMessage);
+    renderActiveAlerts(activeAlerts);
   };
 
   const updateHistory = (readings) => {
@@ -233,36 +297,60 @@
   };
 
   let refreshInProgress = false;
-  let panicBaselineEstablished = false;
-  let lastPanicEventId = null;
+  let alertBaselineEstablished = false;
+  let lastAlertIds = new Set();
 
-  const notifyForNewPanic = (latestPanic) => {
-    const eventId = latestPanic
-      ? latestPanic.id ?? latestPanic.received_at
-      : null;
-
-    if (!panicBaselineEstablished) {
-      panicBaselineEstablished = true;
-      lastPanicEventId = eventId;
-      const receivedAt = latestPanic
-        ? Date.parse(latestPanic.received_at)
-        : NaN;
-      if (
-        latestPanic?.panic &&
-        Number.isFinite(receivedAt) &&
-        Date.now() - receivedAt <= refreshIntervalMs + 5000 &&
-        Date.now() >= receivedAt
-      ) {
-        showPanicNotification();
-      }
+  const notifyForNewAlerts = (alerts) => {
+    const currentAlertIds = new Set(alerts.map((alert) => String(alert.id)));
+    if (!alertBaselineEstablished) {
+      alertBaselineEstablished = true;
+      const hasRecentAlert = alerts.some((alert) => {
+        const createdAt = Date.parse(alert.created_at);
+        return (
+          Number.isFinite(createdAt) &&
+          Date.now() >= createdAt &&
+          Date.now() - createdAt <= refreshIntervalMs + 5000
+        );
+      });
+      if (hasRecentAlert) showPanicNotification();
+      lastAlertIds = currentAlertIds;
       return;
     }
-
-    if (latestPanic?.panic && eventId !== null && eventId !== lastPanicEventId) {
+    if ([...currentAlertIds].some((id) => !lastAlertIds.has(id))) {
       showPanicNotification();
     }
-    lastPanicEventId = eventId;
+    lastAlertIds = currentAlertIds;
   };
+
+  const submitAlertAction = async (alertId, action) => {
+    const response = await fetchWithTimeout(
+      `${apiBaseUrl}/api/v1/alerts/${encodeURIComponent(alertId)}/${action}`,
+      { method: "POST" },
+    );
+    if (!response.ok) throw new Error("Não foi possível atualizar o alerta.");
+  };
+
+  document.addEventListener("click", async (event) => {
+    const button = event.target.closest("[data-alert-action]");
+    if (!button) return;
+    button.disabled = true;
+    try {
+      await submitAlertAction(button.dataset.alertId, button.dataset.alertAction);
+      while (refreshInProgress) {
+        await new Promise((resolve) => window.setTimeout(resolve, 50));
+      }
+      await refreshDeviceData();
+    } catch (error) {
+      button.disabled = false;
+      const toast = document.querySelector("#toast");
+      if (toast) {
+        const toastText = toast.querySelector("span");
+        if (toastText) toastText.textContent = error.message;
+        toast.classList.add("show");
+        window.setTimeout(() => toast.classList.remove("show"), 5000);
+      }
+    }
+  });
 
   const refreshDeviceData = async () => {
     if (refreshInProgress) return;
@@ -274,11 +362,18 @@
         );
         if (!latestResponse.ok) throw new Error("API indisponivel");
         const latest = await latestResponse.json();
-        notifyForNewPanic(latest.latest_panic);
-        updateReading(latest.reading, latest.latest_panic);
+        const activeAlerts = Array.isArray(latest.active_alerts)
+          ? latest.active_alerts
+          : [];
+        notifyForNewAlerts(activeAlerts);
+        updateReading(latest.reading, latest.latest_panic, activeAlerts);
         document.documentElement.dataset.apiStatus = "online";
       } catch {
-        setText("[data-reading-status]", "API indisponivel");
+        updateReading(null, null, []);
+        setText("[data-reading-status]", "API indisponível — sem dados atuais");
+        setText("[data-health-state]", "OFF");
+        setText("[data-health-detail]", "Não foi possível consultar a API");
+        setText("[data-reading-updated]", "Sem conexão com a API");
         document.documentElement.dataset.apiStatus = "offline";
         return;
       }

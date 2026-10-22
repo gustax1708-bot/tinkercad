@@ -2430,6 +2430,114 @@ button {
   line-height: 1.6;
 }
 
+.prototype-notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 22px;
+  padding: 15px 17px;
+  border: 1px solid #f0d89a;
+  border-radius: 8px;
+  background: #fff8e7;
+  color: #57451c;
+}
+
+.prototype-notice > svg {
+  width: 21px;
+  height: 21px;
+  flex: 0 0 auto;
+  color: #9a7013;
+}
+
+.prototype-notice div {
+  display: grid;
+  gap: 3px;
+}
+
+.prototype-notice span {
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.active-alerts {
+  margin: 20px 0;
+  padding: 18px;
+  border: 1px solid #efb4a9;
+  border-radius: 9px;
+  background: #fff7f5;
+  color: #57271f;
+}
+
+.active-alerts[hidden] {
+  display: none;
+}
+
+.active-alerts-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.active-alerts-heading > svg {
+  width: 20px;
+  color: #b43b2c;
+}
+
+.active-alerts-heading h3 {
+  margin: 0;
+  font-size: 15px;
+}
+
+.active-alerts-list {
+  display: grid;
+  gap: 9px;
+}
+
+.active-alert-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 7px;
+  background: #fff;
+}
+
+.active-alert-item p {
+  margin: 4px 0 0;
+  color: #76544e;
+  font-size: 12px;
+}
+
+.active-alert-actions {
+  display: flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+body[data-theme="dark"] .prototype-notice,
+body[data-theme="dark"] .active-alerts {
+  border-color: #795d31;
+  background: #3a3020;
+  color: #fff3d4;
+}
+
+body[data-theme="dark"] .prototype-notice > svg,
+body[data-theme="dark"] .active-alerts-heading > svg {
+  color: #f4c96b;
+}
+
+body[data-theme="dark"] .active-alert-item {
+  background: #1d3345;
+  color: var(--ink);
+}
+
+body[data-theme="dark"] .active-alert-item p {
+  color: #d0dae2;
+}
+
 .accessibility-launcher {
   position: fixed;
   z-index: 60;
@@ -2748,6 +2856,11 @@ body.reduce-motion *::after {
   }
 
   .medicine-item {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .active-alert-item {
     align-items: flex-start;
     flex-direction: column;
   }

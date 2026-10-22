@@ -55,6 +55,25 @@ def database_session():
                     temperature_trend TEXT NOT NULL
                 )"""
             )
+            connection.execute(
+                """CREATE TABLE IF NOT EXISTS alerts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    reading_id INTEGER NOT NULL REFERENCES readings(id),
+                    device_id TEXT NOT NULL,
+                    alert_type TEXT NOT NULL,
+                    created_at TEXT NOT NULL,
+                    acknowledged_at TEXT,
+                    resolved_at TEXT
+                )"""
+            )
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_alerts_open "
+                "ON alerts(resolved_at, id DESC)"
+            )
+            connection.execute(
+                "CREATE UNIQUE INDEX IF NOT EXISTS idx_alerts_reading_type "
+                "ON alerts(reading_id, alert_type)"
+            )
             columns = {
                 row["name"]
                 for row in connection.execute("PRAGMA table_info(readings)")
@@ -71,6 +90,27 @@ def database_session():
                     connection.execute(
                         f"ALTER TABLE readings ADD COLUMN {name} {definition}"
                     )
+            connection.execute(
+                """INSERT OR IGNORE INTO alerts (
+                    reading_id, device_id, alert_type, created_at
+                )
+                SELECT id, device_id, 'panic', received_at
+                FROM readings WHERE panic = 1"""
+            )
+            connection.execute(
+                """INSERT OR IGNORE INTO alerts (
+                    reading_id, device_id, alert_type, created_at
+                )
+                SELECT id, device_id, 'fall', received_at
+                FROM (
+                    SELECT id, device_id, received_at, fall_detected,
+                           LAG(fall_detected, 1, 0) OVER (
+                               PARTITION BY device_id ORDER BY id
+                           ) AS previous_fall
+                    FROM readings
+                )
+                WHERE fall_detected = 1 AND previous_fall = 0"""
+            )
             yield connection
     finally:
         connection.close()
@@ -189,7 +229,7 @@ class ApiHandler(BaseHTTPRequestHandler):
             self.end_headers()
             return
 
-        if path not in ("/api/v1/latest", "/api/v1/history"):
+        if path not in ("/api/v1/latest", "/api/v1/history", "/api/v1/health"):
             self.send_json(404, {"error": "nao encontrado"})
             return
         if not self.device_token_is_valid():
@@ -197,7 +237,12 @@ class ApiHandler(BaseHTTPRequestHandler):
             return
 
         with database_session() as connection:
-            if path.endswith("latest"):
+            if path.endswith("health"):
+                self.send_json(
+                    200,
+                    {"status": "ok", "database": "ok"},
+                )
+            elif path.endswith("latest"):
                 latest = connection.execute(
                     "SELECT * FROM readings WHERE panic = 0 ORDER BY id DESC LIMIT 1"
                 ).fetchone()
@@ -208,11 +253,29 @@ class ApiHandler(BaseHTTPRequestHandler):
                 latest_panic = connection.execute(
                     "SELECT * FROM readings WHERE panic = 1 ORDER BY id DESC LIMIT 1"
                 ).fetchone()
+                alert_rows = connection.execute(
+                    """SELECT id, reading_id, device_id, alert_type, created_at,
+                              acknowledged_at, resolved_at
+                       FROM alerts
+                       WHERE resolved_at IS NULL
+                       ORDER BY id DESC LIMIT 50"""
+                ).fetchall()
                 self.send_json(
                     200,
                     {
                         "reading": dict(latest) if latest else None,
                         "latest_panic": dict(latest_panic) if latest_panic else None,
+                        "active_alerts": [
+                            {
+                                **dict(alert),
+                                "status": (
+                                    "acknowledged"
+                                    if alert["acknowledged_at"]
+                                    else "active"
+                                ),
+                            }
+                            for alert in alert_rows
+                        ],
                     },
                 )
             else:
@@ -222,7 +285,11 @@ class ApiHandler(BaseHTTPRequestHandler):
                 self.send_json(200, {"readings": [dict(row) for row in rows]})
 
     def do_POST(self):
-        if urlparse(self.path).path != "/api/v1/readings":
+        path = urlparse(self.path).path
+        if path.startswith("/api/v1/alerts/"):
+            self.handle_alert_action(path)
+            return
+        if path != "/api/v1/readings":
             self.send_json(404, {"error": "nao encontrado"})
             return
         if not self.device_token_is_valid():
@@ -237,6 +304,11 @@ class ApiHandler(BaseHTTPRequestHandler):
             if not isinstance(payload, dict):
                 raise ValueError("o corpo deve ser um objeto JSON")
             with database_session() as connection:
+                previous_fall = connection.execute(
+                    """SELECT fall_detected FROM readings
+                       WHERE device_id = ? ORDER BY id DESC LIMIT 1""",
+                    (payload.get("device_id", "pulseira-01"),),
+                ).fetchone()
                 reading = interpret(payload, connection)
                 cursor = connection.execute(
                     """INSERT INTO readings (
@@ -257,6 +329,26 @@ class ApiHandler(BaseHTTPRequestHandler):
                     ),
                 )
                 reading["id"] = cursor.lastrowid
+                alert_types = []
+                if reading["panic"]:
+                    alert_types.append("panic")
+                if (
+                    reading["fall_detected"]
+                    and not (previous_fall and previous_fall["fall_detected"])
+                ):
+                    alert_types.append("fall")
+                for alert_type in alert_types:
+                    connection.execute(
+                        """INSERT INTO alerts (
+                            reading_id, device_id, alert_type, created_at
+                        ) VALUES (?, ?, ?, ?)""",
+                        (
+                            reading["id"],
+                            reading["device_id"],
+                            alert_type,
+                            reading["received_at"],
+                        ),
+                    )
             print(
                 f"[API] Telemetria armazenada: id={reading['id']} "
                 f"alerta={reading['panic']} status={reading['status']}",
@@ -266,9 +358,57 @@ class ApiHandler(BaseHTTPRequestHandler):
         except (ValueError, json.JSONDecodeError, UnicodeDecodeError) as error:
             self.send_json(400, {"error": str(error)})
 
+    def handle_alert_action(self, path):
+        if not self.device_token_is_valid():
+            self.send_json(401, {"error": "token invalido"})
+            return
+
+        parts = path.split("/")
+        if len(parts) != 6 or parts[3] != "alerts":
+            self.send_json(404, {"error": "nao encontrado"})
+            return
+        try:
+            alert_id = int(parts[4])
+        except ValueError:
+            self.send_json(400, {"error": "id de alerta invalido"})
+            return
+        action = parts[5]
+        if alert_id < 1 or action not in {"acknowledge", "resolve"}:
+            self.send_json(404, {"error": "acao de alerta nao encontrada"})
+            return
+
+        timestamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
+        column = "acknowledged_at" if action == "acknowledge" else "resolved_at"
+        with database_session() as connection:
+            cursor = connection.execute(
+                f"UPDATE alerts SET {column} = ? WHERE id = ? AND resolved_at IS NULL "
+                f"AND {column} IS NULL",
+                (timestamp, alert_id),
+            )
+            alert = connection.execute(
+                """SELECT id, reading_id, device_id, alert_type, created_at,
+                          acknowledged_at, resolved_at
+                   FROM alerts WHERE id = ?""",
+                (alert_id,),
+            ).fetchone()
+        if alert is None:
+            self.send_json(404, {"error": "alerta nao encontrado"})
+            return
+        alert_data = dict(alert)
+        alert_data["status"] = (
+            "resolved"
+            if alert["resolved_at"]
+            else "acknowledged"
+            if alert["acknowledged_at"]
+            else "active"
+        )
+        self.send_json(200, {"alert": alert_data, "updated": cursor.rowcount == 1})
+
     def log_message(self, format_string, *args):
         request_line = args[0] if args else ""
-        if request_line.startswith(("GET /api/v1/latest", "GET /api/v1/history")):
+        if request_line.startswith(
+            ("GET /api/v1/latest", "GET /api/v1/history", "GET /api/v1/health")
+        ):
             return
         print(f"{self.address_string()} - {format_string % args}")
 

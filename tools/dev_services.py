@@ -13,13 +13,15 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "http://127.0.0.1:8000/api/v1/latest"
+API_HEALTH_URL = "http://127.0.0.1:8000/api/v1/health"
+API_HISTORY_URL = "http://127.0.0.1:8000/api/v1/history"
 SITE_URL = "http://127.0.0.1:8080/"
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 
 
-def get_response(url, headers=None):
+def get_response(url, headers=None, data=None, method=None):
     try:
-        request = Request(url, headers=headers or {})
+        request = Request(url, data=data, headers=headers or {}, method=method)
         with urlopen(request, timeout=1) as response:
             return response.status, response.read()
     except HTTPError as error:
@@ -29,16 +31,22 @@ def get_response(url, headers=None):
 
 
 def api_is_running():
-    status, body = get_response(
-        API_URL, headers={"X-Device-Token": DEVICE_TOKEN}
-    )
-    if status != 200:
-        return False
-    try:
-        payload = json.loads(body)
-    except (json.JSONDecodeError, UnicodeDecodeError):
-        return False
-    return "reading" in payload and "latest_panic" in payload
+    headers = {"X-Device-Token": DEVICE_TOKEN}
+    for url, expected_keys in (
+        (API_HEALTH_URL, {"status", "database"}),
+        (API_URL, {"reading", "latest_panic", "active_alerts"}),
+        (API_HISTORY_URL, {"readings"}),
+    ):
+        status, body = get_response(url, headers=headers)
+        if status != 200:
+            return False
+        try:
+            payload = json.loads(body)
+        except (json.JSONDecodeError, UnicodeDecodeError):
+            return False
+        if not expected_keys.issubset(payload):
+            return False
+    return True
 
 
 def site_is_running():
@@ -50,6 +58,17 @@ def site_is_running():
         status, _ = get_response(f"http://127.0.0.1:8080{path}")
         if status not in (403, 404):
             return False
+
+    for path in (
+        "docs/pages/index.html",
+        "docs/pages/docs.html",
+        "docs/assets/js/api.js",
+        "docs/assets/css/home.css",
+    ):
+        status, body = get_response(f"http://127.0.0.1:8080/{path}")
+        if status != 200 or not body:
+            return False
+
     return True
 
 
@@ -111,6 +130,33 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
             self.send_error(404, "Not found")
             return
         super().do_GET()
+
+    def do_POST(self):
+        request_path = urlsplit(self.path).path
+        if not request_path.startswith("/api/v1/alerts/"):
+            self.send_error(404, "Not found")
+            return
+        status, body = get_response(
+            f"http://127.0.0.1:8000{self.path}",
+            headers={
+                "X-Device-Token": DEVICE_TOKEN,
+                "Content-Length": "0",
+            },
+            data=b"",
+            method="POST",
+        )
+        if status is None:
+            status = 503
+            body = json.dumps({"error": "api indisponivel"}).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        try:
+            self.wfile.write(body)
+        except BrokenPipeError:
+            pass
 
 
 def make_site_server():

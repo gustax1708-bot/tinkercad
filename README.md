@@ -164,7 +164,15 @@ py -3 -m unittest discover -s test -v
 python3 -m unittest discover -s test -v
 ```
 
-A API oferece `POST /api/v1/readings`, `GET /api/v1/latest` e `GET /api/v1/history`. Os endpoints de leitura e histórico também são acessíveis pelo proxy do dashboard na mesma origem.
+Os testes de API executam cenários simulados reproduzíveis de leitura normal, falta de contato, queda com sinal repetido, pânico, reconhecimento e resolução de alertas. Eles usam um banco temporário e não alteram `CURA/readings.sqlite3`. Para o cenário interativo do MPU6050 no simulador, use `CURA/fall_detection.scenario.yaml`.
+
+A API oferece `POST /api/v1/readings`, `GET /api/v1/latest`, `GET /api/v1/history` e `GET /api/v1/health`. Alertas podem ser reconhecidos ou resolvidos com `POST /api/v1/alerts/{id}/acknowledge` e `POST /api/v1/alerts/{id}/resolve`. Os endpoints de leitura, histórico e ações de alerta também são acessíveis pelo proxy do dashboard na mesma origem.
+
+No serviço integrado, confira a disponibilidade da API, do banco e dos arquivos do dashboard com:
+
+```powershell
+py -3 tools/dev_services.py --check
+```
 
 Para executar apenas a API, configure o token correspondente ao firmware e inicie o servidor a partir de `CURA/`:
 
@@ -175,4 +183,4 @@ python3 api.py
 
 ## Limites de uso
 
-Este protótipo não é um dispositivo médico. Pulso, saturação, temperatura de contato e detecção de quedas não têm validação clínica.
+Este protótipo funciona em simulação e não é um dispositivo médico. Pulso, saturação, temperatura de contato, detecção de quedas e alertas não têm validação clínica. Os avisos do dashboard servem somente para testar o fluxo de software e não devem orientar diagnóstico, tratamento ou resposta a emergências.

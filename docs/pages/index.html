@@ -145,6 +145,10 @@
             </div>
           </section>
           <section class="project-section" id="overview">
+            <div class="prototype-notice" role="note">
+              <i data-lucide="flask-conical" aria-hidden="true"></i>
+              <div><strong>Protótipo em simulação</strong><span>Os valores e alertas são experimentais, não têm validação clínica e não devem orientar decisões médicas.</span></div>
+            </div>
             <div class="section-heading">
               <div>
                 <p class="eyebrow">PAINEL DO PROJETO</p>
@@ -155,6 +159,10 @@
                 Wokwi</span
               >
             </div>
+            <section class="active-alerts" data-active-alerts hidden aria-live="polite" aria-label="Alertas ativos">
+              <div class="active-alerts-heading"><i data-lucide="triangle-alert" aria-hidden="true"></i><h3>Alertas que precisam de atenção</h3></div>
+              <div class="active-alerts-list" data-active-alert-list></div>
+            </section>
             <div class="dashboard-grid">
               <article class="telemetry-card">
                 <div class="card-heading">

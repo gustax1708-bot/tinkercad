@@ -49,6 +49,15 @@ class ApiHttpTests(unittest.TestCase):
         response = self.connection.getresponse()
         return response.status, json.loads(response.read())
 
+    def post_alert_action(self, alert_id, action, token="test-token"):
+        self.connection.request(
+            "POST",
+            f"/api/v1/alerts/{alert_id}/{action}",
+            headers={"X-Device-Token": token},
+        )
+        response = self.connection.getresponse()
+        return response.status, json.loads(response.read())
+
     def test_api_root_redirects_to_frontend(self):
         self.connection.request("GET", "/")
         response = self.connection.getresponse()
@@ -57,7 +66,7 @@ class ApiHttpTests(unittest.TestCase):
         self.assertEqual(response.getheader("Location"), api.SITE_URL)
 
     def test_telemetry_endpoints_are_not_cached(self):
-        for path in ("/api/v1/latest", "/api/v1/history"):
+        for path in ("/api/v1/latest", "/api/v1/history", "/api/v1/health"):
             self.connection.request(
                 "GET", path, headers={"X-Device-Token": "test-token"}
             )
@@ -67,6 +76,15 @@ class ApiHttpTests(unittest.TestCase):
             self.assertEqual(response.getheader("Cache-Control"), "no-store")
             self.assertEqual(response.getheader("X-Content-Type-Options"), "nosniff")
             self.assertEqual(response.getheader("X-Frame-Options"), "DENY")
+
+    def test_health_endpoint_confirms_database_is_available(self):
+        self.connection.request(
+            "GET", "/api/v1/health", headers={"X-Device-Token": "test-token"}
+        )
+        response = self.connection.getresponse()
+        result = json.loads(response.read())
+        self.assertEqual(response.status, 200)
+        self.assertEqual(result, {"status": "ok", "database": "ok"})
 
     def test_cors_only_allows_configured_dashboard_origin(self):
         for origin, expected in (
@@ -86,7 +104,11 @@ class ApiHttpTests(unittest.TestCase):
             )
 
     def test_telemetry_reads_require_device_token(self):
-        for path in ("/api/v1/latest", "/api/v1/history"):
+        for path in (
+            "/api/v1/latest",
+            "/api/v1/history",
+            "/api/v1/health",
+        ):
             self.connection.request("GET", path)
             response = self.connection.getresponse()
             response.read()
@@ -141,6 +163,77 @@ class ApiHttpTests(unittest.TestCase):
         self.assertFalse(result["reading"]["panic"])
         self.assertTrue(result["latest_panic"]["panic"])
         self.assertEqual(result["latest_panic"]["heart_rate_bpm"], 72)
+
+    def test_simulated_scenarios_keep_missing_data_clear_and_alerts_actionable(self):
+        normal = {
+            "device_id": "pulseira-01",
+            "spo2_percent": 97,
+            "heart_rate_bpm": 72,
+            "temperature_c": 36.5,
+            "sensor_contact": True,
+        }
+        self.assertEqual(self.post_reading(normal)[0], 201)
+
+        no_contact = {
+            **normal,
+            "spo2_percent": None,
+            "heart_rate_bpm": None,
+            "sensor_contact": False,
+        }
+        status, result = self.post_reading(no_contact)
+        self.assertEqual(status, 201)
+        self.assertEqual(result["reading"]["status"], "sem_contato")
+        self.assertIsNone(result["reading"]["spo2_percent"])
+        self.assertIsNone(result["reading"]["heart_rate_bpm"])
+
+        fall = {**normal, "fall_detected": True}
+        self.assertEqual(self.post_reading(fall)[0], 201)
+        self.assertEqual(self.post_reading(fall)[0], 201)
+        self.assertEqual(
+            self.post_reading({**normal, "fall_detected": False})[0], 201
+        )
+        self.assertEqual(self.post_reading(fall)[0], 201)
+        self.assertEqual(
+            self.post_reading({**normal, "panic": True})[0], 201
+        )
+
+        self.connection.request(
+            "GET", "/api/v1/latest", headers={"X-Device-Token": "test-token"}
+        )
+        response = self.connection.getresponse()
+        latest = json.loads(response.read())
+        self.assertEqual(response.status, 200)
+        alerts = latest["active_alerts"]
+        self.assertEqual(len(alerts), 3)
+        self.assertEqual(
+            [alert["alert_type"] for alert in alerts].count("fall"), 2
+        )
+        self.assertEqual(
+            [alert["alert_type"] for alert in alerts].count("panic"), 1
+        )
+
+        fall_alert = next(alert for alert in alerts if alert["alert_type"] == "fall")
+        self.assertEqual(
+            self.post_alert_action(fall_alert["id"], "acknowledge", token="wrong")[0],
+            401,
+        )
+        self.assertEqual(
+            self.post_alert_action(fall_alert["id"], "acknowledge")[0], 200
+        )
+        self.assertEqual(
+            self.post_alert_action(fall_alert["id"], "resolve")[0], 200
+        )
+        self.assertEqual(
+            self.post_alert_action(alerts[0]["id"], "dismiss")[0], 404
+        )
+
+        self.connection.request(
+            "GET", "/api/v1/latest", headers={"X-Device-Token": "test-token"}
+        )
+        response = self.connection.getresponse()
+        remaining = json.loads(response.read())["active_alerts"]
+        self.assertEqual(len(remaining), 2)
+        self.assertFalse(any(alert["id"] == fall_alert["id"] for alert in remaining))
 
     def test_latest_valid_reading_is_kept_when_panic_is_logged(self):
         normal = {
@@ -332,6 +425,51 @@ class ApiHttpTests(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(len(history["readings"]), 2)
         self.assertEqual(history["readings"][1]["spo2_percent"], 96.0)
+
+    def test_alert_migration_backfills_historical_panic_and_fall_edges(self):
+        connection = sqlite3.connect(api.DATABASE)
+        connection.execute(
+            """CREATE TABLE readings (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                device_id TEXT NOT NULL,
+                received_at TEXT NOT NULL,
+                spo2_percent REAL,
+                heart_rate_bpm REAL,
+                temperature_c REAL,
+                fall_detected INTEGER NOT NULL DEFAULT 0,
+                panic INTEGER NOT NULL,
+                sensor_contact INTEGER NOT NULL,
+                status TEXT NOT NULL,
+                temperature_trend TEXT NOT NULL
+            )"""
+        )
+        connection.executemany(
+            """INSERT INTO readings (
+                device_id, received_at, panic, fall_detected,
+                sensor_contact, status, temperature_trend
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            [
+                ("pulseira-01", "2026-01-01T00:00:00+00:00", 1, 0, 1, "panico", "estavel"),
+                ("pulseira-01", "2026-01-01T00:00:10+00:00", 0, 1, 1, "queda_possivel", "estavel"),
+                ("pulseira-01", "2026-01-01T00:00:20+00:00", 0, 1, 1, "queda_possivel", "estavel"),
+                ("pulseira-01", "2026-01-01T00:00:30+00:00", 0, 0, 1, "normal_demo", "estavel"),
+                ("pulseira-01", "2026-01-01T00:00:40+00:00", 0, 1, 1, "queda_possivel", "estavel"),
+            ],
+        )
+        connection.commit()
+        connection.close()
+
+        self.connection.request(
+            "GET", "/api/v1/latest", headers={"X-Device-Token": "test-token"}
+        )
+        response = self.connection.getresponse()
+        latest = json.loads(response.read())
+        self.assertEqual(response.status, 200)
+        self.assertEqual(len(latest["active_alerts"]), 3)
+        self.assertEqual(
+            {alert["alert_type"] for alert in latest["active_alerts"]},
+            {"panic", "fall"},
+        )
 
 
 if __name__ == "__main__":
