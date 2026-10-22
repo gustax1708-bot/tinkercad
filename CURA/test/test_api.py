@@ -186,19 +186,73 @@ class ApiHttpTests(unittest.TestCase):
         status, _ = self.post_reading({"panic": True}, token="wrong")
         self.assertEqual(status, 401)
 
-    def test_api_rejects_public_bind_with_development_token(self):
-        original_host = api.HOST
+    def test_api_allows_loopback_with_development_token(self):
         original_token = api.DEVICE_TOKEN
+        original_host = api.HOST
         try:
-            api.HOST = "0.0.0.0"
+            self.assertEqual(api.SITE_URL, "http://127.0.0.1:8080/")
+            self.assertEqual(api.API_CORS_ORIGIN, "http://localhost:8080")
+            api.HOST = "127.0.0.1"
             api.DEVICE_TOKEN = "dev-token"
-            with self.assertRaises(ValueError):
-                api.validate_security_configuration()
-            api.DEVICE_TOKEN = "custom-random-token"
             api.validate_security_configuration()
         finally:
-            api.HOST = original_host
             api.DEVICE_TOKEN = original_token
+            api.HOST = original_host
+
+    def test_network_bind_requires_a_strong_device_token(self):
+        original_token = api.DEVICE_TOKEN
+        original_host = api.HOST
+        try:
+            api.HOST = "0.0.0.0"
+            for token in ("dev-token", "short-token"):
+                with self.subTest(token=token):
+                    api.DEVICE_TOKEN = token
+                    with self.assertRaises(ValueError):
+                        api.validate_security_configuration()
+
+            api.DEVICE_TOKEN = "a" * 32
+            api.validate_security_configuration()
+            server = api.ThreadingHTTPServer(
+                ("0.0.0.0", 0), api.ApiHandler
+            )
+            server_thread = threading.Thread(
+                target=server.serve_forever, daemon=True
+            )
+            server_thread.start()
+            connection = http.client.HTTPConnection(
+                "127.0.0.1", server.server_port
+            )
+            try:
+                connection.request("GET", "/api/v1/latest")
+                response = connection.getresponse()
+                response.read()
+                self.assertEqual(response.status, 401)
+
+                connection.request(
+                    "GET",
+                    "/api/v1/latest",
+                    headers={"X-Device-Token": "a" * 32},
+                )
+                response = connection.getresponse()
+                response.read()
+                self.assertEqual(response.status, 200)
+            finally:
+                connection.close()
+                server.shutdown()
+                server.server_close()
+                server_thread.join(timeout=2)
+        finally:
+            api.DEVICE_TOKEN = original_token
+            api.HOST = original_host
+
+    def test_api_rejects_unapproved_bind_addresses(self):
+        original_host = api.HOST
+        try:
+            api.HOST = "192.168.1.10"
+            with self.assertRaises(ValueError):
+                api.validate_security_configuration()
+        finally:
+            api.HOST = original_host
 
     def test_new_sensor_values_are_range_checked(self):
         for payload in (

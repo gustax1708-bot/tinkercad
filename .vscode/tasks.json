@@ -2,7 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Iniciar CUIDA+ para Wokwi",
+      "label": "Iniciar CUIDA+ local",
       "type": "process",
       "command": "python3",
       "args": ["${workspaceFolder}/tools/dev_services.py"],

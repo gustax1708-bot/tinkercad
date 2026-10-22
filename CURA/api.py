@@ -11,18 +11,23 @@ from urllib.parse import urlparse
 
 HOST = os.getenv("API_HOST", "127.0.0.1")
 PORT = int(os.getenv("API_PORT", "8000"))
-SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8080/")
+SITE_URL = "http://127.0.0.1:8080/"
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
-API_CORS_ORIGIN = os.getenv("API_CORS_ORIGIN", "http://localhost:8080")
+API_CORS_ORIGIN = "http://localhost:8080"
 DATABASE = Path(os.getenv("DATABASE_PATH", str(Path(__file__).resolve().parent / "readings.sqlite3")))
 
 
 def validate_security_configuration():
     if not DEVICE_TOKEN:
         raise ValueError("DEVICE_TOKEN nao pode ser vazio")
-    local_hosts = {"127.0.0.1", "localhost", "::1"}
-    if HOST not in local_hosts and DEVICE_TOKEN == "dev-token":
-        raise ValueError("Defina um DEVICE_TOKEN proprio antes de expor a API na rede")
+    if HOST not in {"127.0.0.1", "0.0.0.0"}:
+        raise ValueError("API_HOST deve ser 127.0.0.1 ou 0.0.0.0")
+    if HOST == "0.0.0.0" and (
+        DEVICE_TOKEN == "dev-token" or len(DEVICE_TOKEN) < 32
+    ):
+        raise ValueError(
+            "Ao expor a API na rede, defina DEVICE_TOKEN com pelo menos 32 caracteres"
+        )
 
 
 @contextmanager

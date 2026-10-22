@@ -9,29 +9,23 @@ Projeto integrado de firmware ESP32, simulação Wokwi, API Python e dashboard w
 - MPU6050 para movimento e sinalização experimental de possível queda; MAX17048 para carga e tensão da célula.
 - Botão de pânico ligado ao GPIO27.
 - API Python com persistência SQLite em `CURA/readings.sqlite3`.
-- Dashboard responsivo em HTML, CSS e JavaScript, com página inicial em `index.html` e recursos em `docs/`.
+- Dashboard responsivo em HTML, CSS e JavaScript, com página inicial em `docs/pages/index.html` e recursos em `docs/`.
 
 ## Páginas do dashboard
 
 As páginas compartilham um menu que conecta a Home, Hardware, Firmware, Documentação e Bancada:
 
-- `index.html`: página inicial com telemetria, estado dos sensores e histórico.
+- `docs/pages/index.html`: página inicial com telemetria, estado dos sensores e histórico.
 - `docs/pages/hardware.html`: componentes, ligações e diagnóstico da API.
 - `docs/pages/firmware.html`: código, dependências e informações do firmware.
 - `docs/pages/docs.html`: fluxo de operação e endpoints da API.
 - `docs/pages/workbench.html`: resumo da bancada Wokwi.
 
-## Publicar uma demonstração no Render
-
-O repositório inclui `render.yaml` para publicar o dashboard e a API no mesmo serviço. No Render, crie um **Blueprint** conectado a este repositório e confirme a criação dos recursos descritos no arquivo. O serviço publica a página inicial em `/`, verifica a saúde em `/healthz` e grava o SQLite no disco persistente montado em `/var/data`.
-
-O Render gera um `DEVICE_TOKEN` secreto automaticamente. As gravações de telemetria continuam exigindo esse token; as rotas de leitura usadas pelo dashboard são públicas. Portanto, use apenas dados fictícios nessa demonstração: qualquer pessoa com o endereço do serviço pode consultar as leituras. Não copie telemetria real para essa instância nem compartilhe o token.
-
-O disco persistente está configurado no plano pago `starter` do Render. Consulte os preços e confirme os recursos antes de criar o serviço. A integração de uma placa física ou do Wokwi remoto não faz parte desta publicação de demonstração.
-
 ## Iniciar site e API
 
-No VS Code, execute a tarefa **Iniciar CUIDA+ para Wokwi** ou inicie manualmente:
+O modo local pode ser usado em cada computador separadamente, inclusive no computador da escola: obtenha uma cópia deste repositório nesse computador, instale Python 3 e execute o launcher. O dashboard e a API usam apenas a biblioteca padrão do Python, sem instalação de pacotes adicionais.
+
+No VS Code, abra a pasta do repositório e execute a tarefa **Iniciar CUIDA+ local**. Ou abra um terminal na pasta do projeto e execute:
 
 ```bash
 # Windows
@@ -41,20 +35,35 @@ py -3 tools/dev_services.py
 python3 tools/dev_services.py
 ```
 
-O launcher cria ou reutiliza os serviços locais:
+O launcher inicia ou reutiliza o dashboard e a API naquele computador:
 
 | Serviço | Endereço | Uso |
 | --- | --- | --- |
 | Dashboard | `http://localhost:8080/` | Acesso local |
-| API HTTP | `http://localhost:8000` | Firmware e Wokwi |
+| API HTTP | `http://localhost:8000` | Dashboard e desenvolvimento local |
 
-O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API. O firmware e o Wokwi também enviam telemetria à API HTTP na porta `8000`.
+O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API.
 
-O dashboard e a API locais escutam somente em `127.0.0.1` por padrão. O servidor web entrega a página inicial `index.html` e os arquivos estáticos de `docs/`. Todas as rotas de telemetria locais exigem `X-Device-Token`; o proxy local encaminha o token sem expô-lo ao JavaScript. O CORS permite apenas `http://localhost:8080`, e as respostas incluem cabeçalhos contra sniffing e incorporação em frames.
+Por padrão, cada computador executa sua própria cópia do dashboard, API e banco SQLite, e a API escuta apenas em `127.0.0.1`. Para usar uma placa física na mesma rede Wi-Fi ou conectar o Wokwi pelo **Private IoT Gateway**, inicie a API em modo de rede local. Isso não publica o dashboard nem a API na internet:
 
-O token padrão `dev-token` serve somente para desenvolvimento local. Para Wokwi via gateway ou placa física, habilite a interface de rede explicitamente com `API_HOST=0.0.0.0`, defina um token aleatório próprio em `DEVICE_TOKEN`, copie o mesmo valor para `CURA/include/secrets.h` e limite a porta 8000 no firewall à rede/dispositivo confiável. Nunca encaminhe essa porta à internet. Não abra a porta 8080 no firewall.
+```powershell
+# Gere um token aleatório forte e mantenha-o privado.
+$bytes = New-Object byte[] 32
+[Security.Cryptography.RandomNumberGenerator]::Create().GetBytes($bytes)
+$token = [BitConverter]::ToString($bytes).Replace("-", "").ToLowerInvariant()
+$token
 
-**Limites de segurança:** a demonstração pública no Render usa HTTPS fornecido pela plataforma, mas não tem login individual: as rotas de leitura são públicas. Ela não é adequada para dados biométricos reais ou para acesso remoto da equipe. Isso exige, no mínimo, autenticação e autorização por usuário, gestão de tokens por dispositivo e os controles de consentimento e retenção exigidos para dados pessoais sensíveis pela LGPD.
+# Use o mesmo token no firmware e na API.
+$env:API_HOST = "0.0.0.0"
+$env:DEVICE_TOKEN = $token
+py -3 tools/dev_services.py
+```
+
+Copie esse token para `DEVICE_API_TOKEN` em `CURA/include/secrets.h`. Para a placa física, configure `DEVICE_API_URL` com o IPv4 do computador que está rodando a API, por exemplo `http://192.168.1.25:8000/api/v1/readings` (descubra o endereço com `ipconfig` no Windows). A placa e o computador precisam estar na mesma rede local; permita conexões TCP de entrada na porta `8000` somente no perfil de rede privada, se o firewall solicitar. Não crie encaminhamento de portas no roteador nem libere a porta para redes públicas.
+
+Para Wokwi remoto, use o **Private IoT Gateway** no computador que executa a API. O firmware simulado já envia para `host.wokwi.internal:8000`; o gateway precisa estar ativo e autorizado a acessar o serviço local. Configure o mesmo `DEVICE_API_TOKEN` no `secrets.h` antes de iniciar a simulação. Redes escolares podem bloquear conexões entre dispositivos ou o gateway; nesse caso, a política de rede precisa permitir o tráfego local.
+
+O servidor do dashboard continua restrito ao próprio computador em `127.0.0.1:8080`. A API, quando configurada para aceitar a rede, valida o token em todas as rotas de telemetria e recusa iniciar com o token padrão ou com menos de 32 caracteres. O servidor web redireciona a raiz para `docs/pages/index.html` e entrega os arquivos estáticos de `docs/`; o proxy do dashboard encaminha o token sem expô-lo ao JavaScript. O CORS permanece limitado a `http://localhost:8080`.
 
 ## Configurar o firmware
 
@@ -65,7 +74,7 @@ cd CURA
 cp include/secrets.example.h include/secrets.h
 ```
 
-`secrets.h` é ignorado pelo Git. Para uma placa física, a URL deve apontar para o IPv4 do computador que executa a API, não para `localhost`; permita conexões de entrada na porta `8000` somente na rede privada necessária. No Wokwi, se `secrets.h` existir, o firmware usa o mesmo `DEVICE_API_TOKEN`; sem ele, usa o token demonstrativo `dev-token`.
+`secrets.h` é ignorado pelo Git. No modo padrão, a API aceita somente conexões do computador local. Para receber telemetria da placa ou do Wokwi remoto, use o modo de rede local descrito acima e configure o token correspondente em `secrets.h`. Sem esse arquivo, o firmware usa o token demonstrativo `dev-token`, que só funciona no modo padrão local.
 
 ### Ligações
 
@@ -101,17 +110,9 @@ O MAX17048 deve medir a célula, não a saída de 5 V do conversor. Os 12 h são
 - O alerta confirmado permanece vigente no painel por 10 minutos. O botão físico é momentâneo; sua liberação não encerra o alerta remoto.
 - O dashboard consulta a API a cada 10 segundos.
 
-## Executar no Wokwi
+## Simulação Wokwi
 
-O padrão seguro mantém a API em `127.0.0.1`, inacessível ao Wokwi e a outros dispositivos da LAN. Para usar o **Wokwi Private IoT Gateway**, pare a tarefa local e inicie uma sessão do PowerShell com um token exclusivo para desenvolvimento. Mantenha a porta 8000 bloqueada para redes não confiáveis:
-
-```powershell
-$env:API_HOST = "0.0.0.0"
-$env:DEVICE_TOKEN = "seu-token-aleatorio-de-desenvolvimento"
-py -3 tools/dev_services.py
-```
-
-Use o mesmo token em `CURA/include/secrets.h` (o firmware Wokwi lê esse arquivo quando existe). O firmware simulado usa `host.wokwi.internal` para alcançar a API; o gateway público não encaminha o POST para o servidor local. Não reutilize o token de desenvolvimento em uma implantação real.
+O firmware e o diagrama continuam disponíveis para compilação e simulação. Para enviar telemetria de uma simulação remota, inicie a API em modo de rede local, configure o token em `CURA/include/secrets.h` e conecte o **Private IoT Gateway** no computador que hospeda a API, conforme descrito acima. Sem esse gateway, a simulação ainda pode ser compilada e executada, mas não alcança a API do computador.
 
 Compile o firmware e o chip customizado a partir de `CURA/`:
 

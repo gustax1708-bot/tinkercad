@@ -2,14 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.querySelector("#sidebar");
   const toast = document.querySelector("#toast");
   const menuButton = document.querySelector("#menuButton");
-  const isRootIndex =
-    window.location.pathname.endsWith("/") ||
-    window.location.pathname.endsWith("/index.html");
   const pagePath = (page) =>
-    new URL(
-      isRootIndex ? `docs/pages/${page}` : page,
-      window.location.href,
-    ).pathname;
+    new URL(page, window.location.href).pathname;
   let toastTimer;
 
   if (window.lucide && typeof window.lucide.createIcons === "function") {

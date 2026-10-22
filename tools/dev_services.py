@@ -68,8 +68,6 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         request_path = urlsplit(path).path
-        if request_path in ("/", "/index.html"):
-            return str(ROOT / "index.html")
         if request_path.startswith("/docs/"):
             request_path = request_path[len("/docs"):]
         else:
@@ -103,9 +101,13 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
             except BrokenPipeError:
                 pass
             return
+        if request_path in ("/", "/index.html"):
+            self.send_response(302)
+            self.send_header("Location", "/docs/pages/index.html")
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            return
         if not request_path.startswith("/docs/"):
-            if request_path in ("/", "/index.html"):
-                return super().do_GET()
             self.send_error(404, "Not found")
             return
         super().do_GET()

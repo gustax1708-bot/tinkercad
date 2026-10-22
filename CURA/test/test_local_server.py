@@ -1,7 +1,5 @@
 import http.client
-import json
 import sys
-import tempfile
 import threading
 import unittest
 from pathlib import Path
@@ -11,18 +9,13 @@ from urllib.parse import urljoin, urlsplit
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 
-import render_server
+import dev_services
 
 
-class RenderServerTests(unittest.TestCase):
+class LocalServerTests(unittest.TestCase):
     def setUp(self):
-        self.temp_dir = tempfile.TemporaryDirectory()
-        self.original_database = render_server.api.DATABASE
-        self.original_token = render_server.api.DEVICE_TOKEN
-        render_server.api.DATABASE = Path(self.temp_dir.name) / "readings.sqlite3"
-        render_server.api.DEVICE_TOKEN = "test-token"
-        self.server = render_server.ThreadingHTTPServer(
-            ("127.0.0.1", 0), render_server.RenderHandler
+        self.server = dev_services.ThreadingHTTPServer(
+            ("127.0.0.1", 0), dev_services.FrontendOnlyHandler
         )
         self.server_thread = threading.Thread(
             target=self.server.serve_forever, daemon=True
@@ -37,26 +30,22 @@ class RenderServerTests(unittest.TestCase):
         self.server.shutdown()
         self.server.server_close()
         self.server_thread.join(timeout=2)
-        render_server.api.DATABASE = self.original_database
-        render_server.api.DEVICE_TOKEN = self.original_token
-        self.temp_dir.cleanup()
 
-    def test_root_serves_dashboard(self):
+    def test_root_redirects_to_dashboard_page(self):
         self.connection.request("GET", "/")
+        response = self.connection.getresponse()
+        response.read()
+        self.assertEqual(response.status, 302)
+        self.assertEqual(response.getheader("Location"), "/docs/pages/index.html")
+
+    def test_dashboard_page_and_local_assets_are_served(self):
+        self.connection.request("GET", "/docs/pages/index.html")
         response = self.connection.getresponse()
         body = response.read()
         self.assertEqual(response.status, 200)
         self.assertIn(b"<!doctype html>", body[:128].lower())
-        self.assertIn(b'href="docs/assets/css/home.css"', body)
-        self.assertIn(b'href="docs/pages/hardware.html"', body)
-        self.assertNotIn(b'href="/docs/', body)
-
-    def test_dashboard_can_read_demo_telemetry(self):
-        self.connection.request("GET", "/api/v1/latest")
-        response = self.connection.getresponse()
-        body = json.loads(response.read())
-        self.assertEqual(response.status, 200)
-        self.assertIsNone(body["reading"])
+        self.assertIn(b'href="../assets/css/home.css"', body)
+        self.assertIn(b'href="hardware.html"', body)
 
     def test_dashboard_pages_and_overview_links_are_available(self):
         for page in ("hardware", "firmware", "docs", "workbench"):
@@ -65,18 +54,19 @@ class RenderServerTests(unittest.TestCase):
                 response = self.connection.getresponse()
                 body = response.read()
                 self.assertEqual(response.status, 200)
-                self.assertIn(b'href="../../"', body)
+                self.assertIn(b'href="index.html"', body)
 
     def test_index_resources_and_navigation_resolve(self):
-        site_base = "https://example.github.io/tinkercad/"
+        site_base = "https://example.github.io/tinkercad/docs/pages/"
         for relative_path in (
-            "docs/assets/css/home.css",
-            "docs/assets/js/api.js",
-            "docs/assets/js/home.js",
-            "docs/pages/hardware.html",
-            "docs/pages/firmware.html",
-            "docs/pages/docs.html",
-            "docs/pages/workbench.html",
+            "../assets/css/home.css",
+            "../assets/js/api.js",
+            "../assets/js/home.js",
+            "hardware.html",
+            "firmware.html",
+            "docs.html",
+            "workbench.html",
+            "index.html",
         ):
             with self.subTest(relative_path=relative_path):
                 resolved_path = urlsplit(urljoin(site_base, relative_path)).path
@@ -86,6 +76,7 @@ class RenderServerTests(unittest.TestCase):
             "/docs/assets/css/home.css",
             "/docs/assets/js/home.js",
             "/docs/assets/js/api.js",
+            "/docs/pages/index.html",
             "/docs/pages/hardware.html",
             "/docs/pages/firmware.html",
             "/docs/pages/docs.html",
@@ -105,33 +96,8 @@ class RenderServerTests(unittest.TestCase):
                 response = self.connection.getresponse()
                 body = response.read()
                 self.assertEqual(response.status, 200)
-                self.assertIn(b'href="../../"', body)
+                self.assertIn(b'href="index.html"', body)
                 self.assertEqual(
-                    urlsplit(urljoin(site_base, "../../")).path,
-                    "/tinkercad/",
+                    urlsplit(urljoin(site_base, "index.html")).path,
+                    "/tinkercad/docs/pages/index.html",
                 )
-
-    def test_telemetry_writes_still_require_device_token(self):
-        payload = json.dumps({"spo2_percent": 97, "sensor_contact": True})
-        self.connection.request(
-            "POST",
-            "/api/v1/readings",
-            payload,
-            {"Content-Type": "application/json"},
-        )
-        response = self.connection.getresponse()
-        response.read()
-        self.assertEqual(response.status, 401)
-
-        self.connection.request(
-            "POST",
-            "/api/v1/readings",
-            payload,
-            {
-                "Content-Type": "application/json",
-                "X-Device-Token": "test-token",
-            },
-        )
-        response = self.connection.getresponse()
-        response.read()
-        self.assertEqual(response.status, 201)
