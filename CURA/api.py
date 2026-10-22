@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 
 HOST = os.getenv("API_HOST", "127.0.0.1")
 PORT = int(os.getenv("API_PORT", "8000"))
-SITE_URL = os.getenv("SITE_URL", "/docs/pages/index.html")
+SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8080/")
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 API_CORS_ORIGIN = os.getenv("API_CORS_ORIGIN", "http://localhost:8080")
 DATABASE = Path(os.getenv("DATABASE_PATH", str(Path(__file__).resolve().parent / "readings.sqlite3")))

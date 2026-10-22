@@ -43,15 +43,10 @@ class RenderServerTests(unittest.TestCase):
     def test_root_serves_dashboard(self):
         self.connection.request("GET", "/")
         response = self.connection.getresponse()
-        response.read()
-        self.assertEqual(response.status, 302)
-        self.assertEqual(response.getheader("Location"), "/docs/pages/index.html")
-
-        self.connection.request("GET", "/docs/pages/index.html")
-        response = self.connection.getresponse()
         body = response.read()
         self.assertEqual(response.status, 200)
         self.assertIn(b"<!doctype html>", body[:128].lower())
+        self.assertIn(b'/docs/assets/css/home.css', body)
 
     def test_dashboard_can_read_demo_telemetry(self):
         self.connection.request("GET", "/api/v1/latest")
@@ -61,16 +56,29 @@ class RenderServerTests(unittest.TestCase):
         self.assertIsNone(body["reading"])
 
     def test_dashboard_pages_and_overview_links_are_available(self):
-        for page in ("index", "hardware", "firmware", "docs", "workbench"):
+        for page in ("hardware", "firmware", "docs", "workbench"):
             with self.subTest(page=page):
                 self.connection.request("GET", f"/docs/pages/{page}.html")
                 response = self.connection.getresponse()
                 body = response.read()
                 self.assertEqual(response.status, 200)
-                if page != "index":
-                    continue
-                self.assertIn(b'data-section="overview" href="index.html"', body)
-                self.assertNotIn(b'href="home.html"', body)
+                self.assertIn(b'href="/"', body)
+
+    def test_index_resources_and_navigation_resolve(self):
+        for path in (
+            "/docs/assets/css/home.css",
+            "/docs/assets/js/home.js",
+            "/docs/assets/js/api.js",
+            "/docs/pages/hardware.html",
+            "/docs/pages/firmware.html",
+            "/docs/pages/docs.html",
+            "/docs/pages/workbench.html",
+        ):
+            with self.subTest(path=path):
+                self.connection.request("GET", path)
+                response = self.connection.getresponse()
+                response.read()
+                self.assertEqual(response.status, 200)
 
     def test_telemetry_writes_still_require_device_token(self):
         payload = json.dumps({"spo2_percent": 97, "sensor_contact": True})

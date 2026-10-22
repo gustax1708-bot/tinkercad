@@ -38,9 +38,9 @@ class RenderHandler(SimpleHTTPRequestHandler):
 
     def translate_path(self, path):
         request_path = urlsplit(path).path
-        if request_path == "/":
-            request_path = "/pages/index.html"
-        elif request_path.startswith("/docs/"):
+        if request_path in ("/", "/index.html"):
+            return str(ROOT / "index.html")
+        if request_path.startswith("/docs/"):
             request_path = request_path[len("/docs"):]
 
         relative_path = Path(unquote(request_path).lstrip("/"))
@@ -53,12 +53,6 @@ class RenderHandler(SimpleHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path in ("/api/v1/latest", "/api/v1/history"):
             return api.ApiHandler.do_GET(self)
-        if path == "/":
-            self.send_response(302)
-            self.send_header("Location", "/docs/pages/index.html")
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            return
         if path == "/healthz":
             body = b"ok\n"
             self.send_response(200)
