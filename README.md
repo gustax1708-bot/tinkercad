@@ -50,6 +50,14 @@ O launcher inicia ou reutiliza o dashboard e a API naquele computador:
 
 O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API.
 
+## Publicar o dashboard na internet
+
+O GitHub Actions publica automaticamente os arquivos estáticos de `docs/` no GitHub Pages a cada atualização enviada para `main`. Para ativar a publicação, no GitHub abra **Settings → Pages** e selecione **GitHub Actions** em **Build and deployment → Source**. Depois, acompanhe a execução em **Actions**. O endereço do site é `https://gustax1708-bot.github.io/tinkercad/`; a página inicial encaminha para o dashboard.
+
+Após a publicação, qualquer pessoa com o endereço pode abrir a versão mais recente em computadores diferentes. Uma atualização aparece depois que o workflow de publicação termina.
+
+O Pages hospeda apenas o frontend estático: a API Python, o banco SQLite, as leituras ao vivo e as ações de alerta continuam disponíveis somente quando a API local está em execução. O login demonstrativo, perfil, preferências e medicamentos são armazenados no navegador de cada dispositivo e não são sincronizados entre máquinas. Não use dados pessoais ou médicos reais neste protótipo.
+
 Por padrão, cada computador executa sua própria cópia do dashboard, API e banco SQLite, e a API escuta apenas em `127.0.0.1`. Para usar uma placa física na mesma rede Wi-Fi ou conectar o Wokwi pelo **Private IoT Gateway**, inicie a API em modo de rede local. Isso não publica o dashboard nem a API na internet:
 
 ```powershell
