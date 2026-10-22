@@ -45,9 +45,9 @@ class RenderServerTests(unittest.TestCase):
         response = self.connection.getresponse()
         response.read()
         self.assertEqual(response.status, 302)
-        self.assertEqual(response.getheader("Location"), "/frontend/pages/index.html")
+        self.assertEqual(response.getheader("Location"), "/docs/pages/index.html")
 
-        self.connection.request("GET", "/frontend/pages/index.html")
+        self.connection.request("GET", "/docs/pages/index.html")
         response = self.connection.getresponse()
         body = response.read()
         self.assertEqual(response.status, 200)
@@ -63,7 +63,7 @@ class RenderServerTests(unittest.TestCase):
     def test_dashboard_pages_and_overview_links_are_available(self):
         for page in ("index", "hardware", "firmware", "docs", "workbench"):
             with self.subTest(page=page):
-                self.connection.request("GET", f"/frontend/pages/{page}.html")
+                self.connection.request("GET", f"/docs/pages/{page}.html")
                 response = self.connection.getresponse()
                 body = response.read()
                 self.assertEqual(response.status, 200)

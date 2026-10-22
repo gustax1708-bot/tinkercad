@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "http://127.0.0.1:8000/api/v1/latest"
-SITE_URL = "http://127.0.0.1:8080/frontend/pages/index.html"
+SITE_URL = "http://127.0.0.1:8080/docs/pages/index.html"
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 
 
@@ -64,13 +64,13 @@ def make_api_server():
 
 class FrontendOnlyHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(ROOT / "frontend"), **kwargs)
+        super().__init__(*args, directory=str(ROOT / "docs"), **kwargs)
 
     def translate_path(self, path):
         request_path = urlsplit(path).path
-        if request_path.startswith("/frontend/"):
-            request_path = request_path[len("/frontend"):]
-        elif request_path in ("/", "/frontend", "/frontend/"):
+        if request_path.startswith("/docs/"):
+            request_path = request_path[len("/docs"):]
+        elif request_path in ("/", "/docs", "/docs/"):
             request_path = "/pages/index.html"
         else:
             request_path = "/__not_found__"
@@ -103,12 +103,12 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
             except BrokenPipeError:
                 pass
             return
-        if request_path in ("/", "/frontend", "/frontend/"):
+        if request_path in ("/", "/docs", "/docs/"):
             self.send_response(302)
-            self.send_header("Location", "/frontend/pages/index.html")
+            self.send_header("Location", "/docs/pages/index.html")
             self.end_headers()
             return
-        if not request_path.startswith("/frontend/"):
+        if not request_path.startswith("/docs/"):
             self.send_error(404, "Not found")
             return
         super().do_GET()

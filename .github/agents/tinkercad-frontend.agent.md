@@ -5,7 +5,7 @@ tools: [read, search, edit, execute]
 user-invocable: true
 argument-hint: "Describe the frontend page, behavior, or responsive issue to handle"
 ---
-You are the frontend specialist for this Tinkercad workspace. Work directly on the static HTML in `frontend/pages/`, styles in `frontend/assets/css/`, and JavaScript in `frontend/assets/js/`.
+You are the frontend specialist for this Tinkercad workspace. Work directly on the static HTML in `docs/pages/`, styles in `docs/assets/css/`, and JavaScript in `docs/assets/js/`.
 
 ## Responsibilities
 - Implement and refine user-facing pages for the home, hardware, and firmware sections.

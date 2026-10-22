@@ -9,17 +9,17 @@ Projeto integrado de firmware ESP32, simulação Wokwi, API Python e dashboard w
 - MPU6050 para movimento e sinalização experimental de possível queda; MAX17048 para carga e tensão da célula.
 - Botão de pânico ligado ao GPIO27.
 - API Python com persistência SQLite em `CURA/readings.sqlite3`.
-- Dashboard responsivo em HTML, CSS e JavaScript, servido em `frontend/`.
+- Dashboard responsivo em HTML, CSS e JavaScript, servido em `docs/`.
 
 ## Páginas do dashboard
 
 As páginas compartilham um menu que conecta a Home, Hardware, Firmware, Documentação e Bancada:
 
-- `frontend/pages/index.html`: telemetria, estado dos sensores e histórico.
-- `frontend/pages/hardware.html`: componentes, ligações e diagnóstico da API.
-- `frontend/pages/firmware.html`: código, dependências e informações do firmware.
-- `frontend/pages/docs.html`: fluxo de operação e endpoints da API.
-- `frontend/pages/workbench.html`: resumo da bancada Wokwi.
+- `docs/pages/index.html`: telemetria, estado dos sensores e histórico.
+- `docs/pages/hardware.html`: componentes, ligações e diagnóstico da API.
+- `docs/pages/firmware.html`: código, dependências e informações do firmware.
+- `docs/pages/docs.html`: fluxo de operação e endpoints da API.
+- `docs/pages/workbench.html`: resumo da bancada Wokwi.
 
 ## Publicar uma demonstração no Render
 
@@ -45,12 +45,12 @@ O launcher cria ou reutiliza os serviços locais:
 
 | Serviço | Endereço | Uso |
 | --- | --- | --- |
-| Dashboard | `http://localhost:8080/frontend/pages/index.html` | Acesso local |
+| Dashboard | `http://localhost:8080/docs/pages/index.html` | Acesso local |
 | API HTTP | `http://localhost:8000` | Firmware e Wokwi |
 
 O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API. O firmware e o Wokwi também enviam telemetria à API HTTP na porta `8000`.
 
-O dashboard e a API locais escutam somente em `127.0.0.1` por padrão. O servidor web entrega apenas arquivos de `frontend/`. Todas as rotas de telemetria locais exigem `X-Device-Token`; o proxy local encaminha o token sem expô-lo ao JavaScript. O CORS permite apenas `http://localhost:8080`, e as respostas incluem cabeçalhos contra sniffing e incorporação em frames.
+O dashboard e a API locais escutam somente em `127.0.0.1` por padrão. O servidor web entrega apenas arquivos de `docs/`. Todas as rotas de telemetria locais exigem `X-Device-Token`; o proxy local encaminha o token sem expô-lo ao JavaScript. O CORS permite apenas `http://localhost:8080`, e as respostas incluem cabeçalhos contra sniffing e incorporação em frames.
 
 O token padrão `dev-token` serve somente para desenvolvimento local. Para Wokwi via gateway ou placa física, habilite a interface de rede explicitamente com `API_HOST=0.0.0.0`, defina um token aleatório próprio em `DEVICE_TOKEN`, copie o mesmo valor para `CURA/include/secrets.h` e limite a porta 8000 no firewall à rede/dispositivo confiável. Nunca encaminhe essa porta à internet. Não abra a porta 8080 no firewall.
 

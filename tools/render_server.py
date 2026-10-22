@@ -6,7 +6,7 @@ from urllib.parse import unquote, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
-FRONTEND_ROOT = ROOT / "frontend"
+FRONTEND_ROOT = ROOT / "docs"
 sys.path.insert(0, str(ROOT / "CURA"))
 
 os.environ["API_HOST"] = "0.0.0.0"
@@ -40,8 +40,8 @@ class RenderHandler(SimpleHTTPRequestHandler):
         request_path = urlsplit(path).path
         if request_path == "/":
             request_path = "/pages/index.html"
-        elif request_path.startswith("/frontend/"):
-            request_path = request_path[len("/frontend"):]
+        elif request_path.startswith("/docs/"):
+            request_path = request_path[len("/docs"):]
 
         relative_path = Path(unquote(request_path).lstrip("/"))
         resolved_path = (FRONTEND_ROOT / relative_path).resolve()
@@ -55,7 +55,7 @@ class RenderHandler(SimpleHTTPRequestHandler):
             return api.ApiHandler.do_GET(self)
         if path == "/":
             self.send_response(302)
-            self.send_header("Location", "/frontend/pages/index.html")
+            self.send_header("Location", "/docs/pages/index.html")
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return
