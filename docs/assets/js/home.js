@@ -3,9 +3,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const toast = document.querySelector("#toast");
   const menuButton = document.querySelector("#menuButton");
   const isRootIndex =
-    window.location.pathname === "/" || window.location.pathname === "/index.html";
+    window.location.pathname.endsWith("/") ||
+    window.location.pathname.endsWith("/index.html");
   const pagePath = (page) =>
-    isRootIndex ? `/docs/pages/${page}` : page;
+    new URL(
+      isRootIndex ? `docs/pages/${page}` : page,
+      window.location.href,
+    ).pathname;
   let toastTimer;
 
   if (window.lucide && typeof window.lucide.createIcons === "function") {
@@ -81,8 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (openWorkbench) {
     openWorkbench.addEventListener("click", () => {
       const workbenchPath = pagePath("workbench.html");
-      const currentPage = window.location.pathname.split("/").pop() || "index.html";
-      if (currentPage === workbenchPath) {
+      if (window.location.pathname === workbenchPath) {
         showToast("A bancada já está aberta.");
         return;
       }
@@ -94,8 +97,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (viewDocsButton) {
     viewDocsButton.addEventListener("click", () => {
       const docsPath = pagePath("docs.html");
-      const currentPage = window.location.pathname.split("/").pop() || "index.html";
-      if (currentPage === docsPath) {
+      if (window.location.pathname === docsPath) {
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }

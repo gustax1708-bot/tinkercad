@@ -5,6 +5,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from urllib.parse import urljoin, urlsplit
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -46,7 +47,9 @@ class RenderServerTests(unittest.TestCase):
         body = response.read()
         self.assertEqual(response.status, 200)
         self.assertIn(b"<!doctype html>", body[:128].lower())
-        self.assertIn(b'/docs/assets/css/home.css', body)
+        self.assertIn(b'href="docs/assets/css/home.css"', body)
+        self.assertIn(b'href="docs/pages/hardware.html"', body)
+        self.assertNotIn(b'href="/docs/', body)
 
     def test_dashboard_can_read_demo_telemetry(self):
         self.connection.request("GET", "/api/v1/latest")
@@ -62,9 +65,23 @@ class RenderServerTests(unittest.TestCase):
                 response = self.connection.getresponse()
                 body = response.read()
                 self.assertEqual(response.status, 200)
-                self.assertIn(b'href="/"', body)
+                self.assertIn(b'href="../../"', body)
 
     def test_index_resources_and_navigation_resolve(self):
+        site_base = "https://example.github.io/tinkercad/"
+        for relative_path in (
+            "docs/assets/css/home.css",
+            "docs/assets/js/api.js",
+            "docs/assets/js/home.js",
+            "docs/pages/hardware.html",
+            "docs/pages/firmware.html",
+            "docs/pages/docs.html",
+            "docs/pages/workbench.html",
+        ):
+            with self.subTest(relative_path=relative_path):
+                resolved_path = urlsplit(urljoin(site_base, relative_path)).path
+                self.assertTrue(resolved_path.startswith("/tinkercad/docs/"))
+
         for path in (
             "/docs/assets/css/home.css",
             "/docs/assets/js/home.js",
@@ -79,6 +96,20 @@ class RenderServerTests(unittest.TestCase):
                 response = self.connection.getresponse()
                 response.read()
                 self.assertEqual(response.status, 200)
+
+    def test_section_pages_link_back_to_site_root(self):
+        site_base = "https://example.github.io/tinkercad/docs/pages/"
+        for page in ("hardware", "firmware", "docs", "workbench"):
+            with self.subTest(page=page):
+                self.connection.request("GET", f"/docs/pages/{page}.html")
+                response = self.connection.getresponse()
+                body = response.read()
+                self.assertEqual(response.status, 200)
+                self.assertIn(b'href="../../"', body)
+                self.assertEqual(
+                    urlsplit(urljoin(site_base, "../../")).path,
+                    "/tinkercad/",
+                )
 
     def test_telemetry_writes_still_require_device_token(self):
         payload = json.dumps({"spo2_percent": 97, "sensor_contact": True})
