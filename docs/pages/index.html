@@ -17,6 +17,7 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="../assets/js/api.js?v=7" defer></script>
     <script src="../assets/js/home.js" defer></script>
+    <script src="../assets/js/care-features.js" defer></script>
   </head>
 
   <body>
@@ -34,6 +35,9 @@
           <p class="nav-label">Projeto</p>
           <a class="nav-item active" data-section="overview" href="index.html"
             ><i data-lucide="layout-dashboard"></i><span>Visão geral</span></a
+          >
+          <a class="nav-item" data-section="medications" href="medications.html"
+            ><i data-lucide="pill"></i><span>Medicamentos</span></a
           >
           <a class="nav-item" data-section="hardware" href="hardware.html"
             ><i data-lucide="cpu"></i><span>Hardware</span></a
@@ -55,6 +59,13 @@
             <i data-lucide="download"></i><span>Exportar projeto</span>
           </button>
         </nav>
+        <div class="sidebar-footer">
+          <a class="profile-mini" data-account-link href="login.html">
+            <span class="avatar avatar-small" data-account-avatar aria-hidden="true"><i data-lucide="user-round"></i></span>
+            <span class="profile-copy"><strong data-account-name>Visitante</strong><small data-account-email>Entre para acessar seu perfil</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </a>
+        </div>
       </aside>
       <main class="main-content">
         <header class="topbar">
@@ -68,6 +79,11 @@
           <div class="breadcrumbs">
             <span>Meu projeto</span><i data-lucide="chevron-right"></i
             ><strong>Visão geral</strong>
+          </div>
+          <div class="topbar-actions">
+            <span class="topbar-welcome" data-welcome-user>Bem-vindo(a) ao CUIDA+</span>
+            <a class="icon-button topbar-profile-link" href="profile.html" aria-label="Meu perfil" title="Meu perfil"><i data-lucide="user-round"></i></a>
+            <a class="icon-button topbar-auth-link" data-auth-action href="login.html" aria-label="Entrar" title="Entrar"><i data-lucide="log-in"></i></a>
           </div>
         </header>
         <div class="content-wrap">

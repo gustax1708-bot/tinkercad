@@ -48,7 +48,15 @@ class LocalServerTests(unittest.TestCase):
         self.assertIn(b'href="hardware.html"', body)
 
     def test_dashboard_pages_and_overview_links_are_available(self):
-        for page in ("hardware", "firmware", "docs", "workbench"):
+        for page in (
+            "hardware",
+            "firmware",
+            "docs",
+            "workbench",
+            "medications",
+            "login",
+            "profile",
+        ):
             with self.subTest(page=page):
                 self.connection.request("GET", f"/docs/pages/{page}.html")
                 response = self.connection.getresponse()
@@ -56,16 +64,41 @@ class LocalServerTests(unittest.TestCase):
                 self.assertEqual(response.status, 200)
                 self.assertIn(b'href="index.html"', body)
 
+    def test_account_controls_are_available_on_all_pages(self):
+        for page in (
+            "index",
+            "hardware",
+            "firmware",
+            "docs",
+            "workbench",
+            "medications",
+            "login",
+            "profile",
+        ):
+            with self.subTest(page=page):
+                self.connection.request("GET", f"/docs/pages/{page}.html")
+                response = self.connection.getresponse()
+                body = response.read()
+                self.assertEqual(response.status, 200)
+                self.assertIn(b'data-account-link', body)
+                self.assertIn(b'data-welcome-user', body)
+                self.assertIn(b'data-auth-action', body)
+                self.assertIn(b'aria-label="Meu perfil"', body)
+
     def test_index_resources_and_navigation_resolve(self):
         site_base = "https://example.github.io/tinkercad/docs/pages/"
         for relative_path in (
             "../assets/css/home.css",
             "../assets/js/api.js",
             "../assets/js/home.js",
+            "../assets/js/care-features.js",
             "hardware.html",
             "firmware.html",
             "docs.html",
             "workbench.html",
+            "medications.html",
+            "login.html",
+            "profile.html",
             "index.html",
         ):
             with self.subTest(relative_path=relative_path):
@@ -76,11 +109,15 @@ class LocalServerTests(unittest.TestCase):
             "/docs/assets/css/home.css",
             "/docs/assets/js/home.js",
             "/docs/assets/js/api.js",
+            "/docs/assets/js/care-features.js",
             "/docs/pages/index.html",
             "/docs/pages/hardware.html",
             "/docs/pages/firmware.html",
             "/docs/pages/docs.html",
             "/docs/pages/workbench.html",
+            "/docs/pages/medications.html",
+            "/docs/pages/login.html",
+            "/docs/pages/profile.html",
         ):
             with self.subTest(path=path):
                 self.connection.request("GET", path)

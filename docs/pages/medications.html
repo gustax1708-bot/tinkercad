@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Cadastre medicamentos e horários de lembrete no CUIDA+." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/home.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="../assets/js/home.js" defer></script>
+    <script src="../assets/js/care-features.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><span>CUIDA<span class="brand-dot">+</span></span></div>
+        <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>CUIDA+</strong><small>CARE-2026-001</small></div>
+        <nav class="main-nav" aria-label="Navegação do projeto">
+          <p class="nav-label">Projeto</p>
+          <a class="nav-item" data-section="overview" href="index.html"><i data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
+          <a class="nav-item active" data-section="medications" href="medications.html"><i data-lucide="pill"></i><span>Medicamentos</span></a>
+          <a class="nav-item" data-section="hardware" href="hardware.html"><i data-lucide="cpu"></i><span>Hardware</span></a>
+          <a class="nav-item" data-section="software" href="firmware.html"><i data-lucide="code-2"></i><span>Firmware</span></a>
+          <a class="nav-item" data-section="documents" href="docs.html"><i data-lucide="file-text"></i><span>Documentação</span></a>
+          <a class="nav-item" data-section="workbench" href="workbench.html"><i data-lucide="play"></i><span>Bancada</span></a>
+        </nav>
+        <div class="sidebar-footer">
+          <a class="profile-mini" data-account-link href="login.html">
+            <span class="avatar avatar-small" data-account-avatar aria-hidden="true"><i data-lucide="user-round"></i></span>
+            <span class="profile-copy"><strong data-account-name>Visitante</strong><small data-account-email>Entre para acessar seu perfil</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </a>
+        </div>
+      </aside>
+      <main class="main-content" id="medications">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i data-lucide="menu"></i></button>
+          <div class="breadcrumbs"><span>Meu projeto</span><i data-lucide="chevron-right"></i><strong>Medicamentos</strong></div>
+          <div class="topbar-actions">
+            <span class="topbar-welcome" data-welcome-user>Bem-vindo(a) ao CUIDA+</span>
+            <a class="icon-button topbar-profile-link" href="profile.html" aria-label="Meu perfil" title="Meu perfil"><i data-lucide="user-round"></i></a>
+            <a class="icon-button topbar-auth-link" data-auth-action href="login.html" aria-label="Entrar" title="Entrar"><i data-lucide="log-in"></i></a>
+          </div>
+        </header>
+        <div class="content-wrap care-page">
+          <section class="welcome-row">
+            <div>
+              <p class="eyebrow"><span class="status-dot"></span> ROTINA DE CUIDADOS</p>
+              <h1>Horários que<br /><span class="headline-accent">cuidam.</span></h1>
+              <p class="welcome-copy">Organize os medicamentos e receba um lembrete na hora combinada.</p>
+            </div>
+          </section>
+          <section class="care-card" aria-labelledby="medicineFormTitle">
+            <h2 id="medicineFormTitle">Adicionar medicamento</h2>
+            <form class="care-form" id="medicineForm">
+              <label class="care-field">Nome do medicamento
+                <input name="name" type="text" autocomplete="off" required maxlength="100" placeholder="Ex.: Vitamina D" />
+              </label>
+              <label class="care-field">Dose
+                <input name="dosage" type="text" autocomplete="off" maxlength="80" placeholder="Ex.: 1 comprimido" />
+              </label>
+              <div class="care-field full-width">
+                <span>Horários diários</span>
+                <div class="time-fields" id="medicineTimes">
+                  <input name="time" type="time" required aria-label="Horário para tomar o medicamento" />
+                </div>
+                <button class="care-button secondary" type="button" id="addMedicineTime"><i data-lucide="plus"></i> Adicionar horário</button>
+              </div>
+              <label class="care-field full-width">Observações (opcional)
+                <textarea name="notes" maxlength="300" placeholder="Instruções pessoais para lembrar"></textarea>
+              </label>
+              <div class="care-actions">
+                <button class="care-button" type="submit"><i data-lucide="plus"></i> Salvar medicamento</button>
+                <button class="care-button secondary" type="button" id="enableMedicineNotifications"><i data-lucide="bell"></i> Ativar notificações</button>
+              </div>
+            </form>
+          </section>
+          <section class="care-card" aria-labelledby="medicineListTitle">
+            <h2 id="medicineListTitle">Sua rotina</h2>
+            <p>Os medicamentos e horários ficam salvos neste navegador.</p>
+            <div class="medicine-list" id="medicineList" aria-live="polite"></div>
+          </section>
+          <p class="care-note">Os alertas funcionam enquanto esta página estiver aberta. Notificações do navegador dependem da permissão concedida e não substituem orientação médica nem um sistema de alarme clínico.</p>
+        </div>
+      </main>
+    </div>
+    <div class="toast" id="medicineStatus" role="status" aria-live="polite"><i data-lucide="bell-ring"></i><span></span></div>
+  </body>
+</html>

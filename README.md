@@ -13,13 +13,19 @@ Projeto integrado de firmware ESP32, simulação Wokwi, API Python e dashboard w
 
 ## Páginas do dashboard
 
-As páginas compartilham um menu que conecta a Home, Hardware, Firmware, Documentação e Bancada:
+As páginas compartilham uma navegação fixa que conecta a Home, Medicamentos, Perfil, Login, Hardware, Firmware, Documentação e Bancada:
 
 - `docs/pages/index.html`: página inicial com telemetria, estado dos sensores e histórico.
 - `docs/pages/hardware.html`: componentes, ligações e diagnóstico da API.
 - `docs/pages/firmware.html`: código, dependências e informações do firmware.
 - `docs/pages/docs.html`: fluxo de operação e endpoints da API.
 - `docs/pages/workbench.html`: resumo da bancada Wokwi.
+- `docs/pages/medications.html`: cadastro local de medicamentos, doses e horários com lembretes no navegador.
+- `docs/pages/login.html` e `docs/pages/profile.html`: telas demonstrativas de login e perfil, sem autenticação de servidor.
+
+O botão flutuante de acessibilidade permite alternar tema claro/escuro, alto contraste, texto ampliado e movimento reduzido. Os dados de perfil e medicamentos ficam no armazenamento local do navegador. Os lembretes só funcionam enquanto a página estiver aberta; notificações do sistema dependem da permissão do navegador.
+
+O acesso ao perfil e a ação de entrar/sair ficam nos ícones do canto superior direito. O rodapé da navegação identifica a conta ativa, e a saudação exibe o nome do usuário conectado.
 
 ## Iniciar site e API
 

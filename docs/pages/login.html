@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Acesse sua conta CUIDA+." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/css/home.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="../assets/js/home.js" defer></script>
+    <script src="../assets/js/care-features.js" defer></script>
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><span>CUIDA<span class="brand-dot">+</span></span></div>
+        <div class="project-identity"><span class="project-status"><i></i> PROJETO ATIVO</span><strong>CUIDA+</strong><small>CARE-2026-001</small></div>
+        <nav class="main-nav" aria-label="Navegação do projeto">
+          <p class="nav-label">Projeto</p>
+          <a class="nav-item" data-section="overview" href="index.html"><i data-lucide="layout-dashboard"></i><span>Visão geral</span></a>
+          <a class="nav-item" data-section="medications" href="medications.html"><i data-lucide="pill"></i><span>Medicamentos</span></a>
+          <a class="nav-item" data-section="hardware" href="hardware.html"><i data-lucide="cpu"></i><span>Hardware</span></a>
+          <a class="nav-item" data-section="software" href="firmware.html"><i data-lucide="code-2"></i><span>Firmware</span></a>
+          <a class="nav-item" data-section="documents" href="docs.html"><i data-lucide="file-text"></i><span>Documentação</span></a>
+          <a class="nav-item" data-section="workbench" href="workbench.html"><i data-lucide="play"></i><span>Bancada</span></a>
+        </nav>
+        <div class="sidebar-footer">
+          <a class="profile-mini" data-account-link href="login.html">
+            <span class="avatar avatar-small" data-account-avatar aria-hidden="true"><i data-lucide="user-round"></i></span>
+            <span class="profile-copy"><strong data-account-name>Visitante</strong><small data-account-email>Entre para acessar seu perfil</small></span>
+            <i data-lucide="chevron-right" aria-hidden="true"></i>
+          </a>
+        </div>
+      </aside>
+      <main class="main-content" id="login">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menuButton" aria-label="Abrir menu"><i data-lucide="menu"></i></button>
+          <div class="breadcrumbs"><span>Minha conta</span><i data-lucide="chevron-right"></i><strong>Entrar</strong></div>
+          <div class="topbar-actions">
+            <span class="topbar-welcome" data-welcome-user>Bem-vindo(a) ao CUIDA+</span>
+            <a class="icon-button topbar-profile-link" href="profile.html" aria-label="Meu perfil" title="Meu perfil"><i data-lucide="user-round"></i></a>
+            <a class="icon-button topbar-auth-link" data-auth-action href="login.html" aria-label="Entrar" title="Entrar"><i data-lucide="log-in"></i></a>
+          </div>
+        </header>
+        <div class="content-wrap care-page">
+          <section class="welcome-row"><div><p class="eyebrow"><span class="status-dot"></span> BEM-VINDO AO CUIDA+</p><h1>Entre para<br /><span class="headline-accent">continuar.</span></h1><p class="welcome-copy">Acesse seu perfil para organizar sua rotina de cuidados.</p></div></section>
+          <section class="care-card">
+            <h2>Acessar conta</h2>
+            <p id="loginMessage">Esta demonstração mantém apenas nome e e-mail neste navegador.</p>
+            <form class="care-form" id="loginForm">
+              <label class="care-field full-width">Nome (opcional)
+                <input name="name" type="text" autocomplete="name" maxlength="100" placeholder="Como podemos chamar você?" />
+              </label>
+              <label class="care-field full-width">E-mail
+                <input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="voce@exemplo.com" />
+              </label>
+              <label class="care-field full-width">Senha
+                <input name="password" type="password" autocomplete="current-password" required />
+              </label>
+              <div class="care-actions"><button class="care-button" type="submit"><i data-lucide="log-in"></i> Entrar</button><a class="care-button secondary" href="profile.html">Ver meu perfil</a></div>
+            </form>
+            <p class="care-note">Protótipo visual: não há autenticação de servidor. A senha não é armazenada nem enviada; não use uma senha real.</p>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
