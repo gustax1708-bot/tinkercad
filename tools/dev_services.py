@@ -12,10 +12,13 @@ from urllib.request import Request, urlopen
 
 
 ROOT = Path(__file__).resolve().parents[1]
-API_URL = "http://127.0.0.1:8000/api/v1/latest"
-API_HEALTH_URL = "http://127.0.0.1:8000/api/v1/health"
-API_HISTORY_URL = "http://127.0.0.1:8000/api/v1/history"
-SITE_URL = "http://127.0.0.1:8080/"
+API_PORT = int(os.getenv("API_PORT", "8000"))
+SITE_PORT = int(os.getenv("SITE_PORT", "8080"))
+API_BASE_URL = f"http://127.0.0.1:{API_PORT}"
+API_URL = f"{API_BASE_URL}/api/v1/latest"
+API_HEALTH_URL = f"{API_BASE_URL}/api/v1/health"
+API_HISTORY_URL = f"{API_BASE_URL}/api/v1/history"
+SITE_URL = f"http://127.0.0.1:{SITE_PORT}/"
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 
 
@@ -55,7 +58,7 @@ def site_is_running():
         return False
 
     for path in ("/CURA/readings.sqlite3", "/.git/config"):
-        status, _ = get_response(f"http://127.0.0.1:8080{path}")
+        status, _ = get_response(f"{SITE_URL.rstrip('/')}{path}")
         if status not in (403, 404):
             return False
 
@@ -65,7 +68,7 @@ def site_is_running():
         "docs/assets/js/api.js",
         "docs/assets/css/home.css",
     ):
-        status, body = get_response(f"http://127.0.0.1:8080/{path}")
+        status, body = get_response(f"{SITE_URL.rstrip('/')}/{path}")
         if status != 200 or not body:
             return False
 
@@ -104,7 +107,7 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
         request_path = urlsplit(self.path).path
         if request_path in ("/api/v1/latest", "/api/v1/history"):
             status, body = get_response(
-                f"http://127.0.0.1:8000{self.path}",
+                f"{API_BASE_URL}{self.path}",
                 headers={"X-Device-Token": DEVICE_TOKEN},
             )
             if status is None:
@@ -137,7 +140,7 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
             self.send_error(404, "Not found")
             return
         status, body = get_response(
-            f"http://127.0.0.1:8000{self.path}",
+            f"{API_BASE_URL}{self.path}",
             headers={
                 "X-Device-Token": DEVICE_TOKEN,
                 "Content-Length": "0",
@@ -160,7 +163,7 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
 
 
 def make_site_server():
-    return ThreadingHTTPServer(("127.0.0.1", 8080), FrontendOnlyHandler)
+    return ThreadingHTTPServer(("127.0.0.1", SITE_PORT), FrontendOnlyHandler)
 
 
 def ensure_service(name, is_running, create_server, owned_servers):
@@ -192,7 +195,10 @@ def main():
     try:
         ensure_service("API", api_is_running, make_api_server, owned_servers)
         ensure_service("Site", site_is_running, make_site_server, owned_servers)
-        print(f"CUIDA+ pronto: site {SITE_URL} | API http://localhost:8000", flush=True)
+        print(
+            f"CUIDA+ pronto: site {SITE_URL} | API {API_BASE_URL}",
+            flush=True,
+        )
         print("Leituras recebidas aparecem neste terminal; valores ao vivo aparecem no dashboard.", flush=True)
         threading.Event().wait()
     except KeyboardInterrupt:

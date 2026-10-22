@@ -49,6 +49,17 @@ O launcher inicia ou reutiliza o dashboard e a API naquele computador:
 | API HTTP | `http://localhost:8000` | Dashboard e desenvolvimento local |
 
 O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API.
+O banco SQLite fica em `CURA/readings.sqlite3` e mantém as leituras e alertas entre reinicializações do serviço nesse computador. Para iniciar sem conflito caso as portas padrão já estejam em uso, configure portas alternativas antes de executar:
+
+```powershell
+$env:SITE_PORT = "18080"
+$env:API_PORT = "18000"
+py -3 tools/dev_services.py
+```
+
+Nesse exemplo, abra `http://localhost:18080/`. Para encerrar, pressione `Ctrl+C` no terminal do launcher. O banco continua salvo localmente.
+
+Confirme que ambos os serviços estão respondendo com `py -3 tools/dev_services.py --check`. A verificação mostra a API como online somente se o endpoint de saúde confirmar que o SQLite está acessível.
 
 ## Publicar o dashboard na internet
 

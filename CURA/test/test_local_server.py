@@ -55,7 +55,8 @@ class LocalServerTests(unittest.TestCase):
         self.assertEqual(body["alert"]["status"], "acknowledged")
         args, kwargs = proxy_request.call_args
         self.assertEqual(
-            args[0], "http://127.0.0.1:8000/api/v1/alerts/4/acknowledge"
+            args[0],
+            f"{dev_services.API_BASE_URL}/api/v1/alerts/4/acknowledge",
         )
         self.assertEqual(kwargs["method"], "POST")
         self.assertEqual(kwargs["data"], b"")
