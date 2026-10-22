@@ -21,6 +21,14 @@ As páginas compartilham um menu que conecta a Home, Hardware, Firmware, Documen
 - `frontend/pages/docs.html`: fluxo de operação e endpoints da API.
 - `frontend/pages/workbench.html`: resumo da bancada Wokwi.
 
+## Publicar uma demonstração no Render
+
+O repositório inclui `render.yaml` para publicar o dashboard e a API no mesmo serviço. No Render, crie um **Blueprint** conectado a este repositório e confirme a criação dos recursos descritos no arquivo. O serviço publica a página inicial em `/`, verifica a saúde em `/healthz` e grava o SQLite no disco persistente montado em `/var/data`.
+
+O Render gera um `DEVICE_TOKEN` secreto automaticamente. As gravações de telemetria continuam exigindo esse token; as rotas de leitura usadas pelo dashboard são públicas. Portanto, use apenas dados fictícios nessa demonstração: qualquer pessoa com o endereço do serviço pode consultar as leituras. Não copie telemetria real para essa instância nem compartilhe o token.
+
+O disco persistente está configurado no plano pago `starter` do Render. Consulte os preços e confirme os recursos antes de criar o serviço. A integração de uma placa física ou do Wokwi remoto não faz parte desta publicação de demonstração.
+
 ## Iniciar site e API
 
 No VS Code, execute a tarefa **Iniciar CUIDA+ para Wokwi** ou inicie manualmente:
@@ -42,11 +50,11 @@ O launcher cria ou reutiliza os serviços locais:
 
 O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API. O firmware e o Wokwi também enviam telemetria à API HTTP na porta `8000`.
 
-O dashboard e a API escutam somente em `127.0.0.1` por padrão. O servidor web entrega apenas arquivos de `frontend/`. Todas as rotas de telemetria exigem `X-Device-Token`; o proxy local encaminha o token sem expô-lo ao JavaScript. O CORS permite apenas `http://localhost:8080`, e as respostas incluem cabeçalhos contra sniffing e incorporação em frames.
+O dashboard e a API locais escutam somente em `127.0.0.1` por padrão. O servidor web entrega apenas arquivos de `frontend/`. Todas as rotas de telemetria locais exigem `X-Device-Token`; o proxy local encaminha o token sem expô-lo ao JavaScript. O CORS permite apenas `http://localhost:8080`, e as respostas incluem cabeçalhos contra sniffing e incorporação em frames.
 
 O token padrão `dev-token` serve somente para desenvolvimento local. Para Wokwi via gateway ou placa física, habilite a interface de rede explicitamente com `API_HOST=0.0.0.0`, defina um token aleatório próprio em `DEVICE_TOKEN`, copie o mesmo valor para `CURA/include/secrets.h` e limite a porta 8000 no firewall à rede/dispositivo confiável. Nunca encaminhe essa porta à internet. Não abra a porta 8080 no firewall.
 
-**Limites de segurança:** esta configuração é para desenvolvimento local. O dashboard ainda não tem login individual e a comunicação usa HTTP, sem TLS. Não publique o painel nem use dados biométricos reais para acesso remoto da equipe até implementar HTTPS, autenticação e autorização por usuário, gestão de tokens por dispositivo e os controles de consentimento/retencao exigidos para dados pessoais sensíveis pela LGPD.
+**Limites de segurança:** a demonstração pública no Render usa HTTPS fornecido pela plataforma, mas não tem login individual: as rotas de leitura são públicas. Ela não é adequada para dados biométricos reais ou para acesso remoto da equipe. Isso exige, no mínimo, autenticação e autorização por usuário, gestão de tokens por dispositivo e os controles de consentimento e retenção exigidos para dados pessoais sensíveis pela LGPD.
 
 ## Configurar o firmware
 
@@ -161,4 +169,3 @@ python3 api.py
 ## Limites de uso
 
 Este protótipo não é um dispositivo médico. Pulso, saturação, temperatura de contato e detecção de quedas não têm validação clínica.
-
