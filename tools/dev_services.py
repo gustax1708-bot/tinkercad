@@ -13,7 +13,7 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "http://127.0.0.1:8000/api/v1/latest"
-SITE_URL = "http://127.0.0.1:8080/frontend/pages/home.html"
+SITE_URL = "http://127.0.0.1:8080/frontend/pages/index.html"
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
 
 
@@ -57,6 +57,7 @@ def make_api_server():
     sys.path.insert(0, str(ROOT / "CURA"))
     import api
 
+    api.SITE_URL = SITE_URL
     api.validate_security_configuration()
     return ThreadingHTTPServer((api.HOST, api.PORT), api.ApiHandler)
 
@@ -70,7 +71,7 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
         if request_path.startswith("/frontend/"):
             request_path = request_path[len("/frontend"):]
         elif request_path in ("/", "/frontend", "/frontend/"):
-            request_path = "/pages/home.html"
+            request_path = "/pages/index.html"
         else:
             request_path = "/__not_found__"
         return super().translate_path(request_path)
@@ -104,7 +105,7 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
             return
         if request_path in ("/", "/frontend", "/frontend/"):
             self.send_response(302)
-            self.send_header("Location", "/frontend/pages/home.html")
+            self.send_header("Location", "/frontend/pages/index.html")
             self.end_headers()
             return
         if not request_path.startswith("/frontend/"):

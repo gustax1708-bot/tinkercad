@@ -77,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (openWorkbench) {
     openWorkbench.addEventListener("click", () => {
       const workbenchPath = "workbench.html";
-      const currentPage = window.location.pathname.split("/").pop() || "home.html";
+      const currentPage = window.location.pathname.split("/").pop() || "index.html";
       if (currentPage === workbenchPath) {
         showToast("A bancada já está aberta.");
         return;
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (viewDocsButton) {
     viewDocsButton.addEventListener("click", () => {
       const docsPath = "docs.html";
-      const currentPage = window.location.pathname.split("/").pop() || "home.html";
+      const currentPage = window.location.pathname.split("/").pop() || "index.html";
       if (currentPage === docsPath) {
         window.scrollTo({ top: 0, behavior: "smooth" });
         return;
@@ -102,12 +102,12 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".nav-item[data-section]").forEach((item) => {
     item.addEventListener("click", (event) => {
       const pageBySection = {
-        overview: "home.html",
+        overview: "index.html",
         hardware: "hardware.html",
         software: "firmware.html",
       };
       const currentPage =
-        window.location.pathname.split("/").pop() || "home.html";
+        window.location.pathname.split("/").pop() || "index.html";
       const section = item.dataset.section;
       const targetPage = pageBySection[section];
       const href = item.getAttribute("href");

@@ -39,7 +39,7 @@ class RenderHandler(SimpleHTTPRequestHandler):
     def translate_path(self, path):
         request_path = urlsplit(path).path
         if request_path == "/":
-            request_path = "/pages/home.html"
+            request_path = "/pages/index.html"
         elif request_path.startswith("/frontend/"):
             request_path = request_path[len("/frontend"):]
 
@@ -55,7 +55,7 @@ class RenderHandler(SimpleHTTPRequestHandler):
             return api.ApiHandler.do_GET(self)
         if path == "/":
             self.send_response(302)
-            self.send_header("Location", "/frontend/pages/home.html")
+            self.send_header("Location", "/frontend/pages/index.html")
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             return

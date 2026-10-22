@@ -45,9 +45,9 @@ class RenderServerTests(unittest.TestCase):
         response = self.connection.getresponse()
         response.read()
         self.assertEqual(response.status, 302)
-        self.assertEqual(response.getheader("Location"), "/frontend/pages/home.html")
+        self.assertEqual(response.getheader("Location"), "/frontend/pages/index.html")
 
-        self.connection.request("GET", "/frontend/pages/home.html")
+        self.connection.request("GET", "/frontend/pages/index.html")
         response = self.connection.getresponse()
         body = response.read()
         self.assertEqual(response.status, 200)
@@ -59,6 +59,18 @@ class RenderServerTests(unittest.TestCase):
         body = json.loads(response.read())
         self.assertEqual(response.status, 200)
         self.assertIsNone(body["reading"])
+
+    def test_dashboard_pages_and_overview_links_are_available(self):
+        for page in ("index", "hardware", "firmware", "docs", "workbench"):
+            with self.subTest(page=page):
+                self.connection.request("GET", f"/frontend/pages/{page}.html")
+                response = self.connection.getresponse()
+                body = response.read()
+                self.assertEqual(response.status, 200)
+                if page != "index":
+                    continue
+                self.assertIn(b'data-section="overview" href="index.html"', body)
+                self.assertNotIn(b'href="home.html"', body)
 
     def test_telemetry_writes_still_require_device_token(self):
         payload = json.dumps({"spo2_percent": 97, "sensor_contact": True})

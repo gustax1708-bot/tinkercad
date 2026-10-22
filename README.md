@@ -15,7 +15,7 @@ Projeto integrado de firmware ESP32, simulação Wokwi, API Python e dashboard w
 
 As páginas compartilham um menu que conecta a Home, Hardware, Firmware, Documentação e Bancada:
 
-- `frontend/pages/home.html`: telemetria, estado dos sensores e histórico.
+- `frontend/pages/index.html`: telemetria, estado dos sensores e histórico.
 - `frontend/pages/hardware.html`: componentes, ligações e diagnóstico da API.
 - `frontend/pages/firmware.html`: código, dependências e informações do firmware.
 - `frontend/pages/docs.html`: fluxo de operação e endpoints da API.
@@ -45,7 +45,7 @@ O launcher cria ou reutiliza os serviços locais:
 
 | Serviço | Endereço | Uso |
 | --- | --- | --- |
-| Dashboard | `http://localhost:8080/frontend/pages/home.html` | Acesso local |
+| Dashboard | `http://localhost:8080/frontend/pages/index.html` | Acesso local |
 | API HTTP | `http://localhost:8000` | Firmware e Wokwi |
 
 O dashboard usa HTTP local e encaminha `/api/v1/latest` e `/api/v1/history` para a API. O firmware e o Wokwi também enviam telemetria à API HTTP na porta `8000`.
