@@ -31,6 +31,59 @@ O acesso ao perfil e a ação de entrar/sair ficam nos ícones do canto superior
 
 O modo local pode ser usado em cada computador separadamente, inclusive no computador da escola: obtenha uma cópia deste repositório nesse computador, instale Python 3 e execute o launcher. O dashboard e a API usam apenas a biblioteca padrão do Python, sem instalação de pacotes adicionais.
 
+### Passo a passo para outro colaborador
+
+1. Aceite o convite de colaborador enviado pelo GitHub e entre na conta autorizada. Se o repositório estiver privado, essa autorização é necessária para cloná-lo.
+2. Instale Python 3 e Git for Windows. Para conferir o Python, abra o PowerShell e execute:
+
+   ```powershell
+   py -3 --version
+   ```
+
+3. Baixe a versão mais recente da branch `main`. No PowerShell, escolha uma pasta de destino e execute:
+
+   ```powershell
+   cd $HOME\Documents
+   git clone https://github.com/gustax1708-bot/tinkercad.git
+   cd tinkercad
+   ```
+
+   Se o projeto já estiver nesse computador, atualize a cópia existente em vez de cloná-la novamente:
+
+   ```powershell
+   cd CAMINHO\PARA\tinkercad
+   git switch main
+   git pull origin main
+   ```
+
+4. Na pasta `tinkercad`, inicie o dashboard, a API e o banco SQLite:
+
+   ```powershell
+   py -3 tools/dev_services.py
+   ```
+
+   Mantenha esse terminal aberto e acesse `http://localhost:8080/` no navegador. O banco `CURA/readings.sqlite3` será criado localmente; os dados dessa máquina não são compartilhados com os outros colaboradores.
+
+5. Para confirmar a API e o site, abra um segundo PowerShell, entre na pasta `tinkercad` e execute:
+
+   ```powershell
+   py -3 tools/dev_services.py --check
+   ```
+
+   O resultado esperado é `API: online` e `Site: online`. Para encerrar os serviços, volte ao terminal do launcher e pressione `Ctrl+C`.
+
+Se as portas padrão estiverem ocupadas, use portas alternativas no mesmo terminal antes de iniciar:
+
+```powershell
+$env:SITE_PORT = "18080"
+$env:API_PORT = "18000"
+py -3 tools/dev_services.py
+```
+
+Nesse caso, abra `http://localhost:18080/`. O comando de verificação `--check` deve ser executado no terminal onde essas variáveis foram definidas.
+
+Para apenas abrir o dashboard e testar a API com dados simulados, não é necessário instalar PlatformIO, Wokwi, Docker ou dependências Python adicionais. Para também compilar ou simular o firmware, instale o VS Code com as extensões **PlatformIO IDE** e **Wokwi**; a primeira compilação precisa de internet para baixar o toolchain e as bibliotecas. Na simulação, use **Wokwi: Start Simulator**. O envio de telemetria do Wokwi para a API local pode exigir o **Private IoT Gateway** e depender das regras da rede da escola.
+
 No VS Code, abra a pasta do repositório e execute a tarefa **Iniciar CUIDA+ local**. Ou abra um terminal na pasta do projeto e execute:
 
 ```bash
