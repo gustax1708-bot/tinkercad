@@ -4,10 +4,18 @@ Projeto integrado de firmware ESP32, simulação Wokwi, API Python e dashboard w
 
 ## Componentes
 
-- Firmware PlatformIO para ESP32 DOIT DevKit v1.
-- Sensor MAX30102 para frequência cardíaca e SpO2; MAX30205 para temperatura de contato.
-- MPU6050 para movimento e sinalização experimental de possível queda; MAX17048 para carga e tensão da célula.
+- ESP32 DOIT DevKit v1 como microcontrolador principal.
+- Sensor MAX30102 para frequência cardíaca e SpO2.
+- Sensor MAX30205 para temperatura de contato.
+- MPU6050 para aceleração, rotação nos eixos X/Y/Z e sinalização experimental de possível queda.
+- MAX17048 como monitor de carga e tensão da bateria.
 - Botão de pânico ligado ao GPIO27.
+- Monitor serial para diagnóstico do firmware.
+
+Na simulação Wokwi, altere `rotationX`, `rotationY` e `rotationZ` no MPU6050
+para testar o giroscópio. Os eixos aparecem no painel em graus por segundo; a
+telemetria é enviada em intervalos de 10 segundos.
+
 - API Python com persistência SQLite em `CURA/readings.sqlite3`.
 - Dashboard responsivo em HTML, CSS e JavaScript, com página inicial em `docs/pages/index.html` e recursos em `docs/`.
 

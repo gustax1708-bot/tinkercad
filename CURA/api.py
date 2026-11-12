@@ -47,6 +47,9 @@ def database_session():
                     battery_percent REAL,
                     battery_voltage REAL,
                     acceleration_g REAL,
+                    gyroscope_x_dps REAL,
+                    gyroscope_y_dps REAL,
+                    gyroscope_z_dps REAL,
                     motion_active INTEGER NOT NULL DEFAULT 0,
                     fall_detected INTEGER NOT NULL DEFAULT 0,
                     panic INTEGER NOT NULL,
@@ -82,6 +85,9 @@ def database_session():
                 "battery_percent": "REAL",
                 "battery_voltage": "REAL",
                 "acceleration_g": "REAL",
+                "gyroscope_x_dps": "REAL",
+                "gyroscope_y_dps": "REAL",
+                "gyroscope_z_dps": "REAL",
                 "motion_active": "INTEGER NOT NULL DEFAULT 0",
                 "fall_detected": "INTEGER NOT NULL DEFAULT 0",
             }
@@ -139,6 +145,9 @@ def interpret(payload, connection):
     battery_percent = valid_number(payload.get("battery_percent"), 0, 100)
     battery_voltage = valid_number(payload.get("battery_voltage"), 2.5, 5.0)
     acceleration = valid_number(payload.get("acceleration_g"), 0, 32)
+    gyroscope_x = valid_number(payload.get("gyroscope_x_dps"), -250, 250)
+    gyroscope_y = valid_number(payload.get("gyroscope_y_dps"), -250, 250)
+    gyroscope_z = valid_number(payload.get("gyroscope_z_dps"), -250, 250)
     device_id = payload.get("device_id", "pulseira-01")
     if not isinstance(device_id, str) or not 1 <= len(device_id) <= 64:
         raise ValueError("device_id invalido")
@@ -171,6 +180,9 @@ def interpret(payload, connection):
         "battery_percent": battery_percent,
         "battery_voltage": battery_voltage,
         "acceleration_g": acceleration,
+        "gyroscope_x_dps": gyroscope_x,
+        "gyroscope_y_dps": gyroscope_y,
+        "gyroscope_z_dps": gyroscope_z,
         "panic": panic,
         "sensor_contact": contact,
         "motion_active": motion_active,
@@ -314,14 +326,22 @@ class ApiHandler(BaseHTTPRequestHandler):
                     """INSERT INTO readings (
                         device_id, received_at, spo2_percent, heart_rate_bpm,
                         temperature_c, battery_percent, battery_voltage,
-                        acceleration_g, motion_active, fall_detected, panic,
+                        acceleration_g, gyroscope_x_dps, gyroscope_y_dps,
+                        gyroscope_z_dps, motion_active, fall_detected, panic,
                         sensor_contact, status, temperature_trend
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                     (
-                        reading["device_id"], reading["received_at"],
-                        reading["spo2_percent"], reading["heart_rate_bpm"],
-                        reading["temperature_c"], reading["battery_percent"],
-                        reading["battery_voltage"], reading["acceleration_g"],
+                        reading["device_id"],
+                        reading["received_at"],
+                        reading["spo2_percent"],
+                        reading["heart_rate_bpm"],
+                        reading["temperature_c"],
+                        reading["battery_percent"],
+                        reading["battery_voltage"],
+                        reading["acceleration_g"],
+                        reading["gyroscope_x_dps"],
+                        reading["gyroscope_y_dps"],
+                        reading["gyroscope_z_dps"],
                         int(reading["motion_active"]),
                         int(reading["fall_detected"]), int(reading["panic"]),
                         int(reading["sensor_contact"]), reading["status"],

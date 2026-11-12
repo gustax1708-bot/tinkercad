@@ -19,6 +19,9 @@ struct PanicSnapshot {
   float batteryPercent;
   float batteryVoltage;
   float accelerationG;
+  float gyroscopeXDps;
+  float gyroscopeYDps;
+  float gyroscopeZDps;
   bool sensorContact;
   bool motionActive;
   bool fallDetected;
@@ -45,6 +48,7 @@ constexpr uint32_t kPanicDurationMs = 10 * 60 * 1000;
 constexpr uint32_t kFallImpactWindowMs = 1500;
 constexpr uint32_t kFallStillnessMs = 8000;
 constexpr float kMotionThresholdG = 0.15f;
+constexpr float kGyroscopeMotionThresholdDps = 15.0f;
 constexpr float kFreeFallThresholdG = 0.55f;
 constexpr float kFallImpactThresholdG = 2.0f;
 constexpr size_t kPanicQueueCapacity = 4;
@@ -69,6 +73,9 @@ float skinTemperatureC = NAN;
 float batteryPercent = NAN;
 float batteryVoltage = NAN;
 float accelerationG = NAN;
+float gyroscopeXDps = NAN;
+float gyroscopeYDps = NAN;
+float gyroscopeZDps = NAN;
 float previousAccelerationX = NAN;
 float previousAccelerationY = NAN;
 float previousAccelerationZ = NAN;
@@ -174,10 +181,18 @@ bool writeI2cRegister(uint8_t address, uint8_t registerAddress, uint8_t value) {
   return Wire.endTransmission() == 0;
 }
 
+int16_t readSignedWord(const uint8_t* values) {
+  const uint16_t raw =
+      static_cast<uint16_t>((static_cast<uint16_t>(values[0]) << 8) |
+                            values[1]);
+  return static_cast<int16_t>(raw);
+}
+
 bool initializeMotionSensor() {
   const bool initialized =
       writeI2cRegister(kMotionSensorAddress, 0x6B, 0x00) &&
-      writeI2cRegister(kMotionSensorAddress, 0x1C, 0x00) &&
+      writeI2cRegister(kMotionSensorAddress, 0x1C, 0x08) &&
+      writeI2cRegister(kMotionSensorAddress, 0x1B, 0x00) &&
       writeI2cRegister(kMotionSensorAddress, 0x1A, 0x03);
   motionSensorAvailable = initialized;
   Serial.printf("[MPU6050] %s\n", initialized ? "Sensor inicializado" : "Sensor nao encontrado");
@@ -299,8 +314,8 @@ void updatePanicButton() {
         Serial.println("[PANICO] Botao pressionado; enfileirando alerta");
         const PanicSnapshot panicReading = {
           heartRateBpm, oxygenPercent, skinTemperatureC, batteryPercent,
-          batteryVoltage, accelerationG, contactDetected, motionActive,
-          fallDetected};
+          batteryVoltage, accelerationG, gyroscopeXDps, gyroscopeYDps,
+          gyroscopeZDps, contactDetected, motionActive, fallDetected};
         if (!deliveryTaskReady ||
             xQueueSend(panicQueue, &panicReading, 0) != pdTRUE) {
           Serial.println("[PANICO] Falha: alerta nao enfileirado");
@@ -391,20 +406,34 @@ void updateMotionSensor() {
   if (!motionSensorAvailable || now - lastMotionAt < kMotionIntervalMs) return;
   lastMotionAt = now;
 
-  uint8_t raw[6];
+  uint8_t raw[14];
   if (!readI2cRegisters(kMotionSensorAddress, 0x3B, raw, sizeof(raw))) {
     motionSensorAvailable = false;
     motionActive = false;
+    accelerationG = NAN;
+    gyroscopeXDps = NAN;
+    gyroscopeYDps = NAN;
+    gyroscopeZDps = NAN;
+    previousAccelerationX = NAN;
+    previousAccelerationY = NAN;
+    previousAccelerationZ = NAN;
     Serial.println("[MPU6050] Leitura perdida; tentando reinicializar");
     return;
   }
 
-  const int16_t rawX = static_cast<int16_t>((raw[0] << 8) | raw[1]);
-  const int16_t rawY = static_cast<int16_t>((raw[2] << 8) | raw[3]);
-  const int16_t rawZ = static_cast<int16_t>((raw[4] << 8) | raw[5]);
-  const float accelerationX = rawX / 16384.0f;
-  const float accelerationY = rawY / 16384.0f;
-  const float accelerationZ = rawZ / 16384.0f;
+  const int16_t rawX = readSignedWord(&raw[0]);
+  const int16_t rawY = readSignedWord(&raw[2]);
+  const int16_t rawZ = readSignedWord(&raw[4]);
+  const float accelerationX = rawX / 8192.0f;
+  const float accelerationY = rawY / 8192.0f;
+  const float accelerationZ = rawZ / 8192.0f;
+  gyroscopeXDps = readSignedWord(&raw[8]) / 131.0f;
+  gyroscopeYDps = readSignedWord(&raw[10]) / 131.0f;
+  gyroscopeZDps = readSignedWord(&raw[12]) / 131.0f;
+  const float rotationDps =
+      sqrtf(gyroscopeXDps * gyroscopeXDps +
+            gyroscopeYDps * gyroscopeYDps +
+            gyroscopeZDps * gyroscopeZDps);
   accelerationG = sqrtf(accelerationX * accelerationX +
                         accelerationY * accelerationY +
                         accelerationZ * accelerationZ);
@@ -419,28 +448,36 @@ void updateMotionSensor() {
   previousAccelerationX = accelerationX;
   previousAccelerationY = accelerationY;
   previousAccelerationZ = accelerationZ;
-  motionActive = movementDeltaG > kMotionThresholdG;
+  motionActive = motionActive ||
+                 movementDeltaG > kMotionThresholdG ||
+                 rotationDps > kGyroscopeMotionThresholdDps;
 
   switch (fallState) {
     case FallState::Monitoring:
       if (accelerationG < kFreeFallThresholdG) {
         fallState = FallState::FreeFall;
         fallStateStartedAt = now;
-      }
-      break;
-    case FallState::FreeFall:
-      if (now - fallStateStartedAt > kFallImpactWindowMs) {
-        fallState = FallState::Monitoring;
       } else if (accelerationG >= kFallImpactThresholdG) {
         fallState = FallState::Impact;
         fallStateStartedAt = now;
         fallStillnessStartedAt = 0;
       }
       break;
+    case FallState::FreeFall:
+      if (accelerationG >= kFallImpactThresholdG &&
+          now - fallStateStartedAt <= kFallImpactWindowMs) {
+        fallState = FallState::Impact;
+        fallStateStartedAt = now;
+        fallStillnessStartedAt = 0;
+      } else if (now - fallStateStartedAt > kFallImpactWindowMs) {
+        fallState = FallState::Monitoring;
+      }
+      break;
     case FallState::Impact:
       if (now - fallStateStartedAt > 30000) {
         fallState = FallState::Monitoring;
-      } else if (movementDeltaG <= kMotionThresholdG) {
+      } else if (movementDeltaG <= kMotionThresholdG &&
+                 rotationDps <= kGyroscopeMotionThresholdDps) {
         if (fallStillnessStartedAt == 0) fallStillnessStartedAt = now;
         if (now - fallStillnessStartedAt >= kFallStillnessMs) {
           fallDetected = true;
@@ -461,10 +498,12 @@ void updateMotionSensor() {
   }
 
   if (now - lastMotionLogAt >= kMotionLogIntervalMs) {
-    Serial.printf("[MPU6050] aceleracao=%.2f g | variacao=%.2f g | movimento=%s | queda=%s\n",
-                  accelerationG, movementDeltaG,
-                  motionActive ? "ativo" : "repouso",
-                  fallDetected ? "possivel" : "nao detectada");
+    Serial.printf(
+        "[MPU6050] aceleracao=%.2f g | giroscopio X=%.1f Y=%.1f Z=%.1f "
+        "graus/s | variacao=%.2f g | movimento=%s | queda=%s\n",
+        accelerationG, gyroscopeXDps, gyroscopeYDps, gyroscopeZDps,
+        movementDeltaG, motionActive ? "ativo" : "repouso",
+        fallDetected ? "possivel" : "nao detectada");
     lastMotionLogAt = now;
   }
 }
@@ -511,6 +550,21 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
     payload["acceleration_g"] = nullptr;
   } else {
     payload["acceleration_g"] = reading.accelerationG;
+  }
+  if (isnan(reading.gyroscopeXDps)) {
+    payload["gyroscope_x_dps"] = nullptr;
+  } else {
+    payload["gyroscope_x_dps"] = reading.gyroscopeXDps;
+  }
+  if (isnan(reading.gyroscopeYDps)) {
+    payload["gyroscope_y_dps"] = nullptr;
+  } else {
+    payload["gyroscope_y_dps"] = reading.gyroscopeYDps;
+  }
+  if (isnan(reading.gyroscopeZDps)) {
+    payload["gyroscope_z_dps"] = nullptr;
+  } else {
+    payload["gyroscope_z_dps"] = reading.gyroscopeZDps;
   }
   payload["motion_active"] = reading.motionActive;
   payload["fall_detected"] = reading.fallDetected;
@@ -624,10 +678,11 @@ void loop() {
              deliveryTaskReady) {
     const PanicSnapshot currentReading = {
       heartRateBpm, oxygenPercent, skinTemperatureC, batteryPercent,
-      batteryVoltage, accelerationG, contactDetected, motionActive,
-      fallDetected};
+      batteryVoltage, accelerationG, gyroscopeXDps, gyroscopeYDps,
+      gyroscopeZDps, contactDetected, motionActive, fallDetected};
     lastReadingAttemptAt = now;
     if (xQueueOverwrite(routineReadingQueue, &currentReading) == pdPASS) {
+      motionActive = false;
       initialReadingQueued = true;
       lastReadingAt = now;
     }

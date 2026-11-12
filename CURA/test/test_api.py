@@ -352,6 +352,9 @@ class ApiHttpTests(unittest.TestCase):
             {"battery_percent": 101},
             {"battery_voltage": 5.1},
             {"acceleration_g": 33},
+            {"gyroscope_x_dps": 251},
+            {"gyroscope_y_dps": -251},
+            {"gyroscope_z_dps": 251},
         ):
             with self.subTest(payload=payload):
                 self.assertEqual(self.post_reading(payload)[0], 400)
@@ -402,6 +405,9 @@ class ApiHttpTests(unittest.TestCase):
                 "battery_percent": 84,
                 "battery_voltage": 3.91,
                 "acceleration_g": 1.02,
+                "gyroscope_x_dps": 18.5,
+                "gyroscope_y_dps": -6.0,
+                "gyroscope_z_dps": 0.25,
                 "motion_active": True,
                 "fall_detected": True,
                 "sensor_contact": True,
@@ -413,6 +419,9 @@ class ApiHttpTests(unittest.TestCase):
         self.assertEqual(reading["battery_percent"], 84.0)
         self.assertEqual(reading["battery_voltage"], 3.91)
         self.assertEqual(reading["acceleration_g"], 1.02)
+        self.assertEqual(reading["gyroscope_x_dps"], 18.5)
+        self.assertEqual(reading["gyroscope_y_dps"], -6.0)
+        self.assertEqual(reading["gyroscope_z_dps"], 0.25)
         self.assertTrue(reading["motion_active"])
         self.assertTrue(reading["fall_detected"])
         self.assertEqual(reading["status"], "queda_possivel")

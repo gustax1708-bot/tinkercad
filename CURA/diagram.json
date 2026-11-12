@@ -6,7 +6,7 @@
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": -19.2, "left": 20, "attrs": {} },
     { "type": "chip-max-30102", "id": "chip1", "top": -180, "left": 360, "attrs": { "heartRateBpm": "72", "spo2Percent": "98" } },
       { "type": "chip-max30205", "id": "temp1", "top": 10, "left": 365, "attrs": { "temperatureC": "36.8" } },
-      { "type": "wokwi-mpu6050", "id": "imu1", "top": -20, "left": 550, "attrs": { "accelX": "0", "accelY": "0", "accelZ": "1" } },
+      { "type": "wokwi-mpu6050", "id": "imu1", "top": -20, "left": 550, "attrs": { "accelX": "0", "accelY": "0", "accelZ": "1", "rotationX": "0", "rotationY": "0", "rotationZ": "0" } },
       { "type": "chip-max17048", "id": "batt1", "top": 100, "left": 550, "attrs": { "batteryPercent": "100" } },
     { "type": "wokwi-pushbutton", "id": "btn1", "top": 190, "left": 360, "attrs": {} }
   ],

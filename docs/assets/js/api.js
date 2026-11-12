@@ -94,6 +94,7 @@
       setText('[data-reading="spo2"]', "--");
       setText('[data-reading="battery"]', "--");
       setText('[data-reading="acceleration"]', "--");
+      setText('[data-reading="gyroscope"]', "--");
       setText('[data-reading="motion"]', "--");
       setText('[data-reading="fall"]', "--");
       setText("[data-reading-battery-voltage]", "MAX17048");
@@ -158,6 +159,19 @@
       readingIsFresh
         ? formatValue(reading.acceleration_g, " g", 2)
         : "Desatualizado",
+    );
+    const gyroscopeValues = [
+      reading.gyroscope_x_dps,
+      reading.gyroscope_y_dps,
+      reading.gyroscope_z_dps,
+    ];
+    setText(
+      '[data-reading="gyroscope"]',
+      !readingIsFresh
+        ? "Desatualizado"
+        : gyroscopeValues.every((value) => value == null)
+          ? "Sem leitura"
+          : `X: ${formatValue(gyroscopeValues[0], "°/s")} · Y: ${formatValue(gyroscopeValues[1], "°/s")} · Z: ${formatValue(gyroscopeValues[2], "°/s")}`,
     );
     setText(
       '[data-reading="motion"]',

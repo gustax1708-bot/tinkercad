@@ -1863,6 +1863,13 @@ button {
   font-family: "DM Mono", monospace;
 }
 
+.telemetry-item b[data-reading="gyroscope"] {
+  max-width: 46%;
+  font-size: 10px;
+  line-height: 1.5;
+  text-align: right;
+}
+
 .telemetry-icon,
 .file-icon {
   display: grid;
