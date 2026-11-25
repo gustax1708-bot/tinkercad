@@ -1,5 +1,5 @@
 .firmware-hero .hero-graphic {
-  background: #086bb5;
+  background: var(--hero-graphic-background, #086bb5);
 }
 
 .firmware-hero .code-window {

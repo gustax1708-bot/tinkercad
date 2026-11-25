@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (loginForm) {
     if (profile) {
       const message = document.querySelector("#loginMessage");
-      if (message) message.textContent = `Você já está conectado como ${profile.email}.`;
+      if (message) message.textContent = `Este navegador já tem um perfil local para ${profile.email}.`;
     }
     loginForm.addEventListener("submit", (event) => {
       event.preventDefault();

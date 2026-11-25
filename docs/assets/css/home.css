@@ -85,7 +85,7 @@ button {
 .sidebar {
   width: 248px;
   flex-shrink: 0;
-  background: #eef2ed;
+  background: var(--sidebar-background, #eef2ed);
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
@@ -340,7 +340,7 @@ button {
   align-items: center;
   border-bottom: 1px solid var(--line);
   padding: 0 48px;
-  background: rgba(247, 248, 244, 0.8);
+  background: var(--topbar-background, rgba(247, 248, 244, 0.8));
 }
 
 .breadcrumbs {
@@ -1548,6 +1548,142 @@ button {
   }
 }
 
+body[data-page-theme="overview"] {
+  --orange: #e85d4f;
+  --orange-dark: #c8463a;
+  --paper: #edf8ff;
+  --line: #dfeef7;
+  --deep-mint: #0b4d86;
+  --deep-mint-strong: #072f54;
+  --yellow: #31d0c6;
+  --sidebar-background: #eaf5fb;
+  --topbar-background: rgba(243, 251, 255, 0.88);
+  --hero-graphic-background: #086bb5;
+}
+
+body[data-page-theme="hardware"] {
+  --orange: #0b8baa;
+  --orange-dark: #08718b;
+  --paper: #eefbfc;
+  --line: #d4ebee;
+  --deep-mint: #075b7a;
+  --deep-mint-strong: #053b52;
+  --yellow: #75e4e6;
+  --sidebar-background: #e9f8fa;
+  --topbar-background: rgba(244, 252, 253, 0.9);
+  --hero-graphic-background: #0782a4;
+}
+
+body[data-page-theme="firmware"] {
+  --orange: #13a99b;
+  --orange-dark: #0d837c;
+  --paper: #eef5f8;
+  --line: #d9e7ed;
+  --deep-mint: #18364f;
+  --deep-mint-strong: #102738;
+  --yellow: #55dfc2;
+  --sidebar-background: #e9f3f6;
+  --topbar-background: rgba(242, 248, 251, 0.92);
+  --hero-graphic-background: #0a4461;
+}
+
+body[data-page-theme="documentation"] {
+  --orange: #8e6cc5;
+  --orange-dark: #7152a7;
+  --paper: #f7f3fc;
+  --line: #e9e1f3;
+  --deep-mint: #564078;
+  --deep-mint-strong: #3d2c5e;
+  --yellow: #d6bdff;
+  --sidebar-background: #f2edfa;
+  --topbar-background: rgba(250, 247, 255, 0.92);
+  --hero-graphic-background: #7154a0;
+}
+
+body[data-page-theme="workbench"] {
+  --orange: #26a269;
+  --orange-dark: #1d8054;
+  --paper: #eef8f1;
+  --line: #d9eade;
+  --deep-mint: #17664d;
+  --deep-mint-strong: #104b39;
+  --yellow: #f3c969;
+  --sidebar-background: #eaf5ee;
+  --topbar-background: rgba(245, 251, 247, 0.92);
+  --hero-graphic-background: #23875d;
+}
+
+body[data-page-theme="medications"] {
+  --orange: #d46b7d;
+  --orange-dark: #b45165;
+  --paper: #fff6f5;
+  --line: #f4dedf;
+  --deep-mint: #814957;
+  --deep-mint-strong: #613542;
+  --yellow: #f2c178;
+  --sidebar-background: #fff1f0;
+  --topbar-background: rgba(255, 248, 246, 0.94);
+  --hero-graphic-background: #a84864;
+}
+
+body[data-page-theme="profile"] {
+  --orange: #6b81c9;
+  --orange-dark: #5268ad;
+  --paper: #f4f6ff;
+  --line: #dfe5fb;
+  --deep-mint: #364b83;
+  --deep-mint-strong: #25355f;
+  --yellow: #93d6e8;
+  --sidebar-background: #edf1ff;
+  --topbar-background: rgba(248, 249, 255, 0.94);
+  --hero-graphic-background: #495ea6;
+}
+
+body[data-page-theme="login"] {
+  --orange: #1686aa;
+  --orange-dark: #116983;
+  --paper: #eff9fc;
+  --line: #d8edf2;
+  --deep-mint: #165678;
+  --deep-mint-strong: #10405c;
+  --yellow: #5ad2c2;
+  --sidebar-background: #eaf6fa;
+  --topbar-background: rgba(245, 252, 254, 0.94);
+  --hero-graphic-background: #096c8a;
+}
+
+body[data-page-theme] .sidebar {
+  background: var(--sidebar-background);
+}
+
+body[data-page-theme] .topbar {
+  background: var(--topbar-background);
+}
+
+body[data-page-theme] .nav-item.active {
+  box-shadow: inset 3px 0 var(--orange), 0 2px 7px rgba(20, 50, 40, 0.03);
+}
+
+body[data-page-theme] .hero-panel {
+  background: var(--deep-mint);
+}
+
+body[data-page-theme] .hero-graphic {
+  background: var(--hero-graphic-background);
+}
+
+body[data-theme="dark"][data-page-theme] .sidebar,
+body[data-theme="dark"][data-page-theme] .topbar {
+  background: #182c3c;
+  border-color: var(--line);
+}
+
+body.high-contrast[data-page-theme] .sidebar,
+body.high-contrast[data-page-theme] .topbar {
+  background: var(--paper);
+  border-color: var(--ink);
+}
+
 @media (max-width: 480px) {
   .main-nav {
     grid-template-columns: 1fr;
@@ -1662,7 +1798,7 @@ button {
 }
 
 .project-hero .hero-graphic {
-  background: #086bb5;
+  background: var(--hero-graphic-background, #086bb5);
 }
 
 .device-board {
@@ -1867,6 +2003,12 @@ button {
   max-width: 46%;
   font-size: 10px;
   line-height: 1.5;
+  text-align: right;
+}
+
+.telemetry-item b.api-state {
+  max-width: 46%;
+  font: 10px/1.5 "DM Mono", monospace;
   text-align: right;
 }
 
@@ -2191,7 +2333,7 @@ button {
 }
 
 .hero-graphic {
-  background: #086bb5;
+  background: var(--hero-graphic-background, #086bb5);
 }
 
 .graphic-grid {

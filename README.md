@@ -208,7 +208,7 @@ docker run --rm -v "$PWD":/workspace -w /workspace \
 	wokwi/builder-clang-wasm make build-chip
 ```
 
-Depois, use **Wokwi: Start Simulator** no VS Code. Os artefatos gerados são `CURA/.pio/build/wokwi/firmware.bin`, `CURA/Sensor_Saturacao.chip.wasm`, `CURA/MAX30205.chip.wasm` e `CURA/MAX17048.chip.wasm`. O MAX30102 simulado usa 100 Hz com média de quatro amostras, resultando em 25 amostras por segundo.
+Como `wokwi.toml` e `diagram.json` ficam dentro de `CURA/`, ao abrir a raiz do repositório no VS Code selecione **F1 → Wokwi: Select Config File → `CURA/wokwi.toml`**. Depois, use **Wokwi: Start Simulator**. Os caminhos de firmware e chips são relativos a `wokwi.toml`; os artefatos gerados são `CURA/.pio/build/wokwi/firmware.bin`, `CURA/Sensor_Saturacao.chip.wasm`, `CURA/MAX30205.chip.wasm` e `CURA/MAX17048.chip.wasm`. O MAX30102 simulado usa 100 Hz com média de quatro amostras, resultando em 25 amostras por segundo.
 
 Os controles customizados ajustam frequência cardíaca (40-180 bpm), SpO2 (80-100%), temperatura MAX30205 (0-50 °C) e carga simulada da bateria (0-100%). O MPU6050 pode ser ajustado pelos atributos de aceleração do diagrama. Esses controles são apenas simulação; a carga no Wokwi não estima consumo nem comprova autonomia.
 

@@ -18,7 +18,7 @@
     <script src="../assets/js/home.js" defer></script>
     <script src="../assets/js/care-features.js" defer></script>
   </head>
-  <body>
+  <body data-page-theme="documentation">
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand">
@@ -55,7 +55,7 @@
             <i data-lucide="share-2"></i><span>Compartilhar</span>
           </button>
           <button class="nav-item" id="downloadButton">
-            <i data-lucide="download"></i><span>Exportar projeto</span>
+            <i data-lucide="download"></i><span>Exportar leitura</span>
           </button>
         </nav>
         <div class="sidebar-footer">
@@ -117,17 +117,17 @@
                 <div class="telemetry-list">
                   <div class="telemetry-item">
                     <span class="telemetry-icon green"><i data-lucide="play-circle"></i></span>
-                    <span><strong>1. Iniciar serviços</strong><small>py -3 tools/dev_services.py (Windows) · python3 tools/dev_services.py (Linux/macOS)</small></span>
-                    <b>OK</b>
+                    <span><strong>1. Iniciar serviços locais</strong><small>Windows: py -3 tools/dev_services.py · Linux/macOS: python3 tools/dev_services.py</small></span>
+                    <b>LOCAL</b>
                   </div>
                   <div class="telemetry-item">
-                    <span class="telemetry-icon orange"><i data-lucide="wifi"></i></span>
-                    <span><strong>2. Conectar Wokwi</strong><small>ESP32 + sensores ativos</small></span>
-                    <b>LIVE</b>
+                    <span class="telemetry-icon orange"><i data-lucide="cpu"></i></span>
+                    <span><strong>2. Executar o firmware</strong><small>Compile a simulação Wokwi ou conecte uma placa autorizada à API.</small></span>
+                    <b>ESP32</b>
                   </div>
                   <div class="telemetry-item">
                     <span class="telemetry-icon purple"><i data-lucide="layout-dashboard"></i></span>
-                    <span><strong>3. Monitorar dashboard</strong><small>Atualização automática</small></span>
+                    <span><strong>3. Acompanhar telemetria</strong><small>O painel consulta leituras e alertas ativos a cada 10 segundos.</small></span>
                     <b>10s</b>
                   </div>
                 </div>
@@ -158,8 +158,12 @@
                   <small>recebe telemetria</small>
                 </div>
                 <div class="component-row">
-                  <span><i class="component-dot orange-dot"></i> /api/v1/alerts/{id}</span>
-                  <small>reconhecer ou resolver</small>
+                  <span><i class="component-dot orange-dot"></i> POST /api/v1/alerts/{id}/acknowledge</span>
+                  <small>reconhece um alerta ativo</small>
+                </div>
+                <div class="component-row">
+                  <span><i class="component-dot orange-dot"></i> POST /api/v1/alerts/{id}/resolve</span>
+                  <small>encerra um alerta pendente</small>
                 </div>
               </article>
             </div>

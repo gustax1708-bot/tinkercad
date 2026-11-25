@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Acesse sua conta CUIDA+." />
+    <meta name="description" content="Identificação local de usuário CUIDA+." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -12,7 +12,7 @@
     <script src="../assets/js/home.js" defer></script>
     <script src="../assets/js/care-features.js" defer></script>
   </head>
-  <body>
+  <body data-page-theme="login">
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand"><div class="brand-mark"><span></span><span></span><span></span></div><span>CUIDA<span class="brand-dot">+</span></span></div>
@@ -45,10 +45,10 @@
           </div>
         </header>
         <div class="content-wrap care-page">
-          <section class="welcome-row"><div><p class="eyebrow"><span class="status-dot"></span> BEM-VINDO AO CUIDA+</p><h1>Entre para<br /><span class="headline-accent">continuar.</span></h1><p class="welcome-copy">Acesse seu perfil para organizar sua rotina de cuidados.</p></div></section>
+          <section class="welcome-row"><div><p class="eyebrow"><span class="status-dot"></span> PERFIL NESTE NAVEGADOR</p><h1>Identifique seu<br /><span class="headline-accent">perfil local.</span></h1><p class="welcome-copy">Nome e e-mail ficam salvos neste navegador; não há autenticação no servidor.</p></div></section>
           <section class="care-card">
-            <h2>Acessar conta</h2>
-            <p id="loginMessage">Esta demonstração mantém apenas nome e e-mail neste navegador.</p>
+            <h2>Continuar com perfil local</h2>
+            <p id="loginMessage">Informe um nome e e-mail para personalizar esta demonstração.</p>
             <form class="care-form" id="loginForm">
               <label class="care-field full-width">Nome (opcional)
                 <input name="name" type="text" autocomplete="name" maxlength="100" placeholder="Como podemos chamar você?" />
@@ -56,12 +56,9 @@
               <label class="care-field full-width">E-mail
                 <input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="voce@exemplo.com" />
               </label>
-              <label class="care-field full-width">Senha
-                <input name="password" type="password" autocomplete="current-password" required />
-              </label>
-              <div class="care-actions"><button class="care-button" type="submit"><i data-lucide="log-in"></i> Entrar</button><a class="care-button secondary" href="profile.html">Ver meu perfil</a></div>
+              <div class="care-actions"><button class="care-button" type="submit"><i data-lucide="user-round"></i> Continuar</button><a class="care-button secondary" href="profile.html">Ver meu perfil</a></div>
             </form>
-            <p class="care-note">Protótipo visual: não há autenticação de servidor. A senha não é armazenada nem enviada; não use uma senha real.</p>
+            <p class="care-note">Esta tela não cria uma conta nem valida identidade. Não informe senhas ou dados sensíveis.</p>
           </section>
         </div>
       </main>

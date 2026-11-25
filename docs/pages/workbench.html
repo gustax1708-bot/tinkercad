@@ -12,10 +12,12 @@
     />
     <link rel="stylesheet" href="../assets/css/home.css" />
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="../assets/js/api.js?v=7" defer></script>
     <script src="../assets/js/home.js" defer></script>
     <script src="../assets/js/care-features.js" defer></script>
+    <script src="../assets/js/hardware.js" defer></script>
   </head>
-  <body>
+  <body data-page-theme="workbench">
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand">
@@ -52,7 +54,7 @@
             <i data-lucide="share-2"></i><span>Compartilhar</span>
           </button>
           <button class="nav-item" id="downloadButton">
-            <i data-lucide="download"></i><span>Exportar projeto</span>
+            <i data-lucide="download"></i><span>Exportar leitura</span>
           </button>
         </nav>
         <div class="sidebar-footer">
@@ -82,16 +84,16 @@
         <div class="content-wrap">
           <section class="welcome-row">
             <div>
-              <p class="eyebrow"><span class="status-dot"></span> Ambiente de validação</p>
+              <p class="eyebrow"><span class="status-dot"></span> AMBIENTE DE VALIDAÇÃO · <span data-api-connection>Aguardando API</span></p>
               <h1>Bancada<br /><span class="headline-accent">CUIDA+.</span></h1>
-              <p class="welcome-copy">Status do simulador, fluxo de dados e próximos passos para operação.</p>
+              <p class="welcome-copy">Acompanhe a última telemetria persistida e o estado da API local.</p>
             </div>
             <div class="project-actions">
               <button class="outline-button" id="shareTopButton">
                 <i data-lucide="share-2"></i> Compartilhar
               </button>
-              <button class="solid-button" id="openWorkbench">
-                <i data-lucide="play"></i> Reabrir bancada
+              <button class="solid-button" id="runDiagnosticsButton" type="button">
+                <i data-lucide="activity"></i> Verificar API
               </button>
             </div>
           </section>
@@ -107,26 +109,26 @@
               <article class="telemetry-card">
                 <div class="card-heading">
                   <div>
-                    <span class="card-kicker">WOKWI</span>
-                    <h3>Operação atual</h3>
+                    <span class="card-kicker">API LOCAL</span>
+                    <h3>Estado da telemetria</h3>
                   </div>
-                  <span class="online-pill"><i></i>Ativa</span>
+                  <span class="online-pill" data-reading-status><i></i>Aguardando dados</span>
                 </div>
                 <div class="telemetry-list">
                   <div class="telemetry-item">
-                    <span class="telemetry-icon green"><i data-lucide="wifi"></i></span>
-                    <span><strong>Wi‑Fi</strong><small>Conectado ao gateway local</small></span>
-                    <b>OK</b>
+                    <span class="telemetry-icon green"><i data-lucide="database"></i></span>
+                    <span><strong>API e banco</strong><small>Estado confirmado pela consulta de telemetria</small></span>
+                    <b class="api-state" data-api-connection>Aguardando</b>
                   </div>
                   <div class="telemetry-item">
-                    <span class="telemetry-icon orange"><i data-lucide="activity"></i></span>
-                    <span><strong>Leituras</strong><small>Envio periódico para API</small></span>
-                    <b>LIVE</b>
+                    <span class="telemetry-icon orange"><i data-lucide="heart-pulse"></i></span>
+                    <span><strong>Última leitura</strong><small data-reading-updated>Nenhuma leitura recebida</small></span>
+                    <b data-reading="heart-rate">--</b>
                   </div>
                   <div class="telemetry-item">
                     <span class="telemetry-icon purple"><i data-lucide="shield-alert"></i></span>
-                    <span><strong>Botão de pânico</strong><small>Ativação manual e persistência</small></span>
-                    <b>OK</b>
+                    <span><strong>Alertas de pânico</strong><small>Eventos recebidos e armazenados pela API</small></span>
+                    <b data-reading="panic">--</b>
                   </div>
                 </div>
               </article>
@@ -134,25 +136,30 @@
               <article class="status-card">
                 <div class="card-heading">
                   <div>
-                    <span class="card-kicker">AÇÃO</span>
-                    <h3>Próximos passos</h3>
+                    <span class="card-kicker">TELEMETRIA</span>
+                    <h3>Resumo da última leitura</h3>
                   </div>
                   <i data-lucide="rocket" class="heading-icon"></i>
                 </div>
                 <div class="component-row">
-                  <span><i class="component-dot green-dot"></i> Validar dashboard</span>
-                  <small>auto-refresh</small>
+                  <span><i class="component-dot green-dot"></i> Temperatura</span>
+                  <small data-reading="temperature">--</small>
                 </div>
                 <div class="component-row">
-                  <span><i class="component-dot blue-dot"></i> Validar API</span>
-                  <small>/api/v1/latest</small>
+                  <span><i class="component-dot blue-dot"></i> SpO₂</span>
+                  <small data-reading="spo2">--</small>
                 </div>
                 <div class="component-row">
-                  <span><i class="component-dot orange-dot"></i> Validar alertas</span>
-                  <small>botão de pânico</small>
+                  <span><i class="component-dot orange-dot"></i> Bateria</span>
+                  <small data-reading="battery">--</small>
                 </div>
               </article>
             </div>
+            <section class="active-alerts" data-active-alerts hidden aria-live="polite" aria-label="Alertas ativos">
+              <div class="active-alerts-heading"><i data-lucide="triangle-alert" aria-hidden="true"></i><h3>Alertas pendentes</h3></div>
+              <div class="active-alerts-list" data-active-alert-list></div>
+            </section>
+            <p class="care-note" role="note">Uma API online confirma que o serviço e o banco respondem, mas não garante que o simulador ou a pulseira estejam conectados. O envio do Wokwi depende do Private IoT Gateway.</p>
           </section>
         </div>
       </main>

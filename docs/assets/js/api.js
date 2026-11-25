@@ -382,9 +382,11 @@
         notifyForNewAlerts(activeAlerts);
         updateReading(latest.reading, latest.latest_panic, activeAlerts);
         document.documentElement.dataset.apiStatus = "online";
+        setText("[data-api-connection]", "API e banco online");
       } catch {
         updateReading(null, null, []);
         setText("[data-reading-status]", "API indisponível — sem dados atuais");
+        setText("[data-api-connection]", "API indisponível");
         setText("[data-health-state]", "OFF");
         setText("[data-health-detail]", "Não foi possível consultar a API");
         setText("[data-reading-updated]", "Sem conexão com a API");

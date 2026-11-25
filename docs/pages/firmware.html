@@ -22,7 +22,7 @@
     <script src="../assets/js/firmware.js" defer></script>
   </head>
 
-  <body>
+  <body data-page-theme="firmware">
     <div class="app-shell">
       <aside class="sidebar" id="sidebar">
         <div class="brand">
@@ -61,7 +61,7 @@
             <i data-lucide="share-2"></i><span>Compartilhar</span>
           </button>
           <button class="nav-item" id="downloadButton" type="button">
-            <i data-lucide="download"></i><span>Exportar projeto</span>
+            <i data-lucide="download"></i><span>Exportar leitura</span>
           </button>
         </nav>
         <div class="sidebar-footer">
@@ -264,8 +264,8 @@ apiClient.POST(payload);</pre
           <section class="project-section" id="documents">
             <div class="section-heading">
               <div>
-                <p class="eyebrow">ARQUIVOS RELACIONADOS</p>
-                <h2>Dependências do firmware</h2>
+                <p class="eyebrow">DRIVERS E BIBLIOTECAS</p>
+                <h2>Interfaces do dispositivo</h2>
               </div>
               <button class="text-button" id="viewDependenciesButton">
                 Ver todas <i data-lucide="arrow-right"></i>
@@ -275,18 +275,18 @@ apiClient.POST(payload);</pre
               <div>
                 <span class="file-icon green"
                   ><i data-lucide="package"></i></span
-                ><strong>SparkFun MAX3010x</strong><small>MAX30102 · I2C</small>
+                ><strong>SparkFun MAX3010x</strong><small>MAX30102 · biblioteca I2C</small>
               </div>
               <div>
                 <span class="file-icon orange"
                   ><i data-lucide="package"></i></span
                 ><strong>MAX30205 + MPU6050 + MAX17048</strong
-                ><small>Temperatura, IMU e bateria · I2C</small>
+                ><small>Temperatura, movimento e bateria · I2C no firmware</small>
               </div>
               <div>
                 <span class="file-icon purple"
                   ><i data-lucide="package"></i></span
-                ><strong>ArduinoJson</strong><small>Payload HTTP · v7</small>
+                ><strong>ArduinoJson</strong><small>Serialização do payload HTTP · v7</small>
               </div>
             </div>
           </section>

@@ -1,5 +1,5 @@
 .hardware-hero .hero-graphic {
-  background: #086bb5;
+  background: var(--hero-graphic-background, #086bb5);
 }
 
 .hardware-hero .hardware-board {
