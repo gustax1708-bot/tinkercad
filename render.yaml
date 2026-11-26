@@ -2,9 +2,9 @@ services:
   - type: web
     name: cuida-plus-api
     runtime: python
-    plan: starter
+    plan: free
     rootDir: CURA
-    buildCommand: python -m compileall -q .
+    buildCommand: pip install -r requirements.txt
     startCommand: python api.py
     healthCheckPath: /api/v1/health
     envVars:
@@ -12,11 +12,7 @@ services:
         value: 0.0.0.0
       - key: DEVICE_TOKEN
         generateValue: true
-      - key: DATABASE_PATH
-        value: /var/data/readings.sqlite3
+      - key: DATABASE_URL
+        sync: false
       - key: API_CORS_ORIGINS
         value: http://localhost:8080,https://gustax1708-bot.github.io
-    disk:
-      name: cuida-plus-readings
-      mountPath: /var/data
-      sizeGB: 1

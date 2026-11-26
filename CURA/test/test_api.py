@@ -7,6 +7,7 @@ import tempfile
 import threading
 import unittest
 from pathlib import Path
+from unittest.mock import Mock
 
 import api
 
@@ -57,6 +58,23 @@ class ApiHttpTests(unittest.TestCase):
         )
         response = self.connection.getresponse()
         return response.status, json.loads(response.read())
+
+    def test_postgres_connection_translates_sqlite_insert_conventions(self):
+        cursor = Mock()
+        cursor.fetchone.return_value = {"id": 42}
+        driver_connection = Mock()
+        driver_connection.execute.return_value = cursor
+        connection = api.PostgresConnection(driver_connection)
+
+        result = connection.execute(
+            "INSERT INTO readings (device_id) VALUES (?)", ("pulseira-01",)
+        )
+
+        driver_connection.execute.assert_called_once_with(
+            "INSERT INTO readings (device_id) VALUES (%s) RETURNING id",
+            ("pulseira-01",),
+        )
+        self.assertEqual(result.lastrowid, 42)
 
     def test_api_root_redirects_to_frontend(self):
         self.connection.request("GET", "/")

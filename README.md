@@ -16,7 +16,7 @@ Na simulação Wokwi, altere `rotationX`, `rotationY` e `rotationZ` no MPU6050
 para testar o giroscópio. Os eixos aparecem no painel em graus por segundo; a
 telemetria é enviada em intervalos de 10 segundos.
 
-- API Python com persistência SQLite em `CURA/readings.sqlite3`.
+- API Python com SQLite local em `CURA/readings.sqlite3` ou PostgreSQL via `DATABASE_URL`.
 - Dashboard responsivo em HTML, CSS e JavaScript, com página inicial em `docs/pages/index.html` e recursos em `docs/`.
 
 ## Páginas do dashboard
@@ -130,9 +130,19 @@ O GitHub Actions publica automaticamente os arquivos estáticos de `docs/` no Gi
 
 Após a publicação, qualquer pessoa com o endereço pode abrir a versão mais recente em computadores diferentes. Uma atualização aparece depois que o workflow de publicação termina.
 
-O Pages hospeda apenas o frontend estático. Para alimentar o painel publicado, o repositório inclui um Blueprint do Render em `render.yaml`; ele publica a API Python e mantém o SQLite em um disco persistente. O endpoint de leituras e histórico é público e somente leitura, então não envie dados pessoais ou médicos reais. O envio do dispositivo continua protegido por `DEVICE_TOKEN`; as ações de reconhecer/resolver alertas ficam disponíveis apenas no modo local. O disco persistente exige um serviço pago no Render; confira os valores antes de criar os recursos. O login demonstrativo, perfil, preferências e medicamentos são armazenados no navegador de cada dispositivo e não são sincronizados entre máquinas.
+O Pages hospeda apenas o frontend estático. Para uma implantação gratuita de demonstração, a API pode rodar no Render Free e usar PostgreSQL do Neon Free; o arquivo `render.yaml` configura o serviço e a variável privada `DATABASE_URL`. Crie primeiro um banco PostgreSQL no Neon e depois conecte sua connection string como `DATABASE_URL` ao serviço do Render durante a criação do Blueprint. A API usa SQLite local quando `DATABASE_URL` não está definida e PostgreSQL quando ela está definida. O banco Neon mantém os dados fora do sistema de arquivos temporário do Render.
 
-Para criar a API, no Render selecione **New → Blueprint**, conecte este repositório e revise o serviço e o disco antes de confirmar. O serviço `cuida-plus-api` disponibiliza `/api/v1/health`, `/api/v1/latest` e `/api/v1/history`; o painel publicado aponta para `https://cuida-plus-api.onrender.com`. Se o Render atribuir outro subdomínio, atualize a URL padrão em `docs/assets/js/api.js` e publique o dashboard novamente. Após o deploy, copie o valor privado de `DEVICE_TOKEN` das variáveis de ambiente do serviço para `DEVICE_API_TOKEN` em `CURA/include/secrets.h` e configure `DEVICE_API_URL` como `https://cuida-plus-api.onrender.com/api/v1/readings`. Não coloque o token no frontend nem o envie ao Git.
+Passo a passo:
+
+1. No Neon, crie um projeto PostgreSQL no plano gratuito e copie a connection string com SSL. Mantenha-a privada.
+2. Envie as alterações do repositório para o GitHub.
+3. No Render, escolha **New → Blueprint**, conecte este repositório e confirme o serviço `cuida-plus-api` no plano **Free**. Quando solicitado, configure `DATABASE_URL` com a connection string do Neon. O Blueprint gera um `DEVICE_TOKEN` privado automaticamente.
+4. Depois do deploy, abra `https://cuida-plus-api.onrender.com/api/v1/health`. O esperado é `{"status":"ok","database":"ok"}`. Caso o Render atribua outro endereço, atualize a URL padrão em `docs/assets/js/api.js` para esse endereço e envie a alteração para o GitHub.
+5. Aguarde o workflow do GitHub Pages terminar e abra o painel publicado.
+
+No plano gratuito, a API do Render pode suspender após inatividade e demorar para responder quando iniciar novamente. Os serviços gratuitos têm limites de uso que podem mudar; confira os planos e limites atuais do [Render](https://render.com/docs/free) e do [Neon](https://neon.com/pricing). As rotas GET do painel são públicas e somente leitura; não envie dados pessoais ou médicos reais. Gravações e ações de alerta continuam protegidas pelo `DEVICE_TOKEN`. O login demonstrativo, perfil, preferências e medicamentos são armazenados no navegador de cada dispositivo e não são sincronizados entre máquinas.
+
+Para conectar uma placa física depois de publicar, copie `DEVICE_TOKEN` da área **Environment** do Render para `DEVICE_API_TOKEN` em `CURA/include/secrets.h` e configure `DEVICE_API_URL` com `https://<endereco-do-servico>/api/v1/readings`. O firmware atual foi feito para a API HTTP local; antes de enviar pela internet, adapte e valide o transporte HTTPS com verificação de certificado. Nunca desative a validação TLS nem exponha o token no frontend ou no Git. O Wokwi segue usando o gateway local `host.wokwi.internal` e não envia telemetria diretamente ao Render.
 
 Por padrão, cada computador executa sua própria cópia do dashboard, API e banco SQLite, e a API escuta apenas em `127.0.0.1`. Para usar uma placa física na mesma rede Wi-Fi ou conectar o Wokwi pelo **Private IoT Gateway**, inicie a API em modo de rede local. Isso não publica o dashboard nem a API na internet:
 
@@ -153,7 +163,7 @@ Copie esse token para `DEVICE_API_TOKEN` em `CURA/include/secrets.h`. Para a pla
 
 Para Wokwi remoto, use o **Private IoT Gateway** no computador que executa a API. O firmware simulado já envia para `host.wokwi.internal:8000`; o gateway precisa estar ativo e autorizado a acessar o serviço local. Configure o mesmo `DEVICE_API_TOKEN` no `secrets.h` antes de iniciar a simulação. Redes escolares podem bloquear conexões entre dispositivos ou o gateway; nesse caso, a política de rede precisa permitir o tráfego local.
 
-O servidor local do dashboard continua restrito ao próprio computador em `127.0.0.1:8080`. A API local valida o token nas rotas de telemetria e recusa iniciar com o token padrão ou com menos de 32 caracteres ao aceitar conexões da rede. Na API do Render, somente as rotas GET de leitura são públicas; gravações e ações de alerta continuam exigindo token. O servidor local redireciona a raiz para `docs/pages/index.html` e entrega os arquivos estáticos de `docs/`; seu proxy encaminha o token sem expô-lo ao JavaScript. O CORS aceita apenas `http://localhost:8080` e a origem do GitHub Pages.
+O servidor local do dashboard continua restrito ao próprio computador em `127.0.0.1:8080`. A API local valida o token nas rotas de escrita e recusa iniciar com o token padrão ou com menos de 32 caracteres ao aceitar conexões da rede. Na API publicada, somente as rotas GET de leitura são públicas; gravações e ações de alerta continuam exigindo token. O servidor local redireciona a raiz para `docs/pages/index.html` e entrega os arquivos estáticos de `docs/`; seu proxy encaminha o token sem expô-lo ao JavaScript. O CORS aceita apenas `http://localhost:8080` e a origem do GitHub Pages.
 
 ## Configurar o firmware
 
