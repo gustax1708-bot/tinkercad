@@ -1,11 +1,20 @@
 (function () {
   const staleAfterMs = 6 * 60 * 1000;
   const refreshIntervalMs = 10 * 1000;
+  const isPublishedDashboard =
+    window.location.hostname === "gustax1708-bot.github.io";
+  const defaultApiBaseUrl = isPublishedDashboard
+    ? "https://cuida-plus-api.onrender.com"
+    : window.location.origin;
   const configuredBaseUrl =
     document.documentElement.dataset.apiBase ||
     window.CUIDA_API_URL ||
-    window.location.origin;
+    defaultApiBaseUrl;
   const apiBaseUrl = configuredBaseUrl.replace(/\/$/, "");
+  if (isPublishedDashboard) {
+    window.CUIDA_API_URL = apiBaseUrl;
+    window.CUIDA_API_READ_ONLY = true;
+  }
   const fetchWithTimeout = (url, options = {}) => {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), 5000);
@@ -64,25 +73,29 @@
       const meta = document.createElement("p");
       meta.textContent = `${alert.status === "acknowledged" ? "Reconhecido" : "Ativo"} · ${alert.device_id} · ${formatTime(alert.created_at)}`;
       details.append(title, meta);
-      const actions = document.createElement("div");
-      actions.className = "active-alert-actions";
-      if (alert.status === "active") {
-        const acknowledge = document.createElement("button");
-        acknowledge.className = "care-button secondary";
-        acknowledge.type = "button";
-        acknowledge.textContent = "Reconhecer";
-        acknowledge.dataset.alertAction = "acknowledge";
-        acknowledge.dataset.alertId = alert.id;
-        actions.append(acknowledge);
+      if (window.CUIDA_API_READ_ONLY) {
+        item.append(details);
+      } else {
+        const actions = document.createElement("div");
+        actions.className = "active-alert-actions";
+        if (alert.status === "active") {
+          const acknowledge = document.createElement("button");
+          acknowledge.className = "care-button secondary";
+          acknowledge.type = "button";
+          acknowledge.textContent = "Reconhecer";
+          acknowledge.dataset.alertAction = "acknowledge";
+          acknowledge.dataset.alertId = alert.id;
+          actions.append(acknowledge);
+        }
+        const resolve = document.createElement("button");
+        resolve.className = "care-button";
+        resolve.type = "button";
+        resolve.textContent = "Resolver";
+        resolve.dataset.alertAction = "resolve";
+        resolve.dataset.alertId = alert.id;
+        actions.append(resolve);
+        item.append(details, actions);
       }
-      const resolve = document.createElement("button");
-      resolve.className = "care-button";
-      resolve.type = "button";
-      resolve.textContent = "Resolver";
-      resolve.dataset.alertAction = "resolve";
-      resolve.dataset.alertId = alert.id;
-      actions.append(resolve);
-      item.append(details, actions);
       list.append(item);
     });
   };

@@ -86,9 +86,13 @@ class ApiHttpTests(unittest.TestCase):
         self.assertEqual(response.status, 200)
         self.assertEqual(result, {"status": "ok", "database": "ok"})
 
-    def test_cors_only_allows_configured_dashboard_origin(self):
+    def test_cors_allows_local_and_published_dashboard_origins(self):
         for origin, expected in (
             ("http://localhost:8080", "http://localhost:8080"),
+            (
+                "https://gustax1708-bot.github.io",
+                "https://gustax1708-bot.github.io",
+            ),
             ("https://attacker.example", None),
         ):
             self.connection.request(
@@ -103,23 +107,35 @@ class ApiHttpTests(unittest.TestCase):
                 response.getheader("Access-Control-Allow-Origin"), expected
             )
 
-    def test_telemetry_reads_require_device_token(self):
+    def test_dashboard_read_endpoints_are_public(self):
         for path in (
             "/api/v1/latest",
             "/api/v1/history",
             "/api/v1/health",
         ):
-            self.connection.request("GET", path)
-            response = self.connection.getresponse()
-            response.read()
-            self.assertEqual(response.status, 401)
-
             self.connection.request(
-                "GET", path, headers={"X-Device-Token": "test-token"}
+                "GET",
+                path,
+                headers={"Origin": "https://gustax1708-bot.github.io"},
             )
             response = self.connection.getresponse()
             response.read()
             self.assertEqual(response.status, 200)
+            self.assertEqual(
+                response.getheader("Access-Control-Allow-Origin"),
+                "https://gustax1708-bot.github.io",
+            )
+
+    def test_device_writes_still_require_token(self):
+        self.connection.request(
+            "POST",
+            "/api/v1/readings",
+            json.dumps({"panic": False}),
+            {"Content-Type": "application/json"},
+        )
+        response = self.connection.getresponse()
+        response.read()
+        self.assertEqual(response.status, 401)
 
     def test_api_log_does_not_include_biometric_values(self):
         output = StringIO()
@@ -283,7 +299,10 @@ class ApiHttpTests(unittest.TestCase):
         original_token = api.DEVICE_TOKEN
         original_host = api.HOST
         try:
-            self.assertEqual(api.SITE_URL, "http://127.0.0.1:8080/")
+            self.assertEqual(
+                api.SITE_URL,
+                "https://gustax1708-bot.github.io/tinkercad/pages/index.html",
+            )
             self.assertEqual(api.API_CORS_ORIGIN, "http://localhost:8080")
             api.HOST = "127.0.0.1"
             api.DEVICE_TOKEN = "dev-token"
@@ -319,16 +338,30 @@ class ApiHttpTests(unittest.TestCase):
                 connection.request("GET", "/api/v1/latest")
                 response = connection.getresponse()
                 response.read()
-                self.assertEqual(response.status, 401)
+                self.assertEqual(response.status, 200)
 
                 connection.request(
-                    "GET",
-                    "/api/v1/latest",
-                    headers={"X-Device-Token": "a" * 32},
+                    "POST",
+                    "/api/v1/readings",
+                    json.dumps({"panic": False, "sensor_contact": True}),
+                    {"Content-Type": "application/json"},
                 )
                 response = connection.getresponse()
                 response.read()
-                self.assertEqual(response.status, 200)
+                self.assertEqual(response.status, 401)
+
+                connection.request(
+                    "POST",
+                    "/api/v1/readings",
+                    json.dumps({"panic": False, "sensor_contact": True}),
+                    {
+                        "Content-Type": "application/json",
+                        "X-Device-Token": "a" * 32,
+                    },
+                )
+                response = connection.getresponse()
+                response.read()
+                self.assertEqual(response.status, 201)
             finally:
                 connection.close()
                 server.shutdown()
