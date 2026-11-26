@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">CUIDA+ — informação para quem cuida</title>
+  <desc id="description">Prévia do protótipo CUIDA+ de monitoramento remoto experimental.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#edf8ff"/>
+      <stop offset="1" stop-color="#cceeff"/>
+    </linearGradient>
+    <linearGradient id="device" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0873b8"/>
+      <stop offset="1" stop-color="#063865"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#background)"/>
+  <circle cx="1010" cy="118" r="260" fill="#fff" opacity=".55"/>
+  <circle cx="1030" cy="580" r="235" fill="#31d0c6" opacity=".18"/>
+  <path d="M0 525c200-54 348 22 520-14 208-44 397-62 680 6v113H0z" fill="#07579d"/>
+  <path d="M0 525c200-54 348 22 520-14 208-44 397-62 680 6" fill="none" stroke="#31d0c6" stroke-width="8"/>
+  <text x="84" y="115" fill="#07579d" font-family="Arial,sans-serif" font-size="32" font-weight="700" letter-spacing="3">CUIDA+</text>
+  <text x="84" y="240" fill="#113b5a" font-family="Arial,sans-serif" font-size="64" font-weight="700">Monitoramento</text>
+  <text x="84" y="315" fill="#07579d" font-family="Arial,sans-serif" font-size="64" font-weight="700">que aproxima quem cuida.</text>
+  <text x="88" y="378" fill="#4f6d86" font-family="Arial,sans-serif" font-size="27">Protótipo experimental de telemetria e alertas.</text>
+  <g transform="translate(888 174)">
+    <rect x="0" y="0" width="208" height="258" rx="38" fill="url(#device)"/>
+    <rect x="18" y="19" width="172" height="220" rx="26" fill="#fff"/>
+    <circle cx="104" cy="92" r="39" fill="#dff6ff"/>
+    <path d="M104 70v44M82 92h44" fill="none" stroke="#07579d" stroke-linecap="round" stroke-width="13"/>
+    <rect x="48" y="160" width="112" height="12" rx="6" fill="#31d0c6"/>
+    <rect x="48" y="185" width="82" height="10" rx="5" fill="#cceeff"/>
+  </g>
+  <text x="84" y="585" fill="#fff" font-family="Arial,sans-serif" font-size="21">Dados demonstrativos — não substitui avaliação médica.</text>
+</svg>

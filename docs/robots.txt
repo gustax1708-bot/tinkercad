@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /404.html
+
+Sitemap: https://gustax1708-bot.github.io/tinkercad/sitemap.xml

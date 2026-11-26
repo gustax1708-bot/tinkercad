@@ -254,13 +254,220 @@
     renderActiveAlerts(activeAlerts);
   };
 
+  const chartMetrics = {
+    heart_rate_bpm: {
+      label: "Frequência de pulso",
+      unit: " bpm",
+      decimals: 0,
+    },
+    spo2_percent: {
+      label: "Saturação de oxigênio",
+      unit: "%",
+      decimals: 0,
+    },
+    temperature_c: {
+      label: "Temperatura de contato",
+      unit: " °C",
+      decimals: 1,
+    },
+    battery_percent: {
+      label: "Nível da bateria",
+      unit: "%",
+      decimals: 0,
+    },
+  };
+  let chartReadings = [];
+
+  const renderReadingChart = () => {
+    const chart = document.querySelector("[data-reading-chart]");
+    const metricSelect = document.querySelector("[data-chart-metric]");
+    const emptyState = document.querySelector("[data-chart-empty]");
+    const summary = document.querySelector("[data-chart-summary]");
+    if (!chart || !metricSelect || !emptyState || !summary) return;
+
+    const metric =
+      chartMetrics[metricSelect.value] || chartMetrics.heart_rate_bpm;
+    const points = chartReadings
+      .map((reading) => ({
+        time: Date.parse(reading.received_at),
+        value: reading[metricSelect.value],
+      }))
+      .filter(
+        (point) =>
+          Number.isFinite(point.time) &&
+          point.value != null &&
+          point.value !== "" &&
+          Number.isFinite(Number(point.value)),
+      )
+      .map((point) => ({ ...point, value: Number(point.value) }))
+      .sort((a, b) => a.time - b.time)
+      .slice(-30);
+
+    chart.replaceChildren();
+    if (!points.length) {
+      chart.hidden = true;
+      emptyState.hidden = false;
+      emptyState.textContent = chartReadings.length
+        ? `Sem leituras válidas para ${metric.label.toLocaleLowerCase("pt-BR")}.`
+        : "Aguardando leituras para gerar o gráfico.";
+      summary.textContent = "";
+      return;
+    }
+
+    const values = points.map((point) => point.value);
+    const dataMin = Math.min(...values);
+    const dataMax = Math.max(...values);
+    const minLabel = `${dataMin.toFixed(metric.decimals)}${metric.unit}`;
+    const maxLabel = `${dataMax.toFixed(metric.decimals)}${metric.unit}`;
+    const namespace = "http://www.w3.org/2000/svg";
+    const makeSvgElement = (tagName, attributes = {}) => {
+      const element = document.createElementNS(namespace, tagName);
+      Object.entries(attributes).forEach(([name, value]) => {
+        element.setAttribute(name, String(value));
+      });
+      return element;
+    };
+    const title = makeSvgElement("title", { id: "readingChartSvgTitle" });
+    title.textContent = `Histórico de ${metric.label.toLocaleLowerCase("pt-BR")}`;
+    const firstTime = new Date(points[0].time).toLocaleString("pt-BR");
+    const lastTime = new Date(points[points.length - 1].time).toLocaleString(
+      "pt-BR",
+    );
+    const description = makeSvgElement("desc", {
+      id: "readingChartSvgDescription",
+    });
+    description.textContent =
+      `${points.length} leituras entre ${firstTime} e ${lastTime}, ` +
+      `com valores entre ${minLabel} e ${maxLabel}.`;
+    chart.append(title, description);
+    chart.hidden = false;
+    emptyState.hidden = true;
+
+    const width = 480;
+    const height = 280;
+    const plot = { left: 90, right: 12, top: 18, bottom: 46 };
+    const plotWidth = width - plot.left - plot.right;
+    const plotHeight = height - plot.top - plot.bottom;
+    const minimumPadding = metric.decimals > 0 ? 0.1 : 1;
+    const padding = Math.max(
+      (dataMax - dataMin) * 0.15,
+      Math.abs(dataMax) * 0.03,
+      minimumPadding,
+    );
+    const min = dataMin - padding;
+    const max = dataMax + padding;
+
+    for (let index = 0; index <= 4; index += 1) {
+      const y = plot.top + (plotHeight * index) / 4;
+      const value = max - ((max - min) * index) / 4;
+      chart.append(
+        makeSvgElement("line", {
+          class: "chart-grid-line",
+          x1: plot.left,
+          x2: width - plot.right,
+          y1: y,
+          y2: y,
+        }),
+      );
+      const label = makeSvgElement("text", {
+        class: "chart-axis-label",
+        x: plot.left - 10,
+        y: y + 4,
+        "text-anchor": "end",
+      });
+      label.textContent = `${value.toFixed(metric.decimals)}${metric.unit}`;
+      chart.append(label);
+    }
+
+    chart.append(
+      makeSvgElement("line", {
+        class: "chart-axis-line",
+        x1: plot.left,
+        x2: width - plot.right,
+        y1: height - plot.bottom,
+        y2: height - plot.bottom,
+      }),
+    );
+
+    const xFor = (index) =>
+      points.length === 1
+        ? plot.left + plotWidth / 2
+        : plot.left + (plotWidth * index) / (points.length - 1);
+    const yFor = (value) =>
+      plot.top + (plotHeight * (max - value)) / (max - min);
+    const path = points
+      .map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"} ${xFor(index).toFixed(1)} ${yFor(point.value).toFixed(1)}`,
+      )
+      .join(" ");
+    chart.append(
+      makeSvgElement("path", {
+        class: "chart-data-line",
+        d: path,
+      }),
+    );
+
+    points.forEach((point, index) => {
+      chart.append(
+        makeSvgElement("circle", {
+          class: "chart-data-point",
+          cx: xFor(index),
+          cy: yFor(point.value),
+          r: 4.5,
+        }),
+      );
+    });
+
+    const timeLabelIndices = [
+      ...new Set([0, Math.floor((points.length - 1) / 2), points.length - 1]),
+    ];
+    timeLabelIndices.forEach((index, labelIndex) => {
+      const label = makeSvgElement("text", {
+        class: "chart-axis-label",
+        x: xFor(index),
+        y: height - 12,
+        "text-anchor":
+          timeLabelIndices.length === 1
+            ? "middle"
+            : labelIndex === 0
+              ? "start"
+              : labelIndex === timeLabelIndices.length - 1
+                ? "end"
+                : "middle",
+      });
+      label.textContent = new Date(points[index].time).toLocaleTimeString(
+        "pt-BR",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+        },
+      );
+      chart.append(label);
+    });
+
+    const lastPoint = points[points.length - 1];
+    const lastReadingTime = new Date(lastPoint.time).toLocaleTimeString(
+      "pt-BR",
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      },
+    );
+    summary.textContent = `${points.length} ${
+      points.length === 1 ? "leitura válida" : "leituras válidas"
+    } · de ${minLabel} a ${maxLabel} · última às ${lastReadingTime}`;
+  };
+
   const updateHistory = (readings) => {
+    chartReadings = Array.isArray(readings) ? readings : [];
+    renderReadingChart();
     const log = document.querySelector("[data-reading-log]");
     const activityList = document.querySelector("[data-reading-history]");
     const activityCount = document.querySelector("[data-reading-count]");
-    const recentReadings = readings.slice(0, 4);
+    const recentReadings = chartReadings.slice(0, 4);
     if (activityCount)
-      activityCount.textContent = `${readings.length} registros`;
+      activityCount.textContent = `${chartReadings.length} registros`;
 
     if (log) {
       log.replaceChildren();
@@ -410,6 +617,10 @@
   };
 
   document.addEventListener("DOMContentLoaded", () => {
+    const chartMetric = document.querySelector("[data-chart-metric]");
+    if (chartMetric) {
+      chartMetric.addEventListener("change", renderReadingChart);
+    }
     refreshDeviceData();
     window.setInterval(refreshDeviceData, refreshIntervalMs);
     document.addEventListener("visibilitychange", () => {

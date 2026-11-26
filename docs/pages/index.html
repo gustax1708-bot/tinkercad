@@ -3,10 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Painel de monitoramento remoto | CUIDA+</title>
     <meta
       name="description"
-      content="Painel do CUIDA+ para monitoramento remoto e cuidado conectado."
+      content="Acompanhe telemetria demonstrativa, movimento e alertas do protótipo CUIDA+."
     />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CUIDA+" />
+    <meta property="og:title" content="Painel de monitoramento remoto | CUIDA+" />
+    <meta property="og:description" content="Telemetria demonstrativa, movimento e alertas do protótipo CUIDA+." />
+    <meta property="og:image" content="https://gustax1708-bot.github.io/tinkercad/assets/images/social-preview.svg" />
+    <meta property="og:image:alt" content="CUIDA+: protótipo experimental de monitoramento remoto." />
+    <meta property="og:url" content="https://gustax1708-bot.github.io/tinkercad/pages/index.html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://gustax1708-bot.github.io/tinkercad/pages/index.html" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,7 +25,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../assets/css/home.css" />
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
     <script src="../assets/js/api.js?v=7" defer></script>
     <script src="../assets/js/home.js" defer></script>
     <script src="../assets/js/care-features.js" defer></script>
@@ -103,10 +114,11 @@
               </p>
             </div>
             <div class="project-actions">
-              <button class="outline-button" id="shareTopButton">
-                <i data-lucide="share-2"></i> Compartilhar</button
-              ><button class="solid-button" id="openWorkbench">
-                <i data-lucide="play"></i> Abrir bancada
+              <a class="solid-button" href="#telemetry">
+                <i data-lucide="activity" aria-hidden="true"></i> Ver painel de telemetria
+              </a>
+              <button class="outline-button" id="openWorkbench" type="button">
+                <i data-lucide="play" aria-hidden="true"></i> Abrir bancada
               </button>
             </div>
           </section>
@@ -164,7 +176,7 @@
               <div class="active-alerts-list" data-active-alert-list></div>
             </section>
             <div class="dashboard-grid">
-              <article class="telemetry-card">
+              <article class="telemetry-card" id="telemetry">
                 <div class="card-heading">
                   <div>
                     <span class="card-kicker">TELEMETRIA AO VIVO</span>
@@ -200,28 +212,12 @@
                     ><b data-reading="spo2">--</b>
                   </div>
                   <div class="telemetry-item">
-                    <span class="telemetry-icon green"
-                      ><i data-lucide="battery-medium"></i></span
-                    ><span
-                      ><strong>Bateria</strong
-                      ><small data-reading-battery-voltage>MAX17048</small></span
-                    ><b data-reading="battery">--</b>
-                  </div>
-                  <div class="telemetry-item">
                     <span class="telemetry-icon orange"
                       ><i data-lucide="move-3d"></i></span
                     ><span
                       ><strong>Movimento</strong
                       ><small data-reading="acceleration">MPU6050</small></span
                     ><b data-reading="motion">--</b>
-                  </div>
-                  <div class="telemetry-item">
-                    <span class="telemetry-icon green"
-                      ><i data-lucide="rotate-3d"></i></span
-                    ><span
-                      ><strong>Giroscópio</strong
-                      ><small>MPU6050 · °/s</small></span
-                    ><b data-reading="gyroscope">--</b>
                   </div>
                   <div class="telemetry-item">
                     <span class="telemetry-icon purple"
@@ -241,7 +237,49 @@
                       ></span
                     ><b data-reading="panic">--</b>
                   </div>
+                  <div class="telemetry-item">
+                    <span class="telemetry-icon green"
+                      ><i data-lucide="battery-medium"></i></span
+                    ><span
+                      ><strong>Bateria</strong
+                      ><small data-reading-battery-voltage>MAX17048</small></span
+                    ><b data-reading="battery">--</b>
+                  </div>
                 </div>
+              </article>
+              <article class="chart-card" aria-labelledby="readingChartTitle">
+                <div class="card-heading chart-card-heading">
+                  <div>
+                    <span class="card-kicker">HISTÓRICO RECENTE</span>
+                    <h3 id="readingChartTitle">Gráfico de leituras</h3>
+                  </div>
+                  <label class="chart-metric-control" for="readingChartMetric">
+                    <span>Indicador</span>
+                    <select id="readingChartMetric" data-chart-metric>
+                      <option value="heart_rate_bpm">Pulso</option>
+                      <option value="spo2_percent">SpO₂</option>
+                      <option value="temperature_c">Temperatura</option>
+                      <option value="battery_percent">Bateria</option>
+                    </select>
+                  </label>
+                </div>
+                <p class="chart-empty" data-chart-empty>
+                  Aguardando leituras para gerar o gráfico.
+                </p>
+                <svg
+                  class="reading-chart"
+                  data-reading-chart
+                  viewBox="0 0 480 280"
+                  role="img"
+                  aria-labelledby="readingChartSvgTitle readingChartSvgDescription"
+                  hidden
+                >
+                  <title id="readingChartSvgTitle">Histórico de leituras</title>
+                  <desc id="readingChartSvgDescription">
+                    Gráfico das últimas leituras recebidas.
+                  </desc>
+                </svg>
+                <p class="chart-summary" data-chart-summary aria-live="polite"></p>
               </article>
               <article class="status-card" id="hardware">
                 <div class="card-heading">

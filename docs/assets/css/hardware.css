@@ -329,7 +329,7 @@
   justify-content: space-between;
   padding: 10px 0;
   border-top: 1px solid #edf0ed;
-  color: #7b8780;
+  color: var(--muted);
   font-size: 11px;
 }
 
@@ -361,13 +361,13 @@
 }
 
 .sensor-item small {
-  color: #929e96;
+  color: var(--muted);
   font-size: 10px;
 }
 
 .sensor-pin {
   margin-left: auto;
-  color: #89978f;
+  color: var(--muted);
   font:
     9px "DM Mono",
     monospace;
@@ -442,7 +442,7 @@
 }
 
 .connection-list span {
-  color: #7b8780;
+  color: var(--muted);
   font:
     10px "DM Mono",
     monospace;
@@ -462,7 +462,7 @@
 }
 
 .wiring-node small {
-  color: #929e96;
+  color: var(--muted);
   font-size: 9px;
 }
 
@@ -497,7 +497,7 @@
   left: 50%;
   top: 9px;
   transform: translateX(-50%);
-  color: #89978f;
+  color: var(--muted);
   font:
     8px "DM Mono",
     monospace;
@@ -533,7 +533,7 @@
 
 .power-reading small {
   margin-left: auto;
-  color: #929e96;
+  color: var(--muted);
   font-size: 10px;
 }
 
@@ -556,7 +556,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 11px;
-  color: #789087;
+  color: var(--muted);
   font:
     10px "DM Mono",
     monospace;
@@ -586,7 +586,7 @@
 }
 
 .power-stats small {
-  color: #929e96;
+  color: var(--muted);
   font-size: 10px;
 }
 
@@ -639,18 +639,32 @@
 }
 
 .hardware-doc small {
-  color: #929e96;
+  color: var(--muted);
   font-size: 9px;
 }
 
 .hardware-doc > svg {
   width: 14px;
   margin-left: auto;
-  color: #9aa49f;
+  color: var(--muted);
 }
 
 .hardware-doc .file-icon {
   flex-shrink: 0;
+}
+
+body[data-theme="dark"] .component-card,
+body[data-theme="dark"] .sensor-card,
+body[data-theme="dark"] .wiring-card,
+body[data-theme="dark"] .power-card,
+body[data-theme="dark"] .hardware-doc {
+  border-color: var(--line);
+  background: var(--white);
+  color: var(--ink);
+}
+
+body[data-theme="dark"] .component-state {
+  color: var(--muted);
 }
 
 @media (max-width: 1050px) {

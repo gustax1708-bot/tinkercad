@@ -28,10 +28,12 @@ As páginas compartilham uma navegação fixa que conecta a Home, Medicamentos, 
 - `docs/pages/firmware.html`: código, dependências e informações do firmware.
 - `docs/pages/docs.html`: fluxo de operação e endpoints da API.
 - `docs/pages/workbench.html`: resumo da bancada Wokwi.
+- `docs/pages/privacy.html` e `docs/pages/terms.html`: rascunhos informativos que precisam de revisão antes de uso real.
+- `docs/404.html`: página personalizada para endereços não encontrados.
 - `docs/pages/medications.html`: cadastro local de medicamentos, doses e horários com lembretes no navegador.
 - `docs/pages/login.html` e `docs/pages/profile.html`: telas demonstrativas de login e perfil, sem autenticação de servidor.
 
-O botão flutuante de acessibilidade permite alternar tema claro/escuro, alto contraste, texto ampliado e movimento reduzido. Os dados de perfil e medicamentos ficam no armazenamento local do navegador. Os lembretes só funcionam enquanto a página estiver aberta; notificações do sistema dependem da permissão do navegador.
+O botão flutuante de acessibilidade permite alternar tema claro/escuro, alto contraste, texto ampliado e movimento reduzido. Os dados de perfil e medicamentos ficam no armazenamento local do navegador. Os lembretes só funcionam enquanto a página estiver aberta; notificações do sistema dependem da permissão do navegador. As páginas publicadas incluem metadados para busca e compartilhamento, favicon, `robots.txt` e `sitemap.xml`. Não há analytics configurado; o aviso de privacidade informa o uso de armazenamento local. Os formulários de perfil e medicamentos são locais, sem envio a um servidor, portanto não há endpoint público que receba spam. A imagem `Cura+.png` na raiz do repositório não faz parte dos arquivos publicados pelo GitHub Pages.
 
 O acesso ao perfil e a ação de entrar/sair ficam nos ícones do canto superior direito. O rodapé da navegação identifica a conta ativa, e a saudação exibe o nome do usuário conectado.
 

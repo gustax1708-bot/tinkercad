@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Rascunho informativo sobre os dados locais e de telemetria usados no protótipo CUIDA+." />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="CUIDA+" />
+    <meta property="og:title" content="Privacidade | CUIDA+" />
+    <meta property="og:description" content="Como o protótipo CUIDA+ trata dados locais e telemetria." />
+    <meta property="og:image" content="https://gustax1708-bot.github.io/tinkercad/assets/images/social-preview.svg" />
+    <meta property="og:image:alt" content="CUIDA+: protótipo experimental de monitoramento remoto." />
+    <meta property="og:url" content="https://gustax1708-bot.github.io/tinkercad/pages/privacy.html" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="canonical" href="https://gustax1708-bot.github.io/tinkercad/pages/privacy.html" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../assets/css/home.css" />
+    <script src="../assets/js/care-features.js" defer></script>
+    <title>Política de privacidade (rascunho) | CUIDA+</title>
+  </head>
+  <body data-page-theme="documentation">
+    <main class="legal-page">
+      <header class="legal-header">
+        <a class="legal-brand" href="index.html" aria-label="CUIDA+, voltar ao painel">CUIDA<span>+</span></a>
+        <nav aria-label="Navegação legal">
+          <a href="index.html">Painel</a>
+          <a href="terms.html">Termos e condições</a>
+        </nav>
+      </header>
+      <article class="legal-document">
+        <p class="legal-draft">RASCUNHO INFORMATIVO — REVISÃO NECESSÁRIA ANTES DE USO REAL</p>
+        <h1>Política de privacidade</h1>
+        <p>Este documento descreve, em linguagem simples, o funcionamento atual do protótipo CUIDA+. Não é uma política legal final. O responsável pelo projeto deve revisar e completar os dados de contato, retenção e operação antes de qualquer uso público ou com dados reais.</p>
+        <p><strong>Última atualização:</strong> 26 de novembro de 2026.</p>
+
+        <h2>Que dados o protótipo usa</h2>
+        <ul>
+          <li>O perfil de demonstração (nome e e-mail), medicamentos, horários, preferências de acessibilidade e lembretes são guardados no armazenamento local do navegador deste dispositivo.</li>
+          <li>No modo local, a API pode receber telemetria enviada pelo dispositivo ou simulador: leituras de pulso, SpO₂, temperatura, bateria, movimento, eventos de queda ou pânico, identificador do dispositivo e horário de recebimento. A API grava esses dados no banco SQLite local configurado pelo operador.</li>
+          <li>O protótipo não sincroniza perfil ou medicamentos entre dispositivos. A versão estática publicada no GitHub Pages não hospeda a API nem o banco de telemetria.</li>
+        </ul>
+
+        <h2>Onde os dados ficam</h2>
+        <p>Os dados do perfil e da rotina ficam no navegador e podem ser apagados limpando os dados do site no próprio navegador. No modo local, o operador controla o computador, o arquivo SQLite, os backups e a retenção da telemetria. Não há prazo de retenção configurado pelo site.</p>
+
+        <h2>Cookies, armazenamento e analytics</h2>
+        <p>Este protótipo não tem ferramenta de analytics nem cookies de publicidade configurados. Ele usa armazenamento local do navegador para funções demonstrativas. Fontes e ícones podem ser carregados de Google Fonts e unpkg; esses provedores recebem as requisições necessárias para entregar os recursos.</p>
+
+        <h2>Compartilhamento e serviços externos</h2>
+        <p>O GitHub Pages hospeda a versão estática e os provedores de fontes/ícones entregam recursos externos. No modo local, a telemetria é enviada à API escolhida pelo operador. Não insira informações pessoais ou de saúde reais neste protótipo.</p>
+
+        <h2>Segurança e solicitações</h2>
+        <p>Tokens da API devem permanecer em configuração de servidor ou arquivo local ignorado pelo Git, nunca no HTML ou JavaScript público. Como este projeto ainda não tem um canal público de privacidade nem um responsável legal informado, esta versão não recebe solicitações formais. Esse canal precisa ser definido antes da publicação como serviço real.</p>
+
+        <h2>Uso experimental</h2>
+        <p>O CUIDA+ é um protótipo educacional. Suas leituras e alertas não são validados clinicamente, não substituem avaliação médica, supervisão ou serviços de emergência e não devem orientar decisões de saúde.</p>
+      </article>
+    </main>
+  </body>
+</html>

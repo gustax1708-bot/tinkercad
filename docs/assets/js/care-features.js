@@ -4,7 +4,53 @@ document.addEventListener("DOMContentLoaded", () => {
     medicines: "cuida-medicines",
     profile: "cuida-profile",
     reminders: "cuida-reminders",
+    privacyNotice: "cuida-privacy-notice-v1",
   };
+
+  const isPagesPath = window.location.pathname.includes("/pages/");
+  const legalPath = isPagesPath ? "./" : "./pages/";
+  const siteFooter = document.createElement("footer");
+  siteFooter.className = "site-footer";
+  siteFooter.innerHTML = `
+    <span>Protótipo experimental — não substitui avaliação médica.</span>
+    <nav aria-label="Informações legais">
+      <a href="${legalPath}privacy.html">Privacidade</a>
+      <a href="${legalPath}terms.html">Termos e condições</a>
+    </nav>`;
+  const mainContent = document.querySelector(".main-content, .legal-page");
+  (mainContent || document.body).append(siteFooter);
+
+  if (!window.localStorage.getItem(storageKeys.privacyNotice)) {
+    const notice = document.createElement("section");
+    notice.className = "privacy-notice";
+    notice.setAttribute("role", "region");
+    notice.setAttribute("aria-label", "Aviso sobre cookies e armazenamento local");
+
+    const copy = document.createElement("div");
+    const heading = document.createElement("strong");
+    heading.textContent = "Privacidade e armazenamento";
+    const message = document.createElement("p");
+    message.textContent =
+      "Este protótipo não usa analytics nem cookies de publicidade. Perfil e lembretes ficam no armazenamento local deste navegador.";
+    copy.append(heading, message);
+
+    const actions = document.createElement("div");
+    actions.className = "privacy-notice-actions";
+    const policyLink = document.createElement("a");
+    policyLink.href = `${legalPath}privacy.html`;
+    policyLink.textContent = "Política de privacidade";
+    const dismiss = document.createElement("button");
+    dismiss.type = "button";
+    dismiss.className = "care-button";
+    dismiss.textContent = "Entendi";
+    dismiss.addEventListener("click", () => {
+      window.localStorage.setItem(storageKeys.privacyNotice, "dismissed");
+      notice.remove();
+    });
+    actions.append(policyLink, dismiss);
+    notice.append(copy, actions);
+    document.body.append(notice);
+  }
 
   const readStored = (key, fallback) => {
     const value = window.localStorage.getItem(key);
@@ -217,6 +263,10 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   if (form && timeFields) {
+    const medicineNameInput = form.elements.namedItem("name");
+    medicineNameInput.addEventListener("input", () => {
+      medicineNameInput.setCustomValidity("");
+    });
     document.querySelector("#addMedicineTime")?.addEventListener("click", () => {
       const timeInput = document.createElement("input");
       timeInput.type = "time";
@@ -228,6 +278,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
+      if (!medicineNameInput.value.trim()) {
+        medicineNameInput.setCustomValidity("Informe o nome do medicamento.");
+        medicineNameInput.reportValidity();
+        return;
+      }
+      medicineNameInput.setCustomValidity("");
       const times = [...timeFields.querySelectorAll('input[type="time"]')]
         .map((input) => input.value)
         .filter(Boolean);
@@ -322,6 +378,7 @@ document.addEventListener("DOMContentLoaded", () => {
       event.preventDefault();
       const data = new FormData(loginForm);
       const email = String(data.get("email")).trim();
+      if (!email) return;
       const name = String(data.get("name")).trim() || email.split("@")[0];
       profile = { name, email };
       saveStored(storageKeys.profile, profile);
@@ -334,6 +391,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (profileForm) {
     const nameInput = profileForm.elements.namedItem("name");
     const emailInput = profileForm.elements.namedItem("email");
+    nameInput.addEventListener("input", () => nameInput.setCustomValidity(""));
     if (profile) {
       nameInput.value = profile.name || "";
       emailInput.value = profile.email || "";
@@ -341,6 +399,12 @@ document.addEventListener("DOMContentLoaded", () => {
     profileForm.addEventListener("submit", (event) => {
       event.preventDefault();
       const data = new FormData(profileForm);
+      if (!String(data.get("name")).trim()) {
+        nameInput.setCustomValidity("Informe seu nome.");
+        nameInput.reportValidity();
+        return;
+      }
+      nameInput.setCustomValidity("");
       profile = {
         name: String(data.get("name")).trim(),
         email: String(data.get("email")).trim(),
