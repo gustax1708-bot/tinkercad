@@ -4,7 +4,7 @@
   const isPublishedDashboard =
     window.location.hostname === "gustax1708-bot.github.io";
   const defaultApiBaseUrl = isPublishedDashboard
-    ? "https://cuida-plus-api.onrender.com"
+    ? "https://cura-plus-api.onrender.com"
     : window.location.origin;
   const configuredBaseUrl =
     document.documentElement.dataset.apiBase ||

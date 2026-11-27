@@ -137,7 +137,7 @@ Passo a passo:
 1. No Neon, crie um projeto PostgreSQL no plano gratuito e copie a connection string com SSL. Mantenha-a privada.
 2. Envie as alterações do repositório para o GitHub.
 3. No Render, escolha **New → Blueprint**, conecte este repositório e confirme o serviço `cuida-plus-api` no plano **Free**. Quando solicitado, configure `DATABASE_URL` com a connection string do Neon. O Blueprint gera um `DEVICE_TOKEN` privado automaticamente.
-4. Depois do deploy, abra `https://cuida-plus-api.onrender.com/api/v1/health`. O esperado é `{"status":"ok","database":"ok"}`. Caso o Render atribua outro endereço, atualize a URL padrão em `docs/assets/js/api.js` para esse endereço e envie a alteração para o GitHub.
+4. Depois do deploy, abra `https://cura-plus-api.onrender.com/api/v1/health`. O esperado é `{"status":"ok","database":"ok"}`. Caso o Render atribua outro endereço, atualize a URL padrão em `docs/assets/js/api.js` para esse endereço e envie a alteração para o GitHub.
 5. Aguarde o workflow do GitHub Pages terminar e abra o painel publicado.
 
 No plano gratuito, a API do Render pode suspender após inatividade e demorar para responder quando iniciar novamente. Os serviços gratuitos têm limites de uso que podem mudar; confira os planos e limites atuais do [Render](https://render.com/docs/free) e do [Neon](https://neon.com/pricing). As rotas GET do painel são públicas e somente leitura; não envie dados pessoais ou médicos reais. Gravações e ações de alerta continuam protegidas pelo `DEVICE_TOKEN`. O login demonstrativo, perfil, preferências e medicamentos são armazenados no navegador de cada dispositivo e não são sincronizados entre máquinas.
