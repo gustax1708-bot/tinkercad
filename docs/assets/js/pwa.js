@@ -1,9 +1,28 @@
 // Registra o service worker e guarda o evento de instalação do navegador.
 (function () {
-  if (!("serviceWorker" in navigator)) return;
+  const hostname = window.location.hostname;
+  const isCodespacesPreview =
+    hostname === "github.dev" ||
+    hostname.endsWith(".app.github.dev") ||
+    hostname.endsWith(".githubpreview.dev");
+
+  // Manifestos e service workers não podem ser autenticados pelo proxy do Codespaces.
+  if (isCodespacesPreview) return;
 
   // currentScript só existe enquanto o script roda, por isso guardamos agora.
   const scriptSrc = document.currentScript && document.currentScript.src;
+
+  if (scriptSrc) {
+    const manifestUrl = new URL("../../manifest.json", scriptSrc);
+    if (!document.querySelector('link[rel="manifest"]')) {
+      const manifest = document.createElement("link");
+      manifest.rel = "manifest";
+      manifest.href = manifestUrl.href;
+      document.head.appendChild(manifest);
+    }
+  }
+
+  if (!("serviceWorker" in navigator)) return;
 
   window.addEventListener("load", () => {
     // Caminho calculado a partir deste arquivo: funciona em /tinkercad/ (GitHub Pages) e no localhost.

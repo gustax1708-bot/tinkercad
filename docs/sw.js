@@ -1,6 +1,6 @@
 // Service worker do CUIDA+
 // Estratégia: rede primeiro, cache como reserva (assim você sempre vê a versão nova quando está online).
-const CACHE = "cuida-v1";
+const CACHE = "cuida-v4";
 
 // Arquivos guardados na instalação, para o app abrir mesmo sem internet.
 const ARQUIVOS = [
@@ -21,19 +21,37 @@ const ARQUIVOS = [
   "./assets/css/home.css",
   "./assets/css/hardware.css",
   "./assets/css/firmware.css",
+  "./assets/css/fonts.css",
+  "./assets/fonts/space-grotesk-latin-400-normal.woff2",
+  "./assets/fonts/space-grotesk-latin-500-normal.woff2",
+  "./assets/fonts/space-grotesk-latin-600-normal.woff2",
+  "./assets/fonts/space-grotesk-latin-700-normal.woff2",
+  "./assets/fonts/dm-mono-latin-400-normal.woff2",
   "./assets/js/api.js",
   "./assets/js/home.js",
   "./assets/js/care-features.js",
   "./assets/js/hardware.js",
   "./assets/js/firmware.js",
   "./assets/js/pwa.js",
+  "./assets/js/lucide.min.js",
   "./assets/images/icon-192.png",
   "./assets/images/icon-512.png",
 ];
 
 self.addEventListener("install", (evento) => {
   evento.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(ARQUIVOS)).then(() => self.skipWaiting())
+    caches
+      .open(CACHE)
+      .then(async (cache) => {
+        await Promise.all(
+          ARQUIVOS.map((arquivo) =>
+            cache.add(arquivo).catch((erro) => {
+              console.warn("PWA: recurso não armazenado", arquivo, erro);
+            })
+          )
+        );
+      })
+      .then(() => self.skipWaiting())
   );
 });
 
