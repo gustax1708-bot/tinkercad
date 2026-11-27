@@ -503,7 +503,7 @@ class ApiHandler(BaseHTTPRequestHandler):
         self.send_json(200, {"alert": alert_data, "updated": cursor.rowcount == 1})
 
     def log_message(self, format_string, *args):
-        request_line = args[0] if args else ""
+        request_line = args[0] if args and isinstance(args[0], str) else ""
         if request_line.startswith(
             ("GET /api/v1/latest", "GET /api/v1/history", "GET /api/v1/health")
         ):

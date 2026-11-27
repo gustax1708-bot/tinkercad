@@ -83,6 +83,17 @@ class ApiHttpTests(unittest.TestCase):
         self.assertEqual(response.status, 302)
         self.assertEqual(response.getheader("Location"), api.SITE_URL)
 
+    def test_unsupported_method_is_logged_without_handler_error(self):
+        output = StringIO()
+        with redirect_stdout(output):
+            self.connection.request("PUT", "/api/v1/latest")
+            response = self.connection.getresponse()
+            body = response.read()
+
+        self.assertEqual(response.status, 501)
+        self.assertIn(b"Unsupported method", body)
+        self.assertIn("501", output.getvalue())
+
     def test_telemetry_endpoints_are_not_cached(self):
         for path in ("/api/v1/latest", "/api/v1/history", "/api/v1/health"):
             self.connection.request(
