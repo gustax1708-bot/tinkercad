@@ -11,9 +11,17 @@
 #endif
 constexpr char kWifiSsid[] = "Wokwi-GUEST";
 constexpr char kWifiPassword[] = "";
+#if defined(CUIDA_WOKWI_RENDER)
+constexpr char kApiUrl[] = "http://host.wokwi.internal:8080/api/v1/readings";
+constexpr char kDeviceToken[] = "dev-token";
+#elif defined(CUIDA_WOKWI_LOCAL)
 constexpr char kApiUrl[] = "http://host.wokwi.internal:8000/api/v1/readings";
-constexpr uint8_t kWifiChannel = 6;
+constexpr char kDeviceToken[] = "dev-token";
+#else
+constexpr char kApiUrl[] = "http://host.wokwi.internal:8000/api/v1/readings";
 constexpr char kDeviceToken[] = CUIDA_DEVICE_TOKEN;
+#endif
+constexpr uint8_t kWifiChannel = 6;
 constexpr char kDeviceId[] = "pulseira-01";
 #else
 #if __has_include("secrets.h")

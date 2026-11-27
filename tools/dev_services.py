@@ -20,12 +20,37 @@ API_HEALTH_URL = f"{API_BASE_URL}/api/v1/health"
 API_HISTORY_URL = f"{API_BASE_URL}/api/v1/history"
 SITE_URL = f"http://127.0.0.1:{SITE_PORT}/"
 DEVICE_TOKEN = os.getenv("DEVICE_TOKEN", "dev-token")
+RENDER_API_URL = "https://cura-plus-api.onrender.com/api/v1/readings"
+WOKWI_PROXY_TOKEN = "dev-token"
 
 
-def get_response(url, headers=None, data=None, method=None):
+def render_device_token():
+    configured_token = os.getenv("RENDER_DEVICE_TOKEN")
+    if configured_token:
+        return configured_token
+
+    secrets_path = ROOT / "CURA" / "include" / "secrets.h"
+    if not secrets_path.is_file():
+        return ""
+    for line in secrets_path.read_text(encoding="utf-8").splitlines():
+        parts = line.strip().split(maxsplit=2)
+        if len(parts) != 3 or parts[:2] != ["#define", "DEVICE_API_TOKEN"]:
+            continue
+        value = parts[2].strip()
+        if len(value) < 2 or value[0] != '"' or value[-1] != '"':
+            return ""
+        token = value[1:-1]
+        return "" if token == "REPLACE_WITH_RANDOM_DEVICE_TOKEN" else token
+    return ""
+
+
+RENDER_DEVICE_TOKEN = render_device_token()
+
+
+def get_response(url, headers=None, data=None, method=None, timeout=1):
     try:
         request = Request(url, data=data, headers=headers or {}, method=method)
-        with urlopen(request, timeout=1) as response:
+        with urlopen(request, timeout=timeout) as response:
             return response.status, response.read()
     except HTTPError as error:
         return error.code, error.read()
@@ -136,6 +161,9 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         request_path = urlsplit(self.path).path
+        if request_path == "/api/v1/readings":
+            self.proxy_render_reading()
+            return
         if not request_path.startswith("/api/v1/alerts/"):
             self.send_error(404, "Not found")
             return
@@ -151,6 +179,58 @@ class FrontendOnlyHandler(SimpleHTTPRequestHandler):
         if status is None:
             status = 503
             body = json.dumps({"error": "api indisponivel"}).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        try:
+            self.wfile.write(body)
+        except BrokenPipeError:
+            pass
+
+    def proxy_render_reading(self):
+        if self.headers.get("X-Device-Token") != WOKWI_PROXY_TOKEN:
+            status = 401
+            body = json.dumps({"error": "token local invalido"}).encode("utf-8")
+        elif not RENDER_DEVICE_TOKEN:
+            status = 503
+            body = json.dumps(
+                {
+                    "error": (
+                        "Configure DEVICE_API_TOKEN em secrets.h ou "
+                        "RENDER_DEVICE_TOKEN no ambiente local"
+                    )
+                }
+            ).encode("utf-8")
+        else:
+            try:
+                length = int(self.headers.get("Content-Length", "0"))
+                if not 1 <= length <= 4096:
+                    raise ValueError
+                data = self.rfile.read(length)
+            except ValueError:
+                status = 400
+                body = json.dumps({"error": "tamanho do corpo invalido"}).encode(
+                    "utf-8"
+                )
+            else:
+                status, body = get_response(
+                    RENDER_API_URL,
+                    headers={
+                        "Content-Type": "application/json",
+                        "X-Device-Token": RENDER_DEVICE_TOKEN,
+                    },
+                    data=data,
+                    method="POST",
+                    timeout=65,
+                )
+                if status is None:
+                    status = 503
+                    body = json.dumps({"error": "Render indisponivel"}).encode(
+                        "utf-8"
+                    )
+
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
         self.send_header("Cache-Control", "no-store")

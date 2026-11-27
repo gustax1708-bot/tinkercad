@@ -574,8 +574,13 @@ bool sendReading(bool panicEvent, const PanicSnapshot& panicSnapshot) {
   String body;
   serializeJson(payload, body);
   HTTPClient client;
+#if defined(CUIDA_WOKWI_RENDER)
+  client.setConnectTimeout(5000);
+  client.setTimeout(65000);
+#else
   client.setConnectTimeout(1000);
   client.setTimeout(1000);
+#endif
   if (!client.begin(kApiUrl)) {
     Serial.println("[API] Nao foi possivel iniciar requisicao HTTP");
     return false;

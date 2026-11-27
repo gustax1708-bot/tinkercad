@@ -1,6 +1,7 @@
 import http.client
 import json
 import sys
+import tempfile
 import threading
 import unittest
 from pathlib import Path
@@ -33,6 +34,23 @@ class LocalServerTests(unittest.TestCase):
         self.server.server_close()
         self.server_thread.join(timeout=2)
 
+    def test_render_token_is_read_from_ignored_local_secrets_file(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            secrets_path = root / "CURA" / "include" / "secrets.h"
+            secrets_path.parent.mkdir(parents=True)
+            secrets_path.write_text(
+                '#define DEVICE_API_TOKEN "test-render-token"\n',
+                encoding="utf-8",
+            )
+            with (
+                patch.object(dev_services, "ROOT", root),
+                patch.dict(dev_services.os.environ, {"RENDER_DEVICE_TOKEN": ""}),
+            ):
+                token = dev_services.render_device_token()
+
+        self.assertEqual(token, "test-render-token")
+
     def test_root_redirects_to_dashboard_page(self):
         self.connection.request("GET", "/")
         response = self.connection.getresponse()
@@ -61,6 +79,72 @@ class LocalServerTests(unittest.TestCase):
         self.assertEqual(kwargs["method"], "POST")
         self.assertEqual(kwargs["data"], b"")
         self.assertIn("X-Device-Token", kwargs["headers"])
+
+    def test_wokwi_readings_are_forwarded_to_render_with_local_secret(self):
+        payload = json.dumps({"heart_rate_bpm": 72}).encode("utf-8")
+        response_body = json.dumps({"reading": {"id": 8}}).encode("utf-8")
+        with (
+            patch.object(dev_services, "RENDER_DEVICE_TOKEN", "render-secret"),
+            patch.object(
+                dev_services,
+                "get_response",
+                return_value=(201, response_body),
+            ) as proxy_request,
+        ):
+            self.connection.request(
+                "POST",
+                "/api/v1/readings",
+                payload,
+                {
+                    "Content-Type": "application/json",
+                    "X-Device-Token": "dev-token",
+                },
+            )
+            response = self.connection.getresponse()
+            body = json.loads(response.read())
+
+        self.assertEqual(response.status, 201)
+        self.assertEqual(body["reading"]["id"], 8)
+        args, kwargs = proxy_request.call_args
+        self.assertEqual(args[0], dev_services.RENDER_API_URL)
+        self.assertEqual(kwargs["method"], "POST")
+        self.assertEqual(kwargs["data"], payload)
+        self.assertEqual(
+            kwargs["headers"]["X-Device-Token"],
+            "render-secret",
+        )
+        self.assertEqual(kwargs["timeout"], 65)
+
+    def test_wokwi_render_proxy_requires_local_header_and_render_secret(self):
+        with (
+            patch.object(dev_services, "RENDER_DEVICE_TOKEN", ""),
+            patch.object(dev_services, "get_response") as proxy_request,
+        ):
+            self.connection.request(
+                "POST",
+                "/api/v1/readings",
+                json.dumps({"heart_rate_bpm": 72}),
+                {"Content-Type": "application/json"},
+            )
+            response = self.connection.getresponse()
+            missing_header = json.loads(response.read())
+
+            self.connection.request(
+                "POST",
+                "/api/v1/readings",
+                json.dumps({"heart_rate_bpm": 72}),
+                {
+                    "Content-Type": "application/json",
+                    "X-Device-Token": "dev-token",
+                },
+            )
+            response = self.connection.getresponse()
+            missing_secret = json.loads(response.read())
+
+        self.assertEqual(response.status, 503)
+        self.assertIn("DEVICE_API_TOKEN", missing_secret["error"])
+        self.assertEqual(missing_header["error"], "token local invalido")
+        proxy_request.assert_not_called()
 
     def test_api_outage_is_returned_as_service_unavailable(self):
         with patch.object(dev_services, "get_response", return_value=(None, b"")):

@@ -92,7 +92,7 @@ py -3 tools/dev_services.py
 
 Nesse caso, abra `http://localhost:18080/`. O comando de verificação `--check` deve ser executado no terminal onde essas variáveis foram definidas.
 
-Para apenas abrir o dashboard e testar a API com dados simulados, não é necessário instalar PlatformIO, Wokwi, Docker ou dependências Python adicionais. Para também compilar ou simular o firmware, instale o VS Code com as extensões **PlatformIO IDE** e **Wokwi**; a primeira compilação precisa de internet para baixar o toolchain e as bibliotecas. Na simulação, use **Wokwi: Start Simulator**. O envio de telemetria do Wokwi para a API local pode exigir o **Private IoT Gateway** e depender das regras da rede da escola.
+Para apenas abrir o dashboard e testar a API com dados simulados, não é necessário instalar PlatformIO, Wokwi, Docker ou dependências Python adicionais. Para também compilar ou simular o firmware, instale o VS Code com as extensões **PlatformIO IDE** e **Wokwi**. O Wokwi usa um relay local acessível pelo **Private IoT Gateway**; o relay encaminha a telemetria ao endpoint existente do Render por HTTPS. O dashboard do GitHub Pages consulta os dados a cada 10 segundos. A API publicada não precisa ser alterada.
 
 No VS Code, abra a pasta do repositório e execute a tarefa **Iniciar CUIDA+ local**. Ou abra um terminal na pasta do projeto e execute:
 
@@ -142,7 +142,7 @@ Passo a passo:
 
 No plano gratuito, a API do Render pode suspender após inatividade e demorar para responder quando iniciar novamente. Os serviços gratuitos têm limites de uso que podem mudar; confira os planos e limites atuais do [Render](https://render.com/docs/free) e do [Neon](https://neon.com/pricing). As rotas GET do painel são públicas e somente leitura; não envie dados pessoais ou médicos reais. Gravações e ações de alerta continuam protegidas pelo `DEVICE_TOKEN`. O login demonstrativo, perfil, preferências e medicamentos são armazenados no navegador de cada dispositivo e não são sincronizados entre máquinas.
 
-Para conectar uma placa física depois de publicar, copie `DEVICE_TOKEN` da área **Environment** do Render para `DEVICE_API_TOKEN` em `CURA/include/secrets.h` e configure `DEVICE_API_URL` com `https://<endereco-do-servico>/api/v1/readings`. O firmware atual foi feito para a API HTTP local; antes de enviar pela internet, adapte e valide o transporte HTTPS com verificação de certificado. Nunca desative a validação TLS nem exponha o token no frontend ou no Git. O Wokwi segue usando o gateway local `host.wokwi.internal` e não envia telemetria diretamente ao Render.
+Para conectar uma placa física, copie `DEVICE_TOKEN` da área **Environment** do Render para `DEVICE_API_TOKEN` em `CURA/include/secrets.h` e configure `DEVICE_API_URL` com `https://<endereco-do-servico>/api/v1/readings`. O relay lê o token desse arquivo local e nunca o inclui no firmware.
 
 Por padrão, cada computador executa sua própria cópia do dashboard, API e banco SQLite, e a API escuta apenas em `127.0.0.1`. Para usar uma placa física na mesma rede Wi-Fi ou conectar o Wokwi pelo **Private IoT Gateway**, inicie a API em modo de rede local. Isso não publica o dashboard nem a API na internet:
 
@@ -161,7 +161,7 @@ py -3 tools/dev_services.py
 
 Copie esse token para `DEVICE_API_TOKEN` em `CURA/include/secrets.h`. Para a placa física, configure `DEVICE_API_URL` com o IPv4 do computador que está rodando a API, por exemplo `http://192.168.1.25:8000/api/v1/readings` (descubra o endereço com `ipconfig` no Windows). A placa e o computador precisam estar na mesma rede local; permita conexões TCP de entrada na porta `8000` somente no perfil de rede privada, se o firewall solicitar. Não crie encaminhamento de portas no roteador nem libere a porta para redes públicas.
 
-Para Wokwi remoto, use o **Private IoT Gateway** no computador que executa a API. O firmware simulado já envia para `host.wokwi.internal:8000`; o gateway precisa estar ativo e autorizado a acessar o serviço local. Configure o mesmo `DEVICE_API_TOKEN` no `secrets.h` antes de iniciar a simulação. Redes escolares podem bloquear conexões entre dispositivos ou o gateway; nesse caso, a política de rede precisa permitir o tráfego local.
+O modo padrão do Wokwi envia telemetria sintética ao relay local, que encaminha para a API existente do Render por HTTPS. Copie o `DEVICE_TOKEN` do Render para `DEVICE_API_TOKEN` no arquivo local ignorado `CURA/include/secrets.h`; o relay lê esse valor e não o inclui no firmware. Use o **Private IoT Gateway** do Wokwi para conectar o simulador à porta local `8080`. Use somente leituras simuladas. Para enviar à API local, selecione `CURA/wokwi.local.toml`, compile com `pio run -e wokwi` e use o gateway para alcançar a porta `8000`.
 
 O servidor local do dashboard continua restrito ao próprio computador em `127.0.0.1:8080`. A API local valida o token nas rotas de escrita e recusa iniciar com o token padrão ou com menos de 32 caracteres ao aceitar conexões da rede. Na API publicada, somente as rotas GET de leitura são públicas; gravações e ações de alerta continuam exigindo token. O servidor local redireciona a raiz para `docs/pages/index.html` e entrega os arquivos estáticos de `docs/`; seu proxy encaminha o token sem expô-lo ao JavaScript. O CORS aceita apenas `http://localhost:8080` e a origem do GitHub Pages.
 
@@ -174,7 +174,7 @@ cd CURA
 cp include/secrets.example.h include/secrets.h
 ```
 
-`secrets.h` é ignorado pelo Git. No modo padrão, a API aceita somente conexões do computador local. Para receber telemetria da placa ou do Wokwi remoto, use o modo de rede local descrito acima e configure o token correspondente em `secrets.h`. Sem esse arquivo, o firmware usa o token demonstrativo `dev-token`, que só funciona no modo padrão local.
+`secrets.h` é ignorado pelo Git. Configure `DEVICE_API_TOKEN` nesse arquivo para uma placa física e para o relay Render. O perfil Wokwi-Render usa somente o token local não secreto `dev-token` para falar com o relay; o perfil Wokwi local também usa `dev-token` para falar com a API local.
 
 ### Ligações
 
@@ -212,17 +212,17 @@ O MAX17048 deve medir a célula, não a saída de 5 V do conversor. Os 12 h são
 
 ## Simulação Wokwi
 
-O firmware e o diagrama continuam disponíveis para compilação e simulação. Para enviar telemetria de uma simulação remota, inicie a API em modo de rede local, configure o token em `CURA/include/secrets.h` e conecte o **Private IoT Gateway** no computador que hospeda a API, conforme descrito acima. Sem esse gateway, a simulação ainda pode ser compilada e executada, mas não alcança a API do computador.
+O firmware e o diagrama continuam disponíveis para compilação e simulação. O relay encaminha leituras sintéticas ao endpoint existente `/api/v1/readings`; a API mantém sua autenticação e grava os dados normalmente, e o dashboard público os atualiza na próxima consulta.
 
 Compile o firmware e o chip customizado a partir de `CURA/`:
 
 ```bash
-pio run -e wokwi
+pio run -e wokwi-render
 docker run --rm -v "$PWD":/workspace -w /workspace \
 	wokwi/builder-clang-wasm make build-chip
 ```
 
-Como `wokwi.toml` e `diagram.json` ficam dentro de `CURA/`, ao abrir a raiz do repositório no VS Code selecione **F1 → Wokwi: Select Config File → `CURA/wokwi.toml`**. Depois, use **Wokwi: Start Simulator**. Os caminhos de firmware e chips são relativos a `wokwi.toml`; os artefatos gerados são `CURA/.pio/build/wokwi/firmware.bin`, `CURA/Sensor_Saturacao.chip.wasm`, `CURA/MAX30205.chip.wasm` e `CURA/MAX17048.chip.wasm`. O MAX30102 simulado usa 100 Hz com média de quatro amostras, resultando em 25 amostras por segundo.
+Como `wokwi.toml` e `diagram.json` ficam dentro de `CURA/`, ao abrir a raiz do repositório no VS Code selecione **F1 → Wokwi: Select Config File → `CURA/wokwi.toml`**. Crie `CURA/include/secrets.h` com o token do Render, inicie `tools/dev_services.py`, habilite o **Private IoT Gateway**, compile com `pio run -e wokwi-render` e use **Wokwi: Start Simulator**. Abra o dashboard publicado; ele atualiza a cada 10 segundos. Para voltar ao endpoint local, selecione `CURA/wokwi.local.toml` e compile com `pio run -e wokwi`. Os caminhos de firmware e chips são relativos ao TOML selecionado; os artefatos gerados são `CURA/.pio/build/wokwi-render/firmware.bin` (ou `CURA/.pio/build/wokwi/firmware.bin` no modo local), `CURA/Sensor_Saturacao.chip.wasm`, `CURA/MAX30205.chip.wasm` e `CURA/MAX17048.chip.wasm`. O MAX30102 simulado usa 100 Hz com média de quatro amostras, resultando em 25 amostras por segundo.
 
 Os controles customizados ajustam frequência cardíaca (40-180 bpm), SpO2 (80-100%), temperatura MAX30205 (0-50 °C) e carga simulada da bateria (0-100%). O MPU6050 pode ser ajustado pelos atributos de aceleração do diagrama. Esses controles são apenas simulação; a carga no Wokwi não estima consumo nem comprova autonomia.
 
