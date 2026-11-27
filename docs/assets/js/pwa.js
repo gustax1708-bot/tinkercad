@@ -6,11 +6,19 @@
     hostname.endsWith(".app.github.dev") ||
     hostname.endsWith(".githubpreview.dev");
 
-  // Manifestos e service workers não podem ser autenticados pelo proxy do Codespaces.
-  if (isCodespacesPreview) return;
-
   // currentScript só existe enquanto o script roda, por isso guardamos agora.
   const scriptSrc = document.currentScript && document.currentScript.src;
+
+  // Remove instalações antigas do preview e não pede novo manifesto nem worker protegido.
+  if (isCodespacesPreview) {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        registrations.forEach((registration) => registration.unregister());
+      });
+    }
+    document.querySelectorAll('link[rel="manifest"]').forEach((link) => link.remove());
+    return;
+  }
 
   if (scriptSrc) {
     const manifestUrl = new URL("../../manifest.json", scriptSrc);

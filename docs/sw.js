@@ -1,6 +1,6 @@
 // Service worker do CUIDA+
 // Estratégia: rede primeiro, cache como reserva (assim você sempre vê a versão nova quando está online).
-const CACHE = "cuida-v4";
+const CACHE = "cuida-v5";
 
 // Arquivos guardados na instalação, para o app abrir mesmo sem internet.
 const ARQUIVOS = [
@@ -27,6 +27,7 @@ const ARQUIVOS = [
   "./assets/fonts/space-grotesk-latin-600-normal.woff2",
   "./assets/fonts/space-grotesk-latin-700-normal.woff2",
   "./assets/fonts/dm-mono-latin-400-normal.woff2",
+  "./assets/images/apple-touch-icon.png",
   "./assets/js/api.js",
   "./assets/js/home.js",
   "./assets/js/care-features.js",
@@ -36,6 +37,7 @@ const ARQUIVOS = [
   "./assets/js/lucide.min.js",
   "./assets/images/icon-192.png",
   "./assets/images/icon-512.png",
+  "./assets/images/icon-maskable-512.png",
 ];
 
 self.addEventListener("install", (evento) => {
@@ -74,9 +76,10 @@ self.addEventListener("fetch", (evento) => {
   if (url.pathname.includes("/api/")) return;
 
   evento.respondWith(
-    fetch(req)
-      .then((resposta) => {
-        if (resposta.ok) {
+      fetch(req)
+        .then((resposta) => {
+          const responseUrl = new URL(resposta.url || req.url);
+          if (resposta.ok && responseUrl.origin === self.location.origin) {
           const copia = resposta.clone();
           caches.open(CACHE).then((cache) => cache.put(req, copia));
         }

@@ -1,6 +1,7 @@
 {
   "name": "CUIDA+ | Monitoramento remoto",
   "short_name": "CUIDA+",
+  "id": "./",
   "description": "Painel do protótipo CUIDA+ para telemetria demonstrativa e alertas.",
   "start_url": "./pages/index.html",
   "scope": "./",
